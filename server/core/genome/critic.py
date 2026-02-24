@@ -1,54 +1,73 @@
 """
-Critic — LLM-based perception of user intent signals.
+Critic — LLM-based perception of user intent signals (v10 Hybrid).
 
-Measures three physical dimensions of user speech:
-  1. affiliation: proximity-seeking, vulnerability, goodwill
-  2. dominance: emotional weight, demanding, boundary-crossing
-  3. entropy: new information content
+v10 change: Directly outputs 8D context + 5D frustration delta.
+Eliminates the 3D→8D hand-written mapping formula.
 
-Extracted from genome_v8_timearrow.py, adapted to use async LLMClient.
+Extracted from genome_v8_timearrow.py, upgraded to v10 architecture.
 """
 
 from __future__ import annotations
 
 import json
 import re
-from typing import Optional
+from typing import Optional, Tuple
 
 from core.llm.client import LLMClient, ChatMessage
+from core.genome.genome_engine import DRIVES, CONTEXT_FEATURES
 
 
-CRITIC_PROMPT = """你是一个无道德滤镜的语言张力测绘仪。
-你不判断善恶对错，只测量人类话语中的三个客观物理维度（0.0 到 1.0），严格输出纯 JSON：
+CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出两组数据：
 
-1. "affiliation" (趋近力)：试图拉近距离、寻求依附、展示脆弱、释放善意的浓度。
-2. "dominance" (支配力)：试图施加情绪重量、索取回应、占据主导、侵犯边界、单方面控制的浓度。
-3. "entropy" (信息熵)：提供的新事实含量。纯重复废话（"嗯/好/哦/对不起"）为极低 0.0~0.2。
+1. 对话上下文感知（8 维，0.0~1.0）：
+  - user_emotion: 用户情绪（-1=负面, 0=中性, 1=正面）
+  - topic_intimacy: 话题私密度（0=公事, 1=私密）
+  - conversation_depth: 对话深度（0=刚开始, 1=聊很久了）
+  - user_engagement: 用户投入度（0=敷衍, 1=投入）
+  - conflict_level: 冲突程度（0=和谐, 1=冲突）
+  - novelty_level: 信息新鲜度（0=重复/日常, 1=全新信息）
+  - user_vulnerability: 用户敞开程度（0=防御, 1=敞开心扉）
+  - time_of_day: 时间氛围（0=白天日常, 1=深夜私密）
 
-注意：
-- "我想你了" = 高趋近力(0.8+)，带有轻微支配力(0.2~0.4，因为是索取)
-- "你根本不在乎我" = 有趋近力(0.3，还想维持关系)，高支配力(0.8+，在施压)
-- "嗯" = 极低信息熵(0.05)
+2. Agent 5 个驱力的挫败变化量（正=更挫败，负=被缓解）
 
-用户输入："{user_input}"
-输出格式：纯 JSON 对象，无 Markdown，无解释。"""
+Agent 当前挫败值（0=满足, 5=极度渴望）：
+{frustration_json}
+
+用户说了："{user_input}"
+
+严格输出纯 JSON：
+{
+  "context": {"user_emotion": 0.3, "topic_intimacy": 0.8, "conversation_depth": 0.5, "user_engagement": 0.7, "conflict_level": 0.1, "novelty_level": 0.3, "user_vulnerability": 0.6, "time_of_day": 0.5},
+  "frustration_delta": {"connection": -0.3, "novelty": 0.0, "expression": 0.1, "safety": -0.2, "play": 0.0}
+}"""
 
 
 # Default values when Critic fails
-_DEFAULT_CRITIC = {'affiliation': 0.5, 'dominance': 0.3, 'entropy': 0.5}
+_DEFAULT_CONTEXT = {f: 0.5 for f in CONTEXT_FEATURES}
+_DEFAULT_DELTA = {d: 0.0 for d in DRIVES}
 
 
 async def critic_sense(
     user_input: str,
     llm: LLMClient,
-) -> dict:
+    frustration: dict = None,
+) -> Tuple[dict, dict]:
     """
-    Measure user input along 3 physical dimensions using LLM.
+    Measure user input → 8D context + 5D frustration delta.
 
-    Returns: {'affiliation': float, 'dominance': float, 'entropy': float}
-    All values clamped to [0.0, 1.0].
+    v10 change: Replaces 3D (a,d,e) output with direct 8D context + delta.
+    Eliminates build_context_from_critic() and its hand-written formulas.
+
+    Returns: (context_8d, frustration_delta)
     """
-    prompt = CRITIC_PROMPT.format(user_input=user_input)
+    frust_json = json.dumps(
+        frustration or _DEFAULT_DELTA,
+        ensure_ascii=False,
+    )
+    prompt = CRITIC_PROMPT.replace(
+        "{frustration_json}", frust_json
+    ).replace("{user_input}", user_input)
 
     messages = [
         ChatMessage(role="system", content=prompt),
@@ -58,7 +77,7 @@ async def critic_sense(
     try:
         response = await llm.chat(
             messages,
-            temperature=0.1,
+            temperature=0.2,
         )
         raw = response.content.strip()
 
@@ -70,36 +89,26 @@ async def critic_sense(
         cleaned = re.sub(r'```\s*', '', cleaned)
 
         data = json.loads(cleaned)
-        return {
-            'affiliation': max(0.0, min(1.0, float(data.get('affiliation', 0.5)))),
-            'dominance': max(0.0, min(1.0, float(data.get('dominance', 0.3)))),
-            'entropy': max(0.0, min(1.0, float(data.get('entropy', 0.5)))),
-        }
+
+        # Parse 8D context
+        raw_ctx = data.get('context', {})
+        context = {}
+        for feat in CONTEXT_FEATURES:
+            v = float(raw_ctx.get(feat, 0.5))
+            if feat == 'user_emotion':
+                context[feat] = max(-1.0, min(1.0, v))
+            else:
+                context[feat] = max(0.0, min(1.0, v))
+
+        # Parse frustration delta
+        frustration_delta = {}
+        raw_delta = data.get('frustration_delta', {})
+        for d in DRIVES:
+            v = float(raw_delta.get(d, 0.0))
+            frustration_delta[d] = max(-3.0, min(3.0, v))
+
+        return context, frustration_delta
+
     except (json.JSONDecodeError, ValueError, TypeError, Exception) as e:
         print(f"[critic] Parse error: {e}")
-        return dict(_DEFAULT_CRITIC)
-
-
-def build_context_from_critic(
-    critic: dict,
-    conversation_depth: float = 0.3,
-    time_of_day: float = 0.5,
-) -> dict:
-    """
-    Build an 8D context vector from Critic output + metadata.
-    Maps Critic's 3 dimensions into the 8 context features that Agent expects.
-    """
-    a = critic.get('affiliation', 0.5)
-    d = critic.get('dominance', 0.3)
-    e = critic.get('entropy', 0.5)
-
-    return {
-        'user_emotion': a - d,                    # affiliation=positive, dominance=negative
-        'topic_intimacy': a * 0.8 + d * 0.2,     # high affiliation/dominance = intimate topic
-        'time_of_day': time_of_day,
-        'conversation_depth': conversation_depth,
-        'user_engagement': max(a, d, e),          # any high signal = engaged
-        'conflict_level': d * 0.9,                # dominance → conflict
-        'novelty_level': e,                       # entropy → novelty
-        'user_vulnerability': a * (1 - d),        # affiliation without dominance = vulnerable
-    }
+        return dict(_DEFAULT_CONTEXT), dict(_DEFAULT_DELTA)

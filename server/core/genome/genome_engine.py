@@ -150,6 +150,7 @@ class Agent:
         self._frustration = 0.0
         self._last_hidden = None
         self._last_input = None
+        self.signal_history = []
 
     def compute_signals(self, context: dict) -> dict:
         """
@@ -188,6 +189,11 @@ class Agent:
         signals = {}
         for i, name in enumerate(SIGNALS):
             signals[name] = 1.0 / (1.0 + math.exp(-max(-10, min(10, raw_signals[i]))))
+
+        # Track for personality_fingerprint
+        self.signal_history.append(dict(signals))
+        if len(self.signal_history) > 200:
+            self.signal_history = self.signal_history[-100:]
 
         return signals
 
@@ -267,10 +273,74 @@ class Agent:
         """Return the most urgent drive."""
         return max(self.drive_state, key=self.drive_state.get)
 
+    def personality_fingerprint(self, window_size: int = 30) -> dict:
+        """
+        Analyzes recent signal history to identify stable traits and contradictions.
+        """
+        if not self.signal_history:
+            return {'traits': {}, 'contradictions': []}
+
+        recent_signals = self.signal_history[-window_size:]
+        num_signals = len(recent_signals)
+
+        if num_signals == 0:
+            return {'traits': {}, 'contradictions': []}
+
+        # Calculate average signal values
+        avg_signals = {sig_name: 0.0 for sig_name in SIGNALS}
+        for signals_t in recent_signals:
+            for sig_name, value in signals_t.items():
+                avg_signals[sig_name] += value
+        for sig_name in SIGNALS:
+            avg_signals[sig_name] /= num_signals
+
+        # Identify stable traits (signals consistently high or low)
+        traits = {}
+        for sig_name in SIGNALS:
+            if avg_signals[sig_name] > 0.7:
+                traits[sig_name] = 'high'
+            elif avg_signals[sig_name] < 0.3:
+                traits[sig_name] = 'low'
+            else:
+                traits[sig_name] = 'neutral'
+
+        # Identify contradictions (signals that frequently swing from high to low)
+        contradictions = []
+        for i in range(N_SIGNALS):
+            for j in range(i + 1, N_SIGNALS):
+                sig1_name = SIGNALS[i]
+                sig2_name = SIGNALS[j]
+
+                high_low_count = 0
+                low_high_count = 0
+
+                for k in range(num_signals - 1):
+                    s_t = recent_signals[k]
+                    s_t1 = recent_signals[k+1]
+
+                    # Check for high-to-low swing for sig1 while sig2 is low-to-high
+                    if (s_t[sig1_name] > 0.7 and s_t1[sig1_name] < 0.3 and
+                        s_t[sig2_name] < 0.3 and s_t1[sig2_name] > 0.7):
+                        high_low_count += 1
+                    # Check for low-to-high swing for sig1 while sig2 is high-to-low
+                    elif (s_t[sig1_name] < 0.3 and s_t1[sig1_name] > 0.7 and
+                          s_t[sig2_name] > 0.7 and s_t1[sig2_name] < 0.3):
+                        low_high_count += 1
+
+                # If both swings happen frequently, it's a contradiction
+                if high_low_count > num_signals * 0.1 and low_high_count > num_signals * 0.1:
+                    contradictions.append((sig1_name, sig2_name))
+
+        return {
+            'traits': traits,
+            'avg_signals': avg_signals,
+            'contradictions': contradictions,
+        }
+
     def to_prompt_injection(self, context: dict) -> str:
         """
         Convert current behavioral signals into text for LLM system prompt.
-        Only injects the top 3 most prominent signals (furthest from 0.5).
+        v10: Injects ALL 8 signals (5^8 = 390,625 combinations) instead of top-3.
         """
         signals = self.compute_signals(context)
         dominant_drive = self.get_dominant_drive()
@@ -334,19 +404,26 @@ class Agent:
             ],
         }
 
-        # Only inject top 3 most prominent signals
-        deviations = [(sig, abs(signals[sig] - 0.5), signals[sig]) for sig in SIGNALS]
-        deviations.sort(key=lambda x: x[1], reverse=True)
-        top_signals = deviations[:3]
-
+        # v10: Inject ALL 8 signals (not just top-3)
         lines = ["【你当前的状态】"]
-        for sig_name, _, val in top_signals:
+        for sig_name in SIGNALS:
+            val = signals[sig_name]
             for low, high, desc in descriptions[sig_name]:
                 if val < high or high == 1.0:
                     lines.append(f"- {desc}")
                     break
 
         lines.append(f"\n【内在需求】你现在最需要的是{DRIVE_LABELS[dominant_drive]}")
+
+        # Internal contradiction hint
+        fp = self.personality_fingerprint(30)
+        if fp.get('contradictions'):
+            top_c = fp['contradictions'][0]
+            lines.append(
+                f"【矛盾】你一方面想{SIGNAL_LABELS[top_c[0]].split(' ')[1]}，"
+                f"一方面又想{SIGNAL_LABELS[top_c[1]].split(' ')[1]}，这让你纠结"
+            )
+
         return '\n'.join(lines)
 
     # ── Serialization ──

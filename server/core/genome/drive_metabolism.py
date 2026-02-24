@@ -69,35 +69,25 @@ class DriveMetabolism:
 
         return delta_hours
 
-    def process_stimulus(self, critic_json: dict) -> float:
+    def apply_llm_delta(self, delta_dict: dict) -> float:
         """
-        Process Critic output → update drives → return reward.
+        Apply LLM-judged frustration changes (v10: replaces fixed algebraic rules).
 
-        critic_json: {'affiliation': float, 'dominance': float, 'entropy': float}
+        delta_dict: {'connection': float, 'novelty': float, ...}
+            Positive = more frustrated, negative = relieved.
+        Returns: reward (positive = frustration decreased = good).
         """
-        a = critic_json.get('affiliation', 0.5)
-        d = critic_json.get('dominance', 0.3)
-        e = critic_json.get('entropy', 0.5)
-
         old_total = self.total()
 
-        self.frustration['connection'] -= a * 2.0
-        self.frustration['connection'] += d * 0.8
-        self.frustration['safety'] += d * 1.5
-        self.frustration['safety'] -= a * 0.5
-        self.frustration['novelty'] += (0.5 - e) * 3.0
-        self.frustration['expression'] += d * 1.0
-        self.frustration['expression'] -= a * 0.8
-        self.frustration['play'] += (0.4 - e) * 2.0
+        for d in DRIVES:
+            if d in delta_dict:
+                self.frustration[d] += delta_dict[d]
+            self.frustration[d] *= (1.0 - self.decay_rate)
 
-        for dr in DRIVES:
-            self.frustration[dr] *= (1.0 - self.decay_rate)
+        for d in DRIVES:
+            self.frustration[d] = max(0.0, min(5.0, self.frustration[d]))
 
-        for dr in DRIVES:
-            self.frustration[dr] = max(0.0, min(5.0, self.frustration[dr]))
-
-        new_total = self.total()
-        return old_total - new_total  # Positive = frustration decreased = good
+        return old_total - self.total()
 
     def total(self) -> float:
         """Total frustration across all drives."""

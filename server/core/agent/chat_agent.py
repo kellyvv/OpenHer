@@ -1,12 +1,12 @@
 """
-ChatAgent — Genome v8 lifecycle-powered conversational agent.
+ChatAgent — Genome v10 Hybrid lifecycle-powered conversational agent.
 
 The 10-step lifecycle per turn:
   1. Time metabolism (DriveMetabolism)
-  2. Critic perception (LLM measures affiliation/dominance/entropy)
-  3. Algebraic metabolism (Critic → drive update → reward)
+  2. Critic perception (LLM → 8D context + frustration delta)
+  3. LLM metabolism (apply frustration delta → reward)
   4. Crystallization gate (reward > 0.3 → crystallize last action)
-  5. Compute signals (Agent neural network)
+  5. Compute signals (Agent neural network, context from Critic)
   6. Thermodynamic noise injection
   7. KNN retrieval (ContinuousStyleMemory)
   8. Build Actor prompt (persona + signals + few-shot)
@@ -24,7 +24,7 @@ from core.llm.client import LLMClient, ChatMessage, ChatResponse
 from core.persona.persona_loader import Persona
 from core.genome.genome_engine import Agent, DRIVES, SIGNALS, DRIVE_LABELS
 from core.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
-from core.genome.critic import critic_sense, build_context_from_critic
+from core.genome.critic import critic_sense
 from core.genome.style_memory import ContinuousStyleMemory
 from core.memory.memory_store import MemoryStore
 
@@ -158,12 +158,13 @@ class ChatAgent:
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
-        # ── Step 2: Critic perception ──
-        critic = await critic_sense(user_message, self.llm)
-        self._last_critic = critic
+        # ── Step 2: Critic perception (8D context + delta) ──
+        frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+        context, frustration_delta = await critic_sense(user_message, self.llm, frust_dict)
+        self._last_critic = context
 
-        # ── Step 3: Algebraic metabolism → reward ──
-        reward = self.metabolism.process_stimulus(critic)
+        # ── Step 3: LLM metabolism → reward ──
+        reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)
         self._last_reward = reward
 
@@ -177,11 +178,7 @@ class ChatAgent:
                 self._last_action['user_input'],
             )
 
-        # ── Step 5: Compute signals ──
-        context = build_context_from_critic(
-            critic,
-            conversation_depth=min(1.0, self._turn_count * 0.1),
-        )
+        # ── Step 5: Compute signals (context from Critic directly) ──
         base_signals = self.agent.compute_signals(context)
 
         # ── Step 6: Thermodynamic noise ──
@@ -238,17 +235,18 @@ class ChatAgent:
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
         """
-        Stream a response through the Genome v8 lifecycle.
+        Stream a response through the Genome v10 lifecycle.
         Steps 1-8 run first (Critic, metabolism, KNN), then Actor streams.
         """
         self._turn_count += 1
         now = time.time()
 
-        # ── Steps 1-3: Metabolism + Critic ──
+        # ── Steps 1-3: Metabolism + Critic (8D) ──
         delta_h = self.metabolism.time_metabolism(now)
-        critic = await critic_sense(user_message, self.llm)
-        self._last_critic = critic
-        reward = self.metabolism.process_stimulus(critic)
+        frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+        context, frustration_delta = await critic_sense(user_message, self.llm, frust_dict)
+        self._last_critic = context
+        reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)
         self._last_reward = reward
 
@@ -263,10 +261,6 @@ class ChatAgent:
             )
 
         # ── Steps 5-6: Signals + noise ──
-        context = build_context_from_critic(
-            critic,
-            conversation_depth=min(1.0, self._turn_count * 0.1),
-        )
         base_signals = self.agent.compute_signals(context)
         total_frust = self.metabolism.total()
         noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
