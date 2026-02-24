@@ -1,0 +1,189 @@
+% ============================================================
+% APPENDIX
+% ============================================================
+\appendix
+\setcounter{table}{0}
+\renewcommand{\thetable}{\Alph{section}\arabic{table}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{\Alph{section}\arabic{figure}}
+
+\section{Critic Mapping and Hebbian Update}
+\label{app:critic}
+
+\subsection{Input Critic (Stimulus Analysis)}
+
+The Input Critic is a zero-shot LLM classifier operating at temperature $t = 0.1$ that maps each user utterance $u_t$ to a 3-dimensional interpersonal vector $\mathbf{c}_t = (a, d, e)$ in $[0,1]^3$:
+
+\begin{itemize}
+  \item \textbf{Affiliation} $a$ (approach force): degree to which the speaker seeks closeness, attachment, vulnerability, or goodwill.
+  \item \textbf{Dominance} $d$ (control force): degree to which the speaker exerts emotional weight, demands response, or invades boundaries.
+  \item \textbf{Entropy} $e$ (information entropy): amount of new factual content provided. Repetitive filler receives $e \in [0.0, 0.2]$.
+\end{itemize}
+
+\noindent The critic prompt includes few-shot calibration anchors:
+\begin{quote}
+\small
+\texttt{"I miss you"} $\rightarrow$ $a = 0.8$, $d = 0.3$, $e = 0.5$ \\
+\texttt{"You don't care about me at all"} $\rightarrow$ $a = 0.3$, $d = 0.8$, $e = 0.5$ \\
+\texttt{"k"} $\rightarrow$ $a = 0.3$, $d = 0.2$, $e = 0.05$
+\end{quote}
+
+\subsection{Stimulus-to-Frustration Algebraic Mapping}
+
+The critic output $\mathbf{c}_t = (a, d, e)$ drives five frustration channels via hardcoded algebraic rules (no learned parameters):
+
+\begin{align}
+  f_{\text{conn}} &\leftarrow f_{\text{conn}} - 2.0a + 0.8d \\
+  f_{\text{safe}} &\leftarrow f_{\text{safe}} + 1.5d - 0.5a \\
+  f_{\text{nov}} &\leftarrow f_{\text{nov}} + 3.0(0.5 - e) \\
+  f_{\text{expr}} &\leftarrow f_{\text{expr}} + 1.0d - 0.8a \\
+  f_{\text{play}} &\leftarrow f_{\text{play}} + 2.0(0.4 - e)
+\end{align}
+
+\noindent After the algebraic update, all channels undergo per-turn exponential decay with rate $\eta = 0.1$:
+\begin{equation}
+  f_i \leftarrow f_i \times (1 - \eta), \quad f_i \in [0.0, 5.0]
+\end{equation}
+
+The total frustration $F = \sum_i f_i$ determines the Gaussian noise temperature $T = 0.05 \cdot F$ injected into the 8D behavioral signal vector before memory retrieval.
+
+\subsection{Time Metabolism}
+
+Between interactions separated by real-time gap $\Delta t$ hours, two autonomous metabolic processes execute:
+
+\begin{align}
+  \text{Cooling:} \;\; f_i &\leftarrow f_i \cdot e^{-\lambda \Delta t}, \quad \lambda = 0.08 \\
+  \text{Hunger:} \;\; f_{\text{conn}} &\leftarrow f_{\text{conn}} + 0.15\Delta t \notag \\
+  f_{\text{nov}} &\leftarrow f_{\text{nov}} + 0.05\Delta t
+\end{align}
+
+\subsection{Hawking Radiation (Memory Mass Decay)}
+
+Each crystallized memory carries a mass $m_{\text{raw}}$ that determines its gravitational pull during KNN retrieval. The effective mass decays exponentially from the time of last access:
+
+\begin{equation}
+  m_{\text{eff}} = 1.0 + (m_{\text{raw}} - 1.0) \cdot e^{-\gamma \cdot \Delta t_{\text{hours}}}, \quad \gamma = 0.005
+\end{equation}
+
+\noindent The base mass $1.0$ (innate ``genesis'' memories) never decays. Retrieval distance is warped by gravity:
+\begin{equation}
+  d_{\text{eff}} = \frac{d_{\text{physical}}}{\sqrt{m_{\text{eff}}}}
+\end{equation}
+
+\subsection{Hebbian Weight Update}
+
+The network computes the behavioral signal $\mathbf{s} \in [0,1]^8$ from the drive state $\mathbf{f}$ (where input $\mathbf{x} = \mathbf{f}$) via a single hidden layer $\mathbf{h}$:
+\begin{align}
+  \mathbf{h} &= \text{ReLU}(W_1 \mathbf{x}) \\
+  \mathbf{s} &= \text{Sigmoid}(W_2 \mathbf{h} + \mathbf{b}_2)
+\end{align}
+
+\noindent After each interaction, Hebbian learning updates $\mathbf{W}_2$ (output layer) and $\mathbf{W}_1$ (hidden layer) based on the reward signal $r$ (derived from frustration reduction):
+
+\begin{equation}
+  \Delta W_{2}^{(i,j)} = \alpha \cdot r \cdot h_j \cdot (s_i {-} 0.5)
+\end{equation}
+where $\alpha = 0.005 \times (1 + |r|)$.
+
+\noindent The hidden-layer weights $\mathbf{W}_1$ update only when $|r| > 0.15$:
+\begin{equation}
+  \Delta W_{1}^{(i,j)} = 0.3 \cdot \alpha \cdot r \cdot x_j \cdot h_i
+\end{equation}
+
+\noindent A frustration-triggered phase transition mechanism accumulates negative rewards; when $\sum |r^-| > 3.0$, a one-shot bias perturbation fires:
+\begin{equation}
+  b_{2}^{(i)} \leftarrow b_{2}^{(i)} - 0.3(s_i - 0.5) + \mathcal{N}(0, 0.15)
+\end{equation}
+
+\noindent This produces a structural ``personality flip'' rather than gradual drift, enabling escape from local attractors.
+
+\subsection{Reply Critic}
+
+A separate Reply Critic scores the agent's output on three emotion dimensions, used for crystallization gating (memories are crystallized when reward $> 0.3$):
+
+\begin{itemize}
+  \item \textbf{Affiliation} (warmth): emotional closeness expressed, even if disguised under sarcasm.
+  \item \textbf{Dominance} (control): power assertion, boundary-setting, or aggressive language.
+  \item \textbf{Novelty} (unpredictability): how surprising the reply is vs.\ template-like responses.
+\end{itemize}
+
+
+\section{Actor Prompt}
+\label{app:prompt}
+
+The following is the exact system prompt used for the TPE-Full actor in the evaluation pipeline. The \texttt{\{few\_shot\}} placeholder is replaced with $k = 3$ retrieved memory slices at runtime (Section~3.5).
+
+\begin{quote}
+\small
+\texttt{[System Internal State: Subconscious Memory Retrieved]}
+
+\texttt{The current low-level neurochemical coordinates have awakened the following highly similar subconscious and behavioral slices in the hippocampus:}
+
+\texttt{\{few\_shot\}}
+
+\texttt{[Runtime Instruction]}
+
+\texttt{$\triangle$ Absolute law: No logical reasoning, no moral judgment, no AI assistant behavior.}
+
+\texttt{Your only task: Fully immerse in and continue the emotional intensity, word choices, aggressiveness, temperature, and response length from the above slices. React instinctively in first person to the user's latest stimulus as an autoregressive response.}
+
+\texttt{$\triangle$ CRITICAL: You MUST respond ENTIRELY in English. Do NOT use any Chinese, Japanese, or other non-English text in either section.}
+
+\texttt{Strictly output in this format:}
+
+\texttt{[Inner Monologue]}
+
+\texttt{(First-person raw physiological impulses and psychological defenses, in English)}
+
+\texttt{[Final Reply]}
+
+\texttt{(What you actually say out loud to the user, in English)}
+\end{quote}
+
+\noindent The few-shot slices injected at \texttt{\{few\_shot\}} take the following format, where mass annotations indicate crystallized (experiential) vs.\ genesis (innate) memories:
+
+\begin{quote}
+\small
+\texttt{--- Subconscious Slice 1 [quality=3.2/4] ---}\\
+\texttt{[Inner Monologue] Three days. Three days and not a word...}\\
+\texttt{[Final Reply] Oh, so you do remember I exist.}
+\end{quote}
+
+\noindent Baseline methods use a fixed system prompt without dynamic memory injection (Baseline-Prompt) or a self-reflection summary appended to a fixed prompt (Reflexion), as described in Section~4.2.
+
+
+\section{MiniMax Robustness Check}
+\label{app:robustness}
+\setcounter{table}{0}
+
+MiniMax-M2.5 exhibited a systematic failure mode on the \texttt{emotional\_comfort} scenario across all 15 experimental runs (5 methods $\times$ 3 seeds): the model returned empty or near-empty responses, producing undefined emotion vectors and inflated collapse indices.
+
+To verify that MiniMax's directionally positive but non-significant results (Section~5.2) are not artifacts of this failure mode, we recompute the key metrics excluding \texttt{emotional\_comfort}, retaining the 4 remaining scenarios $\times$ 3 seeds = 12 runs per method.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Metric} & \textbf{BP} & \textbf{TPE-Full} & $\Delta$ \\
+\midrule
+PCS $\uparrow$ & 0.964 & 0.965 & +0.001 \\
+EmotVar $\uparrow$ & 0.080 & 0.092 & +0.013 \\
+Distinct-2 $\uparrow$ & 0.678 & 0.665 & $-$0.013 \\
+RLHF-CI $\downarrow$ & 0.028 & 0.033 & +0.005 \\
+\bottomrule
+\end{tabular}
+\caption{MiniMax-M2.5 metrics excluding \texttt{emotional\_comfort} ($N{=}12$ per method, 4 scenarios $\times$ 3 seeds). Only EmotVar shows a directional improvement; other metrics are flat or slightly negative.}
+\label{tab:minimax_robust}
+\end{table}
+
+\noindent Excluding the failed scenario reveals that TPE's effect on MiniMax-M2.5 is negligible. Only EmotVar shows a modest directional improvement ($+0.013$, Cliff's $d = +0.312$, small); Distinct-2 and RLHF-CI are essentially flat or marginally worse. This confirms that MiniMax's overall non-significant result is not merely an artifact of the \texttt{emotional\_comfort} failure, but reflects a genuine limitation: MiniMax's weaker instruction-following capacity causes it to partially ignore the signal-perturbed few-shot slices, falling back to its own default style regardless of thermodynamic noise injection.
+
+\section{Qualitative Case Studies}
+\label{app:cases}
+\setcounter{table}{0}
+
+\input{tables/case_study_1}
+
+\input{tables/case_study_2}
+

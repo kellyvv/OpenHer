@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenHer · AI Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a2e;
+            --bg-input: #16162a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888a8;
+            --text-muted: #555570;
+            --accent-pink: #ff6b9d;
+            --accent-purple: #c084fc;
+            --accent-blue: #60a5fa;
+            --accent-glow: rgba(255, 107, 157, 0.15);
+            --border: rgba(255, 255, 255, 0.06);
+            --glass: rgba(26, 26, 46, 0.85);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Background Ambience ── */
+        .bg-orbs {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        .bg-orbs::before {
+            content: '';
+            position: absolute;
+            top: -20%; left: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,107,157,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float1 20s ease-in-out infinite;
+        }
+        .bg-orbs::after {
+            content: '';
+            position: absolute;
+            bottom: -20%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float2 25s ease-in-out infinite;
+        }
+        @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(80px,60px); } }
+        @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-60px,-40px); } }
+
+        /* ── Layout ── */
+        .app {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .sidebar-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .persona-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .persona-card {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .persona-card:hover {
+            background: var(--bg-card);
+            border-color: var(--border);
+        }
+        .persona-card.active {
+            background: var(--accent-glow);
+            border-color: rgba(255,107,157,0.2);
+        }
+        .persona-card .name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .persona-card .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .persona-card .tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+        }
+        .persona-card.active .tag {
+            background: rgba(255,107,157,0.1);
+            color: var(--accent-pink);
+        }
+
+        /* ── Status Bar (bottom of sidebar) ── */
+        .status-bar {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .status-item .label { color: var(--text-muted); }
+        .status-item .value { color: var(--text-secondary); font-weight: 500; }
+        .status-item .value.emotion { color: var(--accent-pink); }
+        .status-item .value.intimacy { color: var(--accent-purple); }
+
+        /* ── Chat Area ── */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chat-header .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .chat-header .info .name { font-size: 14px; font-weight: 600; }
+        .chat-header .info .detail { font-size: 11px; color: var(--text-muted); }
+        .connection-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-left: auto;
+            transition: background 0.3s;
+        }
+        .connection-dot.connected { background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.4); }
+        .connection-dot.disconnected { background: #f87171; box-shadow: 0 0 8px rgba(248,113,113,0.4); }
+
+        /* ── Messages ── */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 75%;
+            animation: msgIn 0.3s ease;
+        }
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message .bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .message.assistant .bubble {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 6px;
+        }
+        .message.user .bubble {
+            background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.15));
+            border: 1px solid rgba(255,107,157,0.15);
+            border-bottom-right-radius: 6px;
+        }
+        .message .msg-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .message.assistant .msg-avatar {
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+        }
+        .message.user .msg-avatar {
+            background: rgba(96,165,250,0.2);
+            color: var(--accent-blue);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .typing-indicator.visible { display: flex; gap: 4px; }
+        .typing-indicator span {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: typeBounce 1.4s ease-in-out infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typeBounce {
+            0%,80%,100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+        }
+
+        /* ── Input Area ── */
+        .input-area {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+        }
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-wrapper input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-wrapper input:focus {
+            border-color: rgba(255,107,157,0.3);
+        }
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+        .send-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, opacity 0.15s;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { transform: scale(1.05); }
+        .send-btn:active { transform: scale(0.95); }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .tts-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .tts-btn:hover { border-color: rgba(255,107,157,0.3); color: var(--accent-pink); }
+
+        /* ── Welcome ── */
+        .welcome {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: var(--text-muted);
+        }
+        .welcome .emoji { font-size: 48px; }
+        .welcome h2 { font-size: 18px; font-weight: 500; color: var(--text-secondary); }
+        .welcome p { font-size: 13px; max-width: 300px; text-align: center; line-height: 1.6; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs"></div>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>✦ OpenHer</h1>
+                <p>AI Companion</p>
+            </div>
+            <div class="persona-list" id="personaList">
+                <!-- Populated by JS -->
+            </div>
+            <div class="status-bar" id="statusBar">
+                <div class="status-item">
+                    <span class="label">情绪</span>
+                    <span class="value emotion" id="statusEmotion">—</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">亲密度</span>
+                    <span class="value intimacy" id="statusIntimacy">—</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">XP</span>
+                    <span class="value" id="statusXp">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header" id="chatHeader">
+                <div class="avatar" id="headerAvatar">☁</div>
+                <div class="info">
+                    <div class="name" id="headerName">选择一个角色开始聊天</div>
+                    <div class="detail" id="headerDetail">OpenHer AI Companion</div>
+                </div>
+                <div class="connection-dot disconnected" id="connectionDot"></div>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="welcome">
+                    <div class="emoji">💫</div>
+                    <h2>欢迎来到 OpenHer</h2>
+                    <p>从左边选择一个角色，或者直接开始聊天。每个角色有独特的性格、情绪和成长系统。</p>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span><span></span><span></span>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="说点什么..." autocomplete="off" />
+                    <button class="tts-btn" id="ttsBtn" title="语音播放最后一条消息">🔊</button>
+                    <button class="send-btn" id="sendBtn">↑</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── State ──
+        const API_BASE = 'http://localhost:8800';
+        const WS_URL = 'ws://localhost:8800/ws/chat';
+        let ws = null;
+        let currentPersonaId = 'xiaoyun';
+        let sessionId = null;
+        let lastAssistantMessage = '';
+
+        const PERSONA_EMOJIS = { xiaoyun: '☁️', lingling: '💎', momo: '🌙' };
+
+        // ── DOM ──
+        const $messages = document.getElementById('messages');
+        const $input = document.getElementById('chatInput');
+        const $sendBtn = document.getElementById('sendBtn');
+        const $ttsBtn = document.getElementById('ttsBtn');
+        const $personaList = document.getElementById('personaList');
+        const $typing = document.getElementById('typingIndicator');
+        const $dot = document.getElementById('connectionDot');
+        const $headerName = document.getElementById('headerName');
+        const $headerDetail = document.getElementById('headerDetail');
+        const $headerAvatar = document.getElementById('headerAvatar');
+        const $statusEmotion = document.getElementById('statusEmotion');
+        const $statusIntimacy = document.getElementById('statusIntimacy');
+        const $statusXp = document.getElementById('statusXp');
+
+        // ── Load Personas ──
+        async function loadPersonas() {
+            try {
+                const res = await fetch(`${API_BASE}/api/personas`);
+                const data = await res.json();
+                $personaList.innerHTML = '';
+                data.personas.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = `persona-card ${p.persona_id === currentPersonaId ? 'active' : ''}`;
+                    card.innerHTML = `
+                        <div class="name">${PERSONA_EMOJIS[p.persona_id] || '✨'} ${p.name}</div>
+                        <div class="tags">
+                            ${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                    `;
+                    card.onclick = () => switchPersona(p.persona_id, p.name);
+                    $personaList.appendChild(card);
+                });
+            } catch (e) {
+                console.error('Failed to load personas:', e);
+            }
+        }
+
+        // ── WebSocket ──
+        function connectWS() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                $dot.className = 'connection-dot connected';
+                console.log('WebSocket connected');
+            };
+
+            ws.onclose = () => {
+                $dot.className = 'connection-dot disconnected';
+                setTimeout(connectWS, 3000); // Auto-reconnect
+            };
+
+            ws.onerror = () => {
+                $dot.className = 'connection-dot disconnected';
+            };
+
+            let streamBubble = null;
+            let streamContent = '';
+
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+
+                switch (msg.type) {
+                    case 'chat_start':
+                        sessionId = msg.session_id;
+                        $typing.classList.remove('visible');
+                        // Create streaming bubble
+                        streamContent = '';
+                        streamBubble = addMessage('assistant', '', false);
+                        break;
+
+                    case 'chat_chunk':
+                        streamContent += msg.content;
+                        if (streamBubble) {
+                            streamBubble.querySelector('.bubble').textContent = streamContent;
+                        }
+                        scrollToBottom();
+                        break;
+
+                    case 'chat_end':
+                        lastAssistantMessage = streamContent;
+                        streamBubble = null;
+                        // Update status
+                        $statusEmotion.textContent = msg.emotion || '—';
+                        $statusIntimacy.textContent = msg.intimacy || '—';
+                        $statusXp.textContent = msg.intimacy_xp || '—';
+                        $sendBtn.disabled = false;
+                        break;
+
+                    case 'persona_switched':
+                        sessionId = msg.session_id;
+                        break;
+
+                    case 'tts_audio':
+                        playAudioBase64(msg.audio);
+                        break;
+
+                    case 'error':
+                        console.error('Server error:', msg.content);
+                        $sendBtn.disabled = false;
+                        break;
+                }
+            };
+        }
+
+        // ── Send Message ──
+        function sendMessage() {
+            const text = $input.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            addMessage('user', text);
+            $input.value = '';
+            $sendBtn.disabled = true;
+            $typing.classList.add('visible');
+            scrollToBottom();
+
+            ws.send(JSON.stringify({
+                type: 'chat',
+                content: text,
+                persona_id: currentPersonaId,
+                user_name: '用户',
+            }));
+        }
+
+        // ── Switch Persona ──
+        function switchPersona(personaId, personaName) {
+            currentPersonaId = personaId;
+
+            // Update sidebar active state
+            document.querySelectorAll('.persona-card').forEach((card, i) => {
+                card.classList.toggle('active', card.querySelector('.name').textContent.includes(personaName));
+            });
+
+            // Update header
+            $headerName.textContent = personaName;
+            $headerDetail.textContent = `${personaId} · AI Companion`;
+            $headerAvatar.textContent = PERSONA_EMOJIS[personaId] || '✨';
+
+            // Clear messages
+            $messages.innerHTML = '';
+            sessionId = null;
+            $statusEmotion.textContent = '—';
+            $statusIntimacy.textContent = '—';
+            $statusXp.textContent = '—';
+
+            // Tell server to switch
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'switch_persona',
+                    persona_id: personaId,
+                    user_name: '用户',
+                }));
+            }
+        }
+
+        // ── Add Message Bubble ──
+        function addMessage(role, text, scroll = true) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            const emoji = role === 'user' ? '👤' : (PERSONA_EMOJIS[currentPersonaId] || '✨');
+            div.innerHTML = `
+                <div class="msg-avatar">${emoji}</div>
+                <div class="bubble">${text}</div>
+            `;
+            $messages.appendChild(div);
+            if (scroll) scrollToBottom();
+            return div;
+        }
+
+        function scrollToBottom() {
+            $messages.scrollTop = $messages.scrollHeight;
+        }
+
+        // ── TTS Playback ──
+        async function playTTS() {
+            if (!lastAssistantMessage) return;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'tts_request',
+                    content: lastAssistantMessage,
+                }));
+            }
+        }
+
+        function playAudioBase64(b64) {
+            const audio = new Audio(`data:audio/mp3;base64,${b64}`);
+            audio.play().catch(e => console.error('Audio play error:', e));
+        }
+
+        // ── Event Listeners ──
+        $sendBtn.addEventListener('click', sendMessage);
+        $input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        $ttsBtn.addEventListener('click', playTTS);
+
+        // ── Init ──
+        loadPersonas();
+        connectWS();
+
+        // Auto-select xiaoyun
+        setTimeout(() => {
+            $headerName.textContent = '小云';
+            $headerDetail.textContent = 'xiaoyun · AI Companion';
+            $headerAvatar.textContent = '☁️';
+        }, 500);
+    </script>
+</body>
+</html>

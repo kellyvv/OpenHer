@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.db
+memory_db/
+eval_results/
+node_modules/
+.env
+*.log
+*.aux
+*.bbl
+*.blg
+*.out
+.gemini/
