@@ -1,17 +1,21 @@
 """
 ChatAgent — Genome v10 Hybrid lifecycle-powered conversational agent.
 
-The 10-step lifecycle per turn:
-  1. Time metabolism (DriveMetabolism)
-  2. Critic perception (LLM → 8D context + frustration delta)
-  3. LLM metabolism (apply frustration delta → reward)
-  4. Crystallization gate (reward > 0.3 → crystallize last action)
-  5. Compute signals (Agent neural network, context from Critic)
-  6. Thermodynamic noise injection
-  7. KNN retrieval (ContinuousStyleMemory)
-  8. Build Actor prompt (persona + signals + few-shot)
-  9. LLM Actor (generate response with monologue + reply)
+The 12-step lifecycle per turn (with EverMemOS Shadow Memory):
+  0.  EverMemOS context gathering (4D relationship + memory hint)
+  0.5 Foresight → drive injection (first turn only)
+  1.  Time metabolism (DriveMetabolism)
+  2.  Critic perception (LLM → 8D context + frustration delta)
+  3.  LLM metabolism (apply frustration delta → reward)
+  4.  Crystallization gate (reward > 0.3 → crystallize last action)
+  5.  Compute signals (Agent neural network, 12D context)
+  6.  Thermodynamic noise injection
+  7.  KNN retrieval (ContinuousStyleMemory)
+  8.  Build Actor prompt (persona + signals + few-shot)
+  8.5 Append memory postscript (≤50 chars, if cross-session)
+  9.  LLM Actor (generate response with monologue + reply)
   10. Hebbian learning (Agent.step)
+  11. EverMemOS conversation storage (background)
 """
 
 from __future__ import annotations
@@ -97,6 +101,7 @@ class ChatAgent:
         genome_seed: int = 42,
         genome_data_dir: Optional[str] = None,
         max_history: int = 40,
+        evermemos=None,
     ):
         self.persona = persona
         self.llm = llm
@@ -123,8 +128,14 @@ class ChatAgent:
         self._last_reward: float = 0.0
         self._last_modality: str = ""
 
-        print(f"✓ ChatAgent(Genome v10) 初始化: {persona.name} ↔ {user_name or user_id} "
-              f"(seed={genome_seed}, memories={self.style_memory.total_memories})")
+        # ── EverMemOS Shadow Memory ──
+        self.evermemos = evermemos
+        self.evermemos_uid = f"{user_id}__{persona.persona_id}"
+        self._user_profile: str = ""
+
+        evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
+        print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
+              f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
 
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
         """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
@@ -147,13 +158,28 @@ class ChatAgent:
         self._turn_count += 1
         now = time.time()
 
+        # ── Step 0: EverMemOS context gathering ──
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
+
+        # ── Step 0.5: Foresight → drive injection (first turn only) ──
+        if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
+            self.metabolism.frustration['connection'] += 0.15
+            self.metabolism.frustration['expression'] += 0.10
+            print("  [foresight] 🔮 pending foresight → drive injection (once)")
+
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
         # ── Step 2: Critic perception (8D context + delta) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(user_message, self.llm, frust_dict)
+        context, frustration_delta = await critic_sense(
+            user_message, self.llm, frust_dict,
+            user_profile=self._user_profile,
+        )
         self._last_critic = context
+
+        # Merge Critic's 8D with EverMemOS's 4D → 12D context
+        context.update(relationship_4d)
 
         # ── Step 3: LLM metabolism → reward ──
         reward = self.metabolism.apply_llm_delta(frustration_delta)
@@ -184,6 +210,10 @@ class ChatAgent:
 
         # ── Step 8: Build Actor prompt ──
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+
+        # ── Step 8.5: Append memory postscript (if cross-session memory exists) ──
+        if memory_hint:
+            system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -225,6 +255,9 @@ class ChatAgent:
 
         print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
+        # ── Step 11: EverMemOS conversation storage (background) ──
+        self._evermemos_store(user_message, reply, noisy_signals)
+
         return {'reply': reply, 'modality': modality}
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
@@ -235,11 +268,24 @@ class ChatAgent:
         self._turn_count += 1
         now = time.time()
 
-        # ── Steps 1-3: Metabolism + Critic (8D) ──
+        # ── Step 0: EverMemOS context gathering ──
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
+
+        # ── Step 0.5: Foresight → drive injection (first turn only) ──
+        if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
+            self.metabolism.frustration['connection'] += 0.15
+            self.metabolism.frustration['expression'] += 0.10
+            print("  [foresight] 🔮 pending foresight → drive injection (once)")
+
+        # ── Steps 1-3: Metabolism + Critic (12D) ──
         delta_h = self.metabolism.time_metabolism(now)
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(user_message, self.llm, frust_dict)
+        context, frustration_delta = await critic_sense(
+            user_message, self.llm, frust_dict,
+            user_profile=self._user_profile,
+        )
         self._last_critic = context
+        context.update(relationship_4d)  # Merge 8D + 4D → 12D
         reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)
         self._last_reward = reward
@@ -264,6 +310,10 @@ class ChatAgent:
         self.style_memory.set_clock(now)
         few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+
+        # ── Step 8.5: Append memory postscript ──
+        if memory_hint:
+            system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -301,6 +351,86 @@ class ChatAgent:
 
         print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
+        # ── Step 11: EverMemOS conversation storage ──
+        self._evermemos_store(user_message, reply, noisy_signals)
+
+    def _evermemos_gather(self, user_message: str) -> tuple:
+        """
+        Step 0: EverMemOS context gathering.
+        Returns: (user_profile, memory_hint, relationship_4d)
+        """
+        user_profile = ""
+        memory_hint = ""
+        relationship_4d = {
+            'relationship_depth': 0.0,
+            'emotional_valence': 0.0,
+            'trust_level': 0.0,
+            'pending_foresight': 0.0,
+        }
+
+        if not (self.evermemos and self.evermemos.available):
+            return user_profile, memory_hint, relationship_4d
+
+        try:
+            # 0a. Build memory hint (≤50 chars, for prompt postscript)
+            memory_hint = self.evermemos.build_memory_hint(
+                user_id=self.evermemos_uid,
+                persona_id=self.persona.persona_id,
+                current_query=user_message,
+            ) or ""
+
+            # 0b. Get user profile text (for Critic)
+            profile_results = self.evermemos.get_profile(self.evermemos_uid)
+            if profile_results:
+                user_profile = "\n".join(r.content for r in profile_results[:3])
+                self._user_profile = user_profile
+
+            # 0c. Encode relationship → 4D vector (gradual growth)
+            relationship_4d = self.evermemos.encode_relationship(
+                user_id=self.evermemos_uid,
+                current_query=user_message,
+            )
+
+            if any(v > 0.01 for v in relationship_4d.values()):
+                rel_str = " ".join(f"{k}={v:.2f}" for k, v in relationship_4d.items())
+                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch")
+
+        except Exception as e:
+            print(f"  [evermemos] gather error: {e}")
+
+        return user_profile, memory_hint, relationship_4d
+
+    def _evermemos_store(self, user_message: str, reply: str,
+                        signals: dict = None) -> None:
+        """Step 11: Store conversation turn in EverMemOS (background)."""
+        if not (self.evermemos and self.evermemos.available):
+            return
+
+        try:
+            # Store user message
+            self.evermemos.store_message(
+                user_id=self.evermemos_uid,
+                persona_id=self.persona.persona_id,
+                sender=self.user_id,
+                sender_name=self.user_name or self.user_id,
+                content=user_message,
+            )
+            # Store agent reply
+            metadata = None
+            if signals:
+                top3 = sorted(signals.items(), key=lambda x: abs(x[1]-0.5), reverse=True)[:3]
+                metadata = {"signals": {k: round(v, 2) for k, v in top3}}
+            self.evermemos.store_message(
+                user_id=self.evermemos_uid,
+                persona_id=self.persona.persona_id,
+                sender=self.persona.persona_id,
+                sender_name=self.persona.name,
+                content=reply,
+                metadata=metadata,
+            )
+        except Exception as e:
+            print(f"  [evermemos] store error: {e}")
+
     def get_status(self) -> dict:
         """Get comprehensive agent status including genome state."""
         mem_stats = self.style_memory.stats()
@@ -331,4 +461,5 @@ class ChatAgent:
             "age": self.agent.age,
             "last_reward": round(self._last_reward, 2),
             "modality": self._last_modality,
+            "evermemos": "ON" if (self.evermemos and self.evermemos.available) else "OFF",
         }

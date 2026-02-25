@@ -337,3 +337,129 @@ class EverMemOSClient:
             return None
 
         return "\n".join(lines)
+
+    # ──────────────────────────────────────────────
+    # Shadow Memory: Relationship Encoding + Hints
+    # ──────────────────────────────────────────────
+
+    def encode_relationship(
+        self,
+        user_id: str,
+        current_query: str = "",
+    ) -> dict:
+        """
+        Encode EverMemOS data into 4D relationship vector for neural network input.
+        Uses gradual growth: new users ≈ 0 (identical to vanilla v10).
+
+        Returns dict with keys matching CONTEXT_FEATURES:
+          - relationship_depth:  1 - exp(-n/20)  (5 mems → 0.22, 20 → 0.63)
+          - emotional_valence:   Average emotional tone (-1 to 1)
+          - trust_level:         Trust from profile (0 to 1)
+          - pending_foresight:   Pending foresights (0 or 1)
+        """
+        import math
+
+        result = {
+            'relationship_depth': 0.0,
+            'emotional_valence': 0.0,
+            'trust_level': 0.0,
+            'pending_foresight': 0.0,
+        }
+
+        if not self.available:
+            return result
+
+        try:
+            profile = self.get_profile(user_id)
+            if profile:
+                # Gradual growth: 5→0.22, 10→0.39, 20→0.63, 50→0.92
+                result['relationship_depth'] = 1.0 - math.exp(-len(profile) / 20.0)
+
+                for mem in profile:
+                    content_lower = mem.content.lower()
+                    mem_type = mem.memory_type.lower() if mem.memory_type else ""
+
+                    # Trust detection
+                    trust_kw = ['信任', '依赖', '倾诉', '秘密', '心事', 'trust']
+                    if any(kw in content_lower for kw in trust_kw):
+                        result['trust_level'] = min(1.0, result['trust_level'] + 0.15)
+
+                    # Foresight detection
+                    if 'foresight' in mem_type or '预测' in content_lower or '提醒' in content_lower:
+                        result['pending_foresight'] = 1.0
+
+                    # Emotional valence
+                    pos_kw = ['开心', '高兴', '感谢', '喜欢', '温暖', '快乐']
+                    neg_kw = ['难过', '生气', '失望', '压力', '焦虑', '伤心']
+                    if any(kw in content_lower for kw in pos_kw):
+                        result['emotional_valence'] += 0.2
+                    if any(kw in content_lower for kw in neg_kw):
+                        result['emotional_valence'] -= 0.2
+
+                result['emotional_valence'] = max(-1.0, min(1.0, result['emotional_valence']))
+                result['trust_level'] = min(1.0, result['trust_level'])
+
+        except Exception as e:
+            print(f"⚠ EverMemOS encode_relationship error: {e}")
+
+        return result
+
+    def build_memory_hint(
+        self,
+        user_id: str,
+        persona_id: str,
+        current_query: str = "",
+    ) -> str:
+        """
+        Build a ≤60 char memory hint for prompt postscript.
+        Returns a brief, fuzzy memory fragment (not a full dump).
+        """
+        if not self.available:
+            return ""
+
+        try:
+            results = self.search(
+                user_id=user_id,
+                query=current_query or "最近的事情",
+                top_k=2,
+            )
+            if not results:
+                return ""
+
+            hints = []
+            for r in results[:2]:
+                text = r.content.strip()
+                if len(text) > 30:
+                    text = text[:30] + "…"
+                hints.append(text)
+
+            if not hints:
+                return ""
+
+            hint = "你隐约记得：" + "；".join(hints)
+            if len(hint) > 60:
+                hint = hint[:57] + "…"
+            return hint
+
+        except Exception as e:
+            print(f"⚠ EverMemOS build_memory_hint error: {e}")
+            return ""
+
+    def flush(self, user_id: str, persona_id: str) -> bool:
+        """Send a flush signal to EverMemOS to trigger memory extraction."""
+        if not self.available:
+            return False
+        try:
+            self.store_message(
+                user_id=user_id,
+                persona_id=persona_id,
+                sender=persona_id,
+                sender_name="system",
+                content="[session_end]",
+                is_flush=True,
+            )
+            return True
+        except Exception as e:
+            print(f"⚠ EverMemOS flush error: {e}")
+            return False
+

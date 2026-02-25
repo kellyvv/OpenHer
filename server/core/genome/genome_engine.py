@@ -73,6 +73,11 @@ CONTEXT_FEATURES = [
     'conflict_level',     # 0=和谐 → 1=冲突
     'novelty_level',      # 0=日常话题 → 1=全新话题
     'user_vulnerability', # 0=防御 → 1=敞开心扉
+    # ── EverMemOS relationship dimensions (新用户“0，老用户渐进增长) ──
+    'relationship_depth', # 0=陈生人 → 1=老朋友
+    'emotional_valence',  # -1=负面基调 → 1=正面基调
+    'trust_level',        # 0=无信任 → 1=高度信任
+    'pending_foresight',  # 0=无 → 1=有待处理的前瞅
 ]
 N_CONTEXT = len(CONTEXT_FEATURES)
 
@@ -447,10 +452,23 @@ class Agent:
 
     @classmethod
     def from_dict(cls, data: dict) -> Agent:
-        """Restore agent from serialized state."""
+        """Restore agent from serialized state.
+
+        Handles backward compatibility: old agents have 21D input (8D context)
+        while new agents have 25D input (12D context with EverMemOS dims).
+        """
         agent = cls(seed=data['seed'])
         agent.drive_state = data.get('drive_state', agent.drive_state)
-        agent.W1 = data.get('W1', agent.W1)
+
+        saved_W1 = data.get('W1', agent.W1)
+        # Backward compat: expand 21D → 25D if loading old weights
+        if saved_W1 and len(saved_W1[0]) < INPUT_SIZE:
+            rng = random.Random(data['seed'] + 9999)  # deterministic expansion
+            extra_cols = INPUT_SIZE - len(saved_W1[0])
+            for row in saved_W1:
+                row.extend([rng.gauss(0, 0.3) for _ in range(extra_cols)])
+        agent.W1 = saved_W1
+
         agent.b1 = data.get('b1', agent.b1)
         agent.W2 = data.get('W2', agent.W2)
         agent.b2 = data.get('b2', agent.b2)

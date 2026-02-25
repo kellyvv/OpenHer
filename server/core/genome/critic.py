@@ -34,7 +34,7 @@ CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用
 Agent 当前挫败值（0=满足, 5=极度渴望）：
 {frustration_json}
 
-用户说了："{user_input}"
+{user_profile_section}用户说了："{user_input}"
 
 严格输出纯 JSON：
 {
@@ -52,12 +52,13 @@ async def critic_sense(
     user_input: str,
     llm: LLMClient,
     frustration: dict = None,
+    user_profile: str = "",
 ) -> Tuple[dict, dict]:
     """
     Measure user input → 8D context + 5D frustration delta.
 
-    v10 change: Replaces 3D (a,d,e) output with direct 8D context + delta.
-    Eliminates build_context_from_critic() and its hand-written formulas.
+    Args:
+        user_profile: Optional EverMemOS user profile for relationship-aware perception.
 
     Returns: (context_8d, frustration_delta)
     """
@@ -65,9 +66,19 @@ async def critic_sense(
         frustration or _DEFAULT_DELTA,
         ensure_ascii=False,
     )
+
+    # Build profile section
+    profile_section = ""
+    if user_profile:
+        profile_section = f"关于这个用户的历史画像（请据此更准确地感知情绪和意图）：\n{user_profile}\n\n"
+
     prompt = CRITIC_PROMPT.replace(
         "{frustration_json}", frust_json
-    ).replace("{user_input}", user_input)
+    ).replace(
+        "{user_input}", user_input
+    ).replace(
+        "{user_profile_section}", profile_section
+    )
 
     messages = [
         ChatMessage(role="system", content=prompt),

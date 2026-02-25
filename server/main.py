@@ -97,7 +97,7 @@ async def startup():
 
     # 2. Create LLM client
     provider = os.getenv("DEFAULT_PROVIDER", "dashscope")
-    model = os.getenv("DEFAULT_MODEL", "qwen-max")
+    model = os.getenv("DEFAULT_MODEL", "qwen3-max")
     llm_client = LLMClient(provider=provider, model=model)
 
     # 3. Create TTS engine
@@ -160,6 +160,10 @@ async def shutdown():
         state_store.close()
     if memory_store:
         memory_store.close()
+    # Flush EverMemOS for all active sessions
+    if evermemos and evermemos.available:
+        for sid, (agent, _) in active_sessions.items():
+            evermemos.flush(agent.evermemos_uid, agent.persona.persona_id)
     print("✓ 状态已保存，服务关闭")
 
 
@@ -247,6 +251,9 @@ def _cleanup_expired_sessions() -> int:
     for sid, (agent, last_active) in active_sessions.items():
         if now - last_active > SESSION_TTL_SECONDS:
             _persist_agent(agent)
+            # Flush EverMemOS memory
+            if evermemos and evermemos.available:
+                evermemos.flush(agent.evermemos_uid, agent.persona.persona_id)
             expired.append(sid)
     for sid in expired:
         del active_sessions[sid]
@@ -288,6 +295,7 @@ def get_or_create_session(
         memory_store=memory_store,
         genome_seed=genome_seed,
         genome_data_dir=genome_data_dir,
+        evermemos=evermemos,
     )
 
     # Hydrate from persisted state (if available)

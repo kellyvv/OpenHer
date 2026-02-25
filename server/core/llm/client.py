@@ -78,7 +78,7 @@ class LLMClient:
         model: Optional[str] = None,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        temperature: float = 0.85,
+        temperature: float = 0.92,
         max_tokens: int = 1024,
     ):
         preset = PROVIDERS.get(provider, {})
