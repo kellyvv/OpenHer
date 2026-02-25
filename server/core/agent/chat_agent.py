@@ -416,17 +416,12 @@ class ChatAgent:
                 content=user_message,
             )
             # Store agent reply
-            metadata = None
-            if signals:
-                top3 = sorted(signals.items(), key=lambda x: abs(x[1]-0.5), reverse=True)[:3]
-                metadata = {"signals": {k: round(v, 2) for k, v in top3}}
             self.evermemos.store_message(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
                 sender=self.persona.persona_id,
                 sender_name=self.persona.name,
                 content=reply,
-                metadata=metadata,
             )
         except Exception as e:
             print(f"  [evermemos] store error: {e}")
