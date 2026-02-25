@@ -286,6 +286,7 @@ def get_or_create_session(
         user_name=user_name,
         skills_prompt=skills_prompt or None,
         memory_store=memory_store,
+        evermemos=evermemos,
         genome_seed=genome_seed,
         genome_data_dir=genome_data_dir,
     )
@@ -309,6 +310,13 @@ def remove_session(session_id: str) -> None:
     if session_id and session_id in active_sessions:
         agent, _ = active_sessions.pop(session_id)
         _persist_agent(agent)
+        # Flush EverMemOS to trigger memory extraction
+        if evermemos and evermemos.available:
+            evermemos.flush(
+                user_id=agent.evermemos_uid,
+                persona_id=agent.persona.persona_id,
+            )
+            print(f"  ↳ EverMemOS flush: {agent.evermemos_uid}")
         print(f"  ↳ 会话 {session_id} 已保存并清理")
 
 

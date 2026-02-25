@@ -65,6 +65,7 @@ N_SIGNALS = len(SIGNALS)
 # ══════════════════════════════════════════════
 
 CONTEXT_FEATURES = [
+    # ── 8D: Critic 感知（当前对话） ──
     'user_emotion',       # -1=负面 → 1=正面
     'topic_intimacy',     # 0=公事 → 1=私密
     'time_of_day',        # 0=早晨 → 1=深夜
@@ -73,11 +74,19 @@ CONTEXT_FEATURES = [
     'conflict_level',     # 0=和谐 → 1=冲突
     'novelty_level',      # 0=日常话题 → 1=全新话题
     'user_vulnerability', # 0=防御 → 1=敞开心扉
+    # ── 4D: EverMemOS 关系状态（跨会话） ──
+    'relationship_depth',   # 0=刚认识 → 1=老朋友（Episode 数量归一化）
+    'emotional_valence',    # -1=总体消极 → 1=总体积极（近期情绪均值）
+    'trust_level',          # 0=无信任 → 1=高度信任（Profile 提取）
+    'pending_foresight',    # 0=无待办 → 1=有该惦记的事（Foresight 到期）
 ]
 N_CONTEXT = len(CONTEXT_FEATURES)
 
+# First 8 context features come from Critic; last 4 from EverMemOS
+N_CRITIC_CONTEXT = 8
+
 RECURRENT_SIZE = 8
-INPUT_SIZE = N_DRIVES + N_CONTEXT + RECURRENT_SIZE
+INPUT_SIZE = N_DRIVES + N_CONTEXT + RECURRENT_SIZE  # 5 + 12 + 8 = 25
 HIDDEN_SIZE = 24
 
 
@@ -447,10 +456,23 @@ class Agent:
 
     @classmethod
     def from_dict(cls, data: dict) -> Agent:
-        """Restore agent from serialized state."""
+        """Restore agent from serialized state.
+
+        Handles backward compatibility: old agents have 21D input (8D context)
+        while new agents have 25D input (12D context with EverMemOS dims).
+        """
         agent = cls(seed=data['seed'])
         agent.drive_state = data.get('drive_state', agent.drive_state)
-        agent.W1 = data.get('W1', agent.W1)
+
+        saved_W1 = data.get('W1', agent.W1)
+        # Backward compat: expand 21D → 25D if loading old weights
+        if saved_W1 and len(saved_W1[0]) < INPUT_SIZE:
+            rng = random.Random(data['seed'] + 9999)  # deterministic expansion
+            extra_cols = INPUT_SIZE - len(saved_W1[0])
+            for row in saved_W1:
+                row.extend([rng.gauss(0, 0.3) for _ in range(extra_cols)])
+        agent.W1 = saved_W1
+
         agent.b1 = data.get('b1', agent.b1)
         agent.W2 = data.get('W2', agent.W2)
         agent.b2 = data.get('b2', agent.b2)

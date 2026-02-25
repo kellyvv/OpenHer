@@ -337,3 +337,87 @@ class EverMemOSClient:
             return None
 
         return "\n".join(lines)
+
+    # ──────────────────────────────────────────────
+    # Relationship Encoding: EverMemOS → 4D vector
+    # ──────────────────────────────────────────────
+
+    def encode_relationship(
+        self,
+        user_id: str,
+        current_query: str = "",
+    ) -> dict:
+        """
+        Encode EverMemOS data into 4D relationship vector for neural network input.
+
+        Returns dict with keys matching CONTEXT_FEATURES:
+          - relationship_depth:  Episode count normalized (0=new, 1=old friend)
+          - emotional_valence:   Average emotional tone (-1 to 1)
+          - trust_level:         Trust extracted from profile (0 to 1)
+          - pending_foresight:   Whether there are pending foresights (0 or 1)
+        """
+        result = {
+            'relationship_depth': 0.0,
+            'emotional_valence': 0.0,
+            'trust_level': 0.0,
+            'pending_foresight': 0.0,
+        }
+
+        if not self.available:
+            return result
+
+        try:
+            # Get profile for trust and foresight
+            profile = self.get_profile(user_id)
+            if profile:
+                # relationship_depth: more memories = deeper relationship
+                # Normalize: 10 memories → 1.0
+                result['relationship_depth'] = min(1.0, len(profile) / 10.0)
+
+                # Scan profile for trust/foresight signals
+                for mem in profile:
+                    content_lower = mem.content.lower()
+                    mem_type = mem.memory_type.lower() if mem.memory_type else ""
+
+                    # Trust detection from profile content
+                    trust_keywords = ['信任', '依赖', '倾诉', '秘密', '心事', 'trust']
+                    if any(kw in content_lower for kw in trust_keywords):
+                        result['trust_level'] = min(1.0, result['trust_level'] + 0.3)
+
+                    # Foresight detection
+                    if 'foresight' in mem_type or '预测' in content_lower or '提醒' in content_lower:
+                        result['pending_foresight'] = 1.0
+
+                    # Emotional valence from profile
+                    positive_kw = ['开心', '高兴', '感谢', '喜欢', '温暖', '快乐']
+                    negative_kw = ['难过', '生气', '失望', '压力', '焦虑', '伤心']
+                    if any(kw in content_lower for kw in positive_kw):
+                        result['emotional_valence'] += 0.2
+                    if any(kw in content_lower for kw in negative_kw):
+                        result['emotional_valence'] -= 0.2
+
+                result['emotional_valence'] = max(-1.0, min(1.0, result['emotional_valence']))
+                result['trust_level'] = min(1.0, result['trust_level'])
+
+        except Exception as e:
+            print(f"⚠ EverMemOS encode_relationship error: {e}")
+
+        return result
+
+    def flush(self, user_id: str, persona_id: str) -> bool:
+        """Send a flush signal to EverMemOS to trigger memory extraction."""
+        if not self.available:
+            return False
+        try:
+            self.store_message(
+                user_id=user_id,
+                persona_id=persona_id,
+                sender=persona_id,
+                sender_name="system",
+                content="[session_end]",
+                is_flush=True,
+            )
+            return True
+        except Exception as e:
+            print(f"⚠ EverMemOS flush error: {e}")
+            return False
