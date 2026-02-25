@@ -20,7 +20,7 @@ import time
 import requests
 import statistics
 
-SERVER = "http://127.0.0.1:8765"
+SERVER = "http://127.0.0.1:8800"
 PERSONA = "lingling"
 USER_NAME = "小周"
 

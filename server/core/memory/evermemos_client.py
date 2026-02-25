@@ -370,9 +370,11 @@ class EverMemOSClient:
             # Get profile for trust and foresight
             profile = self.get_profile(user_id)
             if profile:
-                # relationship_depth: more memories = deeper relationship
-                # Normalize: 10 memories → 1.0
-                result['relationship_depth'] = min(1.0, len(profile) / 10.0)
+                # relationship_depth: gradual growth (1 - e^(-n/20))
+                # 5 memories → 0.22, 10 → 0.39, 20 → 0.63, 50 → 0.92
+                import math
+                n = len(profile)
+                result['relationship_depth'] = 1.0 - math.exp(-n / 20.0)
 
                 # Scan profile for trust/foresight signals
                 for mem in profile:
@@ -382,7 +384,7 @@ class EverMemOSClient:
                     # Trust detection from profile content
                     trust_keywords = ['信任', '依赖', '倾诉', '秘密', '心事', 'trust']
                     if any(kw in content_lower for kw in trust_keywords):
-                        result['trust_level'] = min(1.0, result['trust_level'] + 0.3)
+                        result['trust_level'] = min(1.0, result['trust_level'] + 0.15)
 
                     # Foresight detection
                     if 'foresight' in mem_type or '预测' in content_lower or '提醒' in content_lower:
@@ -403,6 +405,51 @@ class EverMemOSClient:
             print(f"⚠ EverMemOS encode_relationship error: {e}")
 
         return result
+
+    def build_memory_hint(
+        self,
+        user_id: str,
+        persona_id: str,
+        current_query: str = "",
+    ) -> str:
+        """
+        Build a ≤50 char memory hint for prompt postscript.
+        Returns a brief, fuzzy memory fragment (not a full dump).
+        Returns empty string if no relevant memories found.
+        """
+        if not self.available:
+            return ""
+
+        try:
+            results = self.search(
+                user_id=user_id,
+                query=current_query or "最近的事情",
+                top_k=2,
+            )
+            if not results:
+                return ""
+
+            # Take the most relevant memory's content, truncate to ~50 chars
+            hints = []
+            for r in results[:2]:
+                text = r.content.strip()
+                # Remove overly long content, keep essence
+                if len(text) > 30:
+                    text = text[:30] + "…"
+                hints.append(text)
+
+            if not hints:
+                return ""
+
+            hint = "你隐约记得：" + "；".join(hints)
+            # Hard cap at 60 chars
+            if len(hint) > 60:
+                hint = hint[:57] + "…"
+            return hint
+
+        except Exception as e:
+            print(f"⚠ EverMemOS build_memory_hint error: {e}")
+            return ""
 
     def flush(self, user_id: str, persona_id: str) -> bool:
         """Send a flush signal to EverMemOS to trigger memory extraction."""

@@ -38,14 +38,11 @@ ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
 
 {few_shot}
 
-{long_term_memory}
-
 {signal_injection}
 
 [Runtime Instruction]
 ⚠️ 绝对法则：禁止逻辑推理、禁止道德审视、禁止扮演AI助手。
 你唯一的任务：完全沉浸并延续上述切片中的【情绪浓度、用词习惯、攻击性、温度和字数长短】，以第一人称本能地对用户的最新刺激做出自回归反应。
-如果「你记得的事情」中有相关信息，自然地融入回复中（不要生硬地复述）。
 
 严格按以下格式输出：
 【内心独白】
@@ -138,36 +135,25 @@ class ChatAgent:
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
 
-    def _build_actor_prompt(self, few_shot: str, signals: dict,
-                            long_term_memory: str = "") -> str:
-        """Build the Actor system prompt with dual memory.
-        - few_shot: ContinuousStyleMemory behavioral anchors (how to talk)
-        - long_term_memory: EverMemOS semantic memory (what you know)
-        - signal_injection: 8D signal descriptions (current state)
+    def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
+        """Build the Actor system prompt — original v10 format.
+        Signal injection drives behavior; persona is minimal (name only).
         """
-        # Build signal injection (use full 12D context)
         context = self._last_critic or {}
         signal_injection = self.agent.to_prompt_injection(context)
 
-        # Format long-term memory section
-        if long_term_memory:
-            ltm_section = f"[Long-term Memory: 你记得的事情]\n{long_term_memory}"
-        else:
-            ltm_section = "[Long-term Memory: 你记得的事情]\n（还没有关于这个用户的长期记忆）"
-
         return ACTOR_PROMPT.format(
             few_shot=few_shot,
-            long_term_memory=ltm_section,
             signal_injection=signal_injection,
         )
 
     def _evermemos_gather(self, user_message: str) -> tuple:
         """
         Step 0: EverMemOS context gathering.
-        Returns: (user_profile, semantic_memory, relationship_4d)
+        Returns: (user_profile, memory_hint, relationship_4d)
         """
         user_profile = ""
-        semantic_memory = ""
+        memory_hint = ""
         relationship_4d = {
             'relationship_depth': 0.0,
             'emotional_valence': 0.0,
@@ -176,11 +162,11 @@ class ChatAgent:
         }
 
         if not (self.evermemos and self.evermemos.available):
-            return user_profile, semantic_memory, relationship_4d
+            return user_profile, memory_hint, relationship_4d
 
         try:
-            # 0a. Build semantic memory context
-            semantic_memory = self.evermemos.build_memory_context(
+            # 0a. Build memory hint (≤50 chars, for prompt postscript)
+            memory_hint = self.evermemos.build_memory_hint(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
                 current_query=user_message,
@@ -192,19 +178,20 @@ class ChatAgent:
                 user_profile = "\n".join(r.content for r in profile_results[:3])
                 self._user_profile = user_profile
 
-            # 0c. Encode relationship → 4D vector
+            # 0c. Encode relationship → 4D vector (gradual growth)
             relationship_4d = self.evermemos.encode_relationship(
                 user_id=self.evermemos_uid,
                 current_query=user_message,
             )
 
-            rel_str = " ".join(f"{k}={v:.2f}" for k, v in relationship_4d.items())
-            print(f"  [evermemos] {rel_str} | mem={len(semantic_memory)}ch")
+            if any(v > 0.01 for v in relationship_4d.values()):
+                rel_str = " ".join(f"{k}={v:.2f}" for k, v in relationship_4d.items())
+                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch")
 
         except Exception as e:
             print(f"  [evermemos] gather error: {e}")
 
-        return user_profile, semantic_memory, relationship_4d
+        return user_profile, memory_hint, relationship_4d
 
     def _evermemos_store(self, user_message: str, reply: str,
                         signals: dict = None) -> None:
@@ -235,13 +222,13 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS context gathering ──
-        user_profile, semantic_memory, relationship_4d = self._evermemos_gather(user_message)
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
 
-        # ── Step 0.5: Foresight → drive injection ──
-        if relationship_4d.get('pending_foresight', 0) > 0.5:
-            self.metabolism.frustration['connection'] += 0.3
-            self.metabolism.frustration['expression'] += 0.2
-            print("  [foresight] 🔮 pending foresight → drive injection")
+        # ── Step 0.5: Foresight → drive injection (first turn only, halved) ──
+        if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
+            self.metabolism.frustration['connection'] += 0.15
+            self.metabolism.frustration['expression'] += 0.10
+            print("  [foresight] 🔮 pending foresight → drive injection (once)")
 
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
@@ -284,9 +271,12 @@ class ChatAgent:
         self.style_memory.set_clock(now)
         few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
 
-        # ── Step 8: Build Actor prompt (dual memory) ──
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals,
-                                                 long_term_memory=semantic_memory)
+        # ── Step 8: Build Actor prompt (original v10) ──
+        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+
+        # ── Step 8.5: Append memory postscript (if cross-session memory exists) ──
+        if memory_hint:
+            system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -342,13 +332,13 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS context gathering ──
-        user_profile, semantic_memory, relationship_4d = self._evermemos_gather(user_message)
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
 
-        # ── Step 0.5: Foresight → drive injection ──
-        if relationship_4d.get('pending_foresight', 0) > 0.5:
-            self.metabolism.frustration['connection'] += 0.3
-            self.metabolism.frustration['expression'] += 0.2
-            print("  [foresight] 🔮 pending foresight → drive injection")
+        # ── Step 0.5: Foresight → drive injection (first turn only, halved) ──
+        if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
+            self.metabolism.frustration['connection'] += 0.15
+            self.metabolism.frustration['expression'] += 0.10
+            print("  [foresight] 🔮 pending foresight → drive injection (once)")
 
         # ── Steps 1-3: Metabolism + Critic (12D) ──
         delta_h = self.metabolism.time_metabolism(now)
@@ -379,11 +369,14 @@ class ChatAgent:
         noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
         self._last_signals = noisy_signals
 
-        # ── Step 7-8: KNN + Actor prompt (dual memory) ──
+        # ── Step 7-8: KNN + Actor prompt (original v10) ──
         self.style_memory.set_clock(now)
         few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals,
-                                                 long_term_memory=semantic_memory)
+        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+
+        # ── Step 8.5: Append memory postscript ──
+        if memory_hint:
+            system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
