@@ -438,7 +438,7 @@ class ChatAgent:
           alpha = clip(0.15 + 0.5 * depth, 0.15, 0.65)
           state_t = alpha * posterior + (1 - alpha) * state_{t-1}
 
-        First turn initializes EMA from prior (no delta applied).
+        First turn initializes EMA state from prior, then applies delta normally.
         """
         # Map Critic output keys → context feature keys
         delta_map = {
