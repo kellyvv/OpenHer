@@ -133,12 +133,8 @@ class ChatAgent:
         if self.skills_prompt:
             persona_section += f"\n\n{self.skills_prompt}"
 
-        # Build signal injection
-        # Build simple context for prompt injection (reuse agent's context)
-        context = build_context_from_critic(
-            self._last_critic or {'affiliation': 0.5, 'dominance': 0.3, 'entropy': 0.5},
-            conversation_depth=min(1.0, self._turn_count * 0.1),
-        )
+        # Build signal injection (use Critic's 8D context directly)
+        context = self._last_critic or {}
         signal_injection = self.agent.to_prompt_injection(context)
 
         return ACTOR_PROMPT.format(
@@ -226,10 +222,10 @@ class ChatAgent:
                 persona_id=self.persona.persona_id,
                 content=user_message,
                 category="user_message",
-                importance=critic.get('entropy', 0.5),
+                importance=context.get('entropy', 0.5),
             )
 
-        print(f"  [genome] critic={critic} reward={reward:.2f} temp={total_frust*0.05:.3f}")
+        print(f"  [genome] context={context} reward={reward:.2f} temp={total_frust*0.05:.3f}")
 
         return reply
 
