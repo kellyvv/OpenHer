@@ -404,6 +404,143 @@ class EverMemOSClient:
 
         return result
 
+    # ──────────────────────────────────────────────
+    # Deep Integration: Cross-Session Drive Evolution
+    # ──────────────────────────────────────────────
+
+    def compute_drive_evolution(self, user_id: str) -> dict:
+        """
+        Analyze EverMemOS profile to compute drive baseline shifts.
+        Returns dict of {drive_name: delta} — small adjustments (±0.15 max).
+
+        Logic:
+        - 用户经常分享心事 → connection↑ (更主动关心)
+        - 用户喜欢开玩笑/调侃 → play↑ (更爱玩)
+        - 用户聊新奇话题多 → novelty↑ (更好奇)
+        - 用户情绪波动大 → expression↑ (表达欲更强)
+        - 关系深厚 → safety↓ (更大胆，防线降低)
+
+        New user → all zeros (identical to vanilla v10).
+        """
+        import math
+
+        deltas = {
+            'connection': 0.0,
+            'novelty': 0.0,
+            'expression': 0.0,
+            'safety': 0.0,
+            'play': 0.0,
+        }
+
+        if not self.available:
+            return deltas
+
+        try:
+            profile = self.get_profile(user_id)
+            if not profile or len(profile) < 3:
+                return deltas  # Not enough history to evolve
+
+            # Analyze profile content patterns
+            all_content = " ".join(m.content.lower() for m in profile)
+
+            # Connection: emotional sharing keywords
+            conn_kw = ['心事', '倾诉', '难过', '想你', '孤独', '陪', '依赖',
+                        '秘密', '信任', '心里话', '谢谢你听']
+            conn_hits = sum(1 for kw in conn_kw if kw in all_content)
+
+            # Play: humor/teasing keywords
+            play_kw = ['哈哈', '搞笑', '玩', '游戏', '调侃', '开玩笑',
+                        '逗', '笑死', '奶茶', '约']
+            play_hits = sum(1 for kw in play_kw if kw in all_content)
+
+            # Novelty: new topics/curiosity
+            nov_kw = ['创业', '新', '想法', '计划', '梦想', '尝试',
+                       '学', '旅行', '探索', '项目']
+            nov_hits = sum(1 for kw in nov_kw if kw in all_content)
+
+            # Expression: emotional intensity
+            expr_kw = ['生气', '爱', '恨', '激动', '兴奋', '崩溃',
+                        '压力', '焦虑', '开心', '感动']
+            expr_hits = sum(1 for kw in expr_kw if kw in all_content)
+
+            # Relationship depth factor (0~1, gradual)
+            depth = 1.0 - math.exp(-len(profile) / 20.0)
+
+            # Scale: more hits + deeper relationship → larger delta (max ±0.15)
+            max_delta = 0.15
+            scale = min(1.0, depth * 1.5)  # depth amplifies the effect
+
+            deltas['connection'] = min(max_delta, conn_hits * 0.03 * scale)
+            deltas['play'] = min(max_delta, play_hits * 0.03 * scale)
+            deltas['novelty'] = min(max_delta, nov_hits * 0.03 * scale)
+            deltas['expression'] = min(max_delta, expr_hits * 0.03 * scale)
+            # Safety decreases (braver) as relationship deepens
+            deltas['safety'] = -min(max_delta, depth * 0.1)
+
+        except Exception as e:
+            print(f"⚠ EverMemOS compute_drive_evolution error: {e}")
+
+        return deltas
+
+    # ──────────────────────────────────────────────
+    # Deep Integration: Foresight Extraction
+    # ──────────────────────────────────────────────
+
+    def extract_and_store_foresight(
+        self,
+        user_id: str,
+        persona_id: str,
+        user_message: str,
+        reply: str,
+    ) -> Optional[str]:
+        """
+        Detect future-oriented user intents and store as foresight.
+        Returns the foresight text if found, None otherwise.
+
+        Detects patterns like:
+        - "明天/下周/周一要..." → time-specific events
+        - "打算/计划/准备..." → future plans
+        - "想要辞职/创业/搬家..." → life changes
+        """
+        if not self.available:
+            return None
+
+        # Future intent keywords
+        time_markers = ['明天', '后天', '下周', '下个月', '周一', '周二',
+                        '周三', '周四', '周五', '下次', '过几天', '月底']
+        intent_markers = ['打算', '计划', '准备', '想要', '决定', '考虑',
+                          '辞职', '创业', '搬家', '面试', '考试', '结婚',
+                          '分手', '旅行', '手术', '毕业']
+
+        msg_lower = user_message.lower()
+
+        # Check for future intent
+        has_time = any(m in msg_lower for m in time_markers)
+        has_intent = any(m in msg_lower for m in intent_markers)
+
+        if not (has_time or has_intent):
+            return None
+
+        # Build foresight text
+        foresight = user_message[:80]  # Cap at 80 chars
+        if len(user_message) > 80:
+            foresight += "…"
+
+        try:
+            # Store as a special "foresight" type message
+            self.store_message(
+                user_id=user_id,
+                persona_id=persona_id,
+                sender="system",
+                sender_name="foresight",
+                content=f"[预见] {foresight}",
+            )
+            print(f"  [foresight] 💡 detected: {foresight[:40]}...")
+            return foresight
+        except Exception as e:
+            print(f"⚠ EverMemOS foresight store error: {e}")
+            return None
+
     def build_memory_hint(
         self,
         user_id: str,

@@ -167,6 +167,16 @@ class ChatAgent:
             self.metabolism.frustration['expression'] += 0.10
             print("  [foresight] 🔮 pending foresight → drive injection (once)")
 
+        # ── Step 0.6: Cross-session drive evolution (first turn only) ──
+        if self._turn_count == 1 and self.evermemos and self.evermemos.available:
+            drive_deltas = self.evermemos.compute_drive_evolution(self.evermemos_uid)
+            if any(abs(v) > 0.01 for v in drive_deltas.values()):
+                for d, delta in drive_deltas.items():
+                    old = self.agent.drive_baseline.get(d, 0.5)
+                    self.agent.drive_baseline[d] = max(0.1, min(0.95, old + delta))
+                delta_str = " ".join(f"{d}={v:+.2f}" for d, v in drive_deltas.items() if abs(v) > 0.01)
+                print(f"  [进化] 🧬 drive baseline shift: {delta_str}")
+
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
@@ -258,6 +268,15 @@ class ChatAgent:
         # ── Step 11: EverMemOS conversation storage (background) ──
         self._evermemos_store(user_message, reply, noisy_signals)
 
+        # ── Step 12: Foresight extraction ──
+        if self.evermemos and self.evermemos.available:
+            self.evermemos.extract_and_store_foresight(
+                user_id=self.evermemos_uid,
+                persona_id=self.persona.persona_id,
+                user_message=user_message,
+                reply=reply,
+            )
+
         return {'reply': reply, 'modality': modality}
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
@@ -276,6 +295,16 @@ class ChatAgent:
             self.metabolism.frustration['connection'] += 0.15
             self.metabolism.frustration['expression'] += 0.10
             print("  [foresight] 🔮 pending foresight → drive injection (once)")
+
+        # ── Step 0.6: Cross-session drive evolution (first turn only) ──
+        if self._turn_count == 1 and self.evermemos and self.evermemos.available:
+            drive_deltas = self.evermemos.compute_drive_evolution(self.evermemos_uid)
+            if any(abs(v) > 0.01 for v in drive_deltas.values()):
+                for d, delta in drive_deltas.items():
+                    old = self.agent.drive_baseline.get(d, 0.5)
+                    self.agent.drive_baseline[d] = max(0.1, min(0.95, old + delta))
+                delta_str = " ".join(f"{d}={v:+.2f}" for d, v in drive_deltas.items() if abs(v) > 0.01)
+                print(f"  [进化] 🧬 drive baseline shift: {delta_str}")
 
         # ── Steps 1-3: Metabolism + Critic (12D) ──
         delta_h = self.metabolism.time_metabolism(now)
@@ -353,6 +382,15 @@ class ChatAgent:
 
         # ── Step 11: EverMemOS conversation storage ──
         self._evermemos_store(user_message, reply, noisy_signals)
+
+        # ── Step 12: Foresight extraction ──
+        if self.evermemos and self.evermemos.available:
+            self.evermemos.extract_and_store_foresight(
+                user_id=self.evermemos_uid,
+                persona_id=self.persona.persona_id,
+                user_message=user_message,
+                reply=reply,
+            )
 
     def _evermemos_gather(self, user_message: str) -> tuple:
         """
