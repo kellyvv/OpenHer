@@ -44,31 +44,37 @@ ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
 
 严格按以下格式输出：
 【内心独白】
-(第一人称真实的生理冲动与心理防线)
+第一人称真实的生理冲动与心理防线
 【最终回复】
-(直接对用户说出口的话)"""
+直接对用户说出口的话，不要加括号动作描写
+【表达方式】
+你决定用什么方式发这条消息。可选：文字 / 语音 / 表情 / 多条拆分 / 照片。可组合。说明理由（一句话）。"""
 
 
-def extract_reply(raw: str) -> tuple[str, str]:
-    """Extract monologue and reply from Actor output."""
+def extract_reply(raw: str) -> tuple[str, str, str]:
+    """Extract monologue, reply, and modality from Actor output."""
     monologue = ""
     reply = ""
-    if "【内心独白】" in raw and "【最终回复】" in raw:
-        m = re.search(r'【内心独白】\s*(.*?)(?=【最终回复】)', raw, re.DOTALL)
-        r = re.search(r'【最终回复】\s*(.*?)$', raw, re.DOTALL)
-        if m: monologue = m.group(1).strip()
-        if r: reply = r.group(1).strip()
-    elif "【最终回复】" in raw:
-        parts = raw.split("【最终回复】", 1)
-        monologue = parts[0].replace("【内心独白】", "").strip()
-        reply = parts[1].strip()
+    modality = ""
+
+    # Parse structured sections
+    parts = re.split(r'【(内心独白|最终回复|表达方式)】', raw)
+    for j in range(len(parts)):
+        if parts[j] == '内心独白' and j+1 < len(parts):
+            monologue = parts[j+1].strip()
+        elif parts[j] == '最终回复' and j+1 < len(parts):
+            reply = parts[j+1].strip()
+        elif parts[j] == '表达方式' and j+1 < len(parts):
+            modality = parts[j+1].strip()
+
     if not reply:
         # Fallback: strip action descriptions
         reply = re.sub(r'[（(][^）)]*[）)]', '', raw).strip()
         reply = re.sub(r'\*[^*]+\*', '', reply).strip()
         if not reply:
             reply = "..."
-    return monologue, reply
+
+    return monologue, reply, modality
 
 
 class ChatAgent:
@@ -115,8 +121,9 @@ class ChatAgent:
         self._last_critic: Optional[dict] = None
         self._last_signals: Optional[dict] = None
         self._last_reward: float = 0.0
+        self._last_modality: str = ""
 
-        print(f"✓ ChatAgent(Genome v8) 初始化: {persona.name} ↔ {user_name or user_id} "
+        print(f"✓ ChatAgent(Genome v10) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories})")
 
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
@@ -184,7 +191,7 @@ class ChatAgent:
         messages.append(ChatMessage(role="user", content=user_message))
 
         response = await self.llm.chat(messages)
-        monologue, reply = extract_reply(response.content)
+        monologue, reply, modality = extract_reply(response.content)
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -201,8 +208,10 @@ class ChatAgent:
             'signals': noisy_signals,
             'monologue': monologue,
             'reply': reply,
+            'modality': modality,
             'user_input': user_message,
         }
+        self._last_modality = modality
 
         # Store facts in keyword memory (if available)
         if self.memory_store:
@@ -214,9 +223,9 @@ class ChatAgent:
                 importance=context.get('entropy', 0.5),
             )
 
-        print(f"  [genome] context={context} reward={reward:.2f} temp={total_frust*0.05:.3f}")
+        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
-        return reply
+        return {'reply': reply, 'modality': modality}
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
         """
@@ -268,7 +277,7 @@ class ChatAgent:
 
         # ── Post-stream processing ──
         raw_text = "".join(full_response)
-        monologue, reply = extract_reply(raw_text)
+        monologue, reply, modality = extract_reply(raw_text)
 
         # Step 10: Hebbian learning
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -285,10 +294,12 @@ class ChatAgent:
             'signals': noisy_signals,
             'monologue': monologue,
             'reply': reply,
+            'modality': modality,
             'user_input': user_message,
         }
+        self._last_modality = modality
 
-        print(f"  [genome] critic={critic} reward={reward:.2f} temp={total_frust*0.05:.3f}")
+        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
     def get_status(self) -> dict:
         """Get comprehensive agent status including genome state."""
@@ -319,4 +330,5 @@ class ChatAgent:
             "personal_memories": mem_stats.get('personal_count', 0),
             "age": self.agent.age,
             "last_reward": round(self._last_reward, 2),
+            "modality": self._last_modality,
         }

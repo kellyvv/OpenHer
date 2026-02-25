@@ -1,8 +1,8 @@
 """
-Gateway — FastAPI WebSocket server for OpenHer (Genome v8).
+Gateway — FastAPI WebSocket server for OpenHer (Genome v10 Hybrid).
 
 Provides:
-  - WebSocket endpoint for real-time chat with Genome v8 lifecycle
+  - WebSocket endpoint for real-time chat with Genome v10 lifecycle
   - REST APIs for persona management, status
   - Agent state persistence (neural network weights + drive metabolism)
   - Session auto-cleanup with TTL
@@ -48,8 +48,8 @@ load_dotenv()
 
 app = FastAPI(
     title="OpenHer",
-    description="AI Companion Server — Genome v8 Engine",
-    version="0.4.0",
+    description="AI Companion Server — Genome v10 Hybrid Engine",
+    version="0.5.0",
 )
 
 app.add_middleware(
@@ -145,7 +145,7 @@ async def startup():
     if os.path.isdir(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-    print("✓ OpenHer 服务启动完成 (v0.4.0 — Genome v8 Engine)")
+    print("✓ OpenHer 服务启动完成 (v0.5.0 — Genome v10 Hybrid Engine)")
     print("  → 演示页面: http://localhost:8800/app")
 
 
@@ -354,14 +354,15 @@ async def chat_api(req: ChatRequest):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-    response = await agent.chat(req.message)
+    result = await agent.chat(req.message)
     status = agent.get_status()
 
     _persist_agent(agent)
 
     return {
         "session_id": session_id,
-        "response": response,
+        "response": result['reply'],
+        "modality": result['modality'],
         **status,
     }
 
@@ -476,6 +477,7 @@ async def websocket_chat(ws: WebSocket):
                     status = agent.get_status()
                     await ws.send_json({
                         "type": "chat_end",
+                        "modality": status.get("modality", ""),
                         **status,
                     })
 
