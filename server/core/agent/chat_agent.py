@@ -151,6 +151,8 @@ class ChatAgent:
         self._relevant_facts: str = ""      # Populated by async search from previous turn
         self._relevant_episodes: str = ""   # Populated by async search from previous turn
         self._search_task: Optional[asyncio.Task] = None  # Tracks background search
+        self._search_hit: int = 0           # Observability: successful search collections
+        self._search_timeout: int = 0       # Observability: timeout fallbacks
 
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
@@ -615,8 +617,13 @@ class ChatAgent:
             )
             self._relevant_facts = facts
             self._relevant_episodes = episodes
+            self._search_hit += 1
         except asyncio.TimeoutError:
-            print("  [evermemos] 🔍 search timeout (>500ms), using static fallback")
+            self._search_timeout += 1
+            total = self._search_hit + self._search_timeout
+            pct = self._search_timeout / total * 100 if total else 0
+            print(f"  [evermemos] 🔍 search timeout (>500ms), "
+                  f"static fallback ({self._search_timeout}/{total} = {pct:.0f}%)")
             self._relevant_facts = ""
             self._relevant_episodes = ""
         except Exception as e:
@@ -658,4 +665,6 @@ class ChatAgent:
             "last_reward": round(self._last_reward, 2),
             "modality": self._last_modality,
             "evermemos": "ON" if (self.evermemos and self.evermemos.available) else "OFF",
+            "search_hit": self._search_hit,
+            "search_timeout": self._search_timeout,
         }
