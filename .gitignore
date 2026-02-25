@@ -12,3 +12,5 @@ node_modules/
 *.blg
 *.out
 .gemini/
+_backup_paper/
+_voice_tts/
