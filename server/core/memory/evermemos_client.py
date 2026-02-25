@@ -338,15 +338,30 @@ class EverMemOSClient:
         t0 = _time.monotonic()
 
         try:
-            response = await self._mem.search(
-                extra_query={
+            # Primary query params (matches KI docs)
+            query_params = {
+                "query": query,
+                "user_id": user_id,
+                "retrieve_method": "rrf",
+                "memory_types": "event_log,episodic_memory",
+            }
+            try:
+                response = await self._mem.search(
+                    extra_query=query_params,
+                    timeout=3.0,
+                )
+            except Exception:
+                # SDK compat: some versions use singular param names
+                query_params_alt = {
                     "query": query,
                     "user_id": user_id,
-                    "retrieve_method": "rrf",
-                    "memory_types": "event_log,episodic_memory",
-                },
-                timeout=3.0,
-            )
+                    "search_method": "rrf",
+                    "memory_type": "event_log,episodic_memory",
+                }
+                response = await self._mem.search(
+                    extra_query=query_params_alt,
+                    timeout=3.0,
+                )
 
             elapsed_ms = (_time.monotonic() - t0) * 1000
 

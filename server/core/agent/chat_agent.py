@@ -151,8 +151,10 @@ class ChatAgent:
         self._relevant_facts: str = ""      # Populated by async search from previous turn
         self._relevant_episodes: str = ""   # Populated by async search from previous turn
         self._search_task: Optional[asyncio.Task] = None  # Tracks background search
+        self._search_turn_id: int = 0       # Turn that fired the search (concurrency guard)
         self._search_hit: int = 0           # Observability: successful search collections
         self._search_timeout: int = 0       # Observability: timeout fallbacks
+        self._search_fallback: int = 0      # Observability: used static instead of relevant
 
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
@@ -223,6 +225,29 @@ class ChatAgent:
         episode_budget = int(150 + 450 * t)   # 150..600
         return profile_budget, episode_budget
 
+    def _blend_injection(
+        self, relevant: str, static: str, budget: int,
+    ) -> str:
+        """
+        Blend relevant (query-based) and static (session-init) memory text.
+
+        Strategy: 80% relevant + 20% static floor ensures long-term profile
+        stability even when search results are highly focused.
+        Falls back to pure static when no relevant results available.
+        """
+        if not relevant and not static:
+            return ""
+        if not relevant:
+            self._search_fallback += 1
+            return static[:budget]
+        # 80/20 split: relevant gets 80% of budget, static gets 20%
+        rel_budget = int(budget * 0.8)
+        sta_budget = budget - rel_budget
+        blended = relevant[:rel_budget]
+        if static:
+            blended += "；" + static[:sta_budget]
+        return blended
+
     async def chat(self, user_message: str) -> str:
         """
         Process a user message through the full Genome v10 lifecycle.
@@ -233,9 +258,6 @@ class ChatAgent:
 
         # ── Step 0: EverMemOS session context (first turn only) ──
         relationship_prior = await self._evermemos_gather()
-
-        # Collect previous turn's async search results (if any)
-        await self._collect_search_results()
 
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
@@ -298,14 +320,21 @@ class ChatAgent:
 
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
+            # Collect search results right before injection (not at turn start)
+            await self._collect_search_results()
             profile_budget, episode_budget = self._memory_injection_budget(context)
-            # Phase 3: prefer query-relevant memories; fall back to static truncation
-            profile_text = self._relevant_facts or self._user_profile
-            episode_text = self._relevant_episodes or self._episode_summary
+            # Phase 3: blend relevant (80%) + static (20%) for stability
+            profile_text = self._blend_injection(
+                self._relevant_facts, self._user_profile, profile_budget
+            )
+            episode_text = self._blend_injection(
+                self._relevant_episodes, self._episode_summary, episode_budget
+            )
+            name = self.user_name or self.user_id
             if profile_text:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {profile_text[:profile_budget]}"
+                system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {episode_text[:episode_budget]}"
+                system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -366,9 +395,6 @@ class ChatAgent:
         # ── Step 0: EverMemOS session context (first turn only) ──
         relationship_prior = await self._evermemos_gather()
 
-        # Collect previous turn's async search results (if any)
-        await self._collect_search_results()
-
         # ── Step 1: Metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
         # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
@@ -422,14 +448,21 @@ class ChatAgent:
 
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
+            # Collect search results right before injection (not at turn start)
+            await self._collect_search_results()
             profile_budget, episode_budget = self._memory_injection_budget(context)
-            # Phase 3: prefer query-relevant memories; fall back to static truncation
-            profile_text = self._relevant_facts or self._user_profile
-            episode_text = self._relevant_episodes or self._episode_summary
+            # Phase 3: blend relevant (80%) + static (20%) for stability
+            profile_text = self._blend_injection(
+                self._relevant_facts, self._user_profile, profile_budget
+            )
+            episode_text = self._blend_injection(
+                self._relevant_episodes, self._episode_summary, episode_budget
+            )
+            name = self.user_name or self.user_id
             if profile_text:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {profile_text[:profile_budget]}"
+                system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {episode_text[:episode_budget]}"
+                system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -583,14 +616,21 @@ class ChatAgent:
     def _evermemos_search_bg(self, user_message: str) -> None:
         """
         Step 12: Fire async RRF search for the current user_message.
-        Results are collected at the START of the NEXT turn via _collect_search_results().
-        First turn fires search; second turn uses results + fires new search.
+        Results are collected at Step 8.5 of the NEXT turn.
+        Cancels any pending search before starting a new one.
         """
         if not (self.evermemos and self.evermemos.available):
             return
         if not self._session_ctx or not self._session_ctx.has_history:
             return
+
+        # Cancel any orphaned previous search task
+        if self._search_task and not self._search_task.done():
+            self._search_task.cancel()
+            self._search_task = None
+
         try:
+            self._search_turn_id = self._turn_count  # Tag with origin turn
             self._search_task = asyncio.create_task(
                 self.evermemos.search_relevant_memories(
                     query=user_message,
@@ -603,12 +643,20 @@ class ChatAgent:
 
     async def _collect_search_results(self) -> None:
         """
-        Collect the previous turn's async search results (non-blocking).
-        Called at the start of each turn. If the task isn't done yet,
-        waits up to 0.5s (search is typically ~300ms). On timeout or
-        error, falls back to static profile/episode (empty relevant_*).
+        Collect previous turn's async search results (called at Step 8.5).
+        Validates turn_id to prevent concurrent mismatch.
+        Waits up to 0.5s; on timeout/error falls back to empty (static used).
         """
         if self._search_task is None:
+            return
+
+        # Concurrency guard: reject stale results from wrong turn
+        expected_turn = self._turn_count - 1
+        if self._search_turn_id != expected_turn:
+            self._search_task.cancel()
+            self._search_task = None
+            self._relevant_facts = ""
+            self._relevant_episodes = ""
             return
 
         try:
@@ -650,6 +698,14 @@ class ChatAgent:
 
         dominant_drive = self.agent.get_dominant_drive()
 
+        # Phase 3 metrics
+        total_searches = self._search_hit + self._search_timeout
+        search_hit_rate = self._search_hit / total_searches if total_searches else 0.0
+        search_timeout_rate = self._search_timeout / total_searches if total_searches else 0.0
+        fallback_rate = self._search_fallback / max(self._turn_count, 1)
+        relevant_injections = self._search_hit - self._search_fallback
+        relevant_injection_ratio = relevant_injections / max(self._turn_count, 1)
+
         return {
             "persona": self.persona.name,
             "dominant_drive": DRIVE_LABELS.get(dominant_drive, dominant_drive),
@@ -667,4 +723,9 @@ class ChatAgent:
             "evermemos": "ON" if (self.evermemos and self.evermemos.available) else "OFF",
             "search_hit": self._search_hit,
             "search_timeout": self._search_timeout,
+            "search_fallback": self._search_fallback,
+            "search_hit_rate": round(search_hit_rate, 3),
+            "search_timeout_rate": round(search_timeout_rate, 3),
+            "fallback_rate": round(fallback_rate, 3),
+            "relevant_injection_ratio": round(relevant_injection_ratio, 3),
         }
