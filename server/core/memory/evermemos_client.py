@@ -312,4 +312,80 @@ class EverMemOSClient:
             'pending_foresight': round(ctx.pending_foresight, 3),
         }
 
+    # ─────────────────────────────────────────────────────────────
+    # Query-Based Relevance Retrieval (Phase 3)
+    # ─────────────────────────────────────────────────────────────
 
+    async def search_relevant_memories(
+        self,
+        query: str,
+        user_id: str,
+    ) -> tuple[str, str]:
+        """
+        Search for memories most relevant to the current user message.
+
+        Uses EverMemOS RRF (hybrid keyword+vector) retrieval to find
+        event_log facts and episodic_memory summaries relevant to the
+        query. ~300ms typical latency with 3s hard timeout.
+
+        Returns: (relevant_facts, relevant_episodes) as formatted strings.
+                 Empty strings on error or no results.
+        """
+        if not self.available or not query.strip():
+            return "", ""
+
+        import time as _time
+        t0 = _time.monotonic()
+
+        try:
+            response = await self._mem.search(
+                extra_query={
+                    "query": query,
+                    "user_id": user_id,
+                    "retrieve_method": "rrf",
+                    "memory_types": "event_log,episodic_memory",
+                },
+                timeout=3.0,
+            )
+
+            elapsed_ms = (_time.monotonic() - t0) * 1000
+
+            if not response or not response.result or not response.result.memories:
+                print(f"  [evermemos] 🔍 search: 0 results ({elapsed_ms:.0f}ms)")
+                return "", ""
+
+            memories = response.result.memories
+            facts = []
+            episodes = []
+
+            for mem in memories:
+                mem_type = getattr(mem, '__class__', None)
+                type_name = mem_type.__name__ if mem_type else ""
+
+                if "EventLog" in type_name:
+                    fact = getattr(mem, 'atomic_fact', None)
+                    if fact and fact.strip():
+                        facts.append(fact.strip())
+
+                elif "Episode" in type_name or "Episodic" in type_name:
+                    summary = (
+                        getattr(mem, 'summary', None)
+                        or getattr(mem, 'narrative', None)
+                        or getattr(mem, 'content', None)
+                    )
+                    if summary and summary.strip():
+                        episodes.append(summary.strip())
+
+            relevant_facts = "；".join(facts) if facts else ""
+            relevant_episodes = "；".join(episodes) if episodes else ""
+
+            print(
+                f"  [evermemos] 🔍 search: {len(facts)} facts, "
+                f"{len(episodes)} episodes ({elapsed_ms:.0f}ms)"
+            )
+            return relevant_facts, relevant_episodes
+
+        except Exception as e:
+            elapsed_ms = (_time.monotonic() - t0) * 1000
+            print(f"  [evermemos] 🔍 search error ({elapsed_ms:.0f}ms): {e}")
+            return "", ""

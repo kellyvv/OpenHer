@@ -147,6 +147,11 @@ class ChatAgent:
         # ── Phase 1 Emergence: Relationship EMA state ──
         self._relationship_ema: dict = {}  # Populated on first turn from prior
 
+        # ── Phase 3: Query-based relevance retrieval ──
+        self._relevant_facts: str = ""      # Populated by async search from previous turn
+        self._relevant_episodes: str = ""   # Populated by async search from previous turn
+        self._search_task: Optional[asyncio.Task] = None  # Tracks background search
+
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
@@ -227,6 +232,9 @@ class ChatAgent:
         # ── Step 0: EverMemOS session context (first turn only) ──
         relationship_prior = await self._evermemos_gather()
 
+        # Collect previous turn's async search results (if any)
+        await self._collect_search_results()
+
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
@@ -289,10 +297,13 @@ class ChatAgent:
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
             profile_budget, episode_budget = self._memory_injection_budget(context)
-            if self._user_profile:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:profile_budget]}"
-            if self._episode_summary:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:episode_budget]}"
+            # Phase 3: prefer query-relevant memories; fall back to static truncation
+            profile_text = self._relevant_facts or self._user_profile
+            episode_text = self._relevant_episodes or self._episode_summary
+            if profile_text:
+                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {profile_text[:profile_budget]}"
+            if episode_text:
+                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {episode_text[:episode_budget]}"
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -337,6 +348,9 @@ class ChatAgent:
         # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
         self._evermemos_store_bg(user_message, reply)
 
+        # ── Step 12: Fire async search for NEXT turn's injection ──
+        self._evermemos_search_bg(user_message)
+
         return {'reply': reply, 'modality': modality}
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
@@ -349,6 +363,9 @@ class ChatAgent:
 
         # ── Step 0: EverMemOS session context (first turn only) ──
         relationship_prior = await self._evermemos_gather()
+
+        # Collect previous turn's async search results (if any)
+        await self._collect_search_results()
 
         # ── Step 1: Metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
@@ -404,10 +421,13 @@ class ChatAgent:
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
             profile_budget, episode_budget = self._memory_injection_budget(context)
-            if self._user_profile:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:profile_budget]}"
-            if self._episode_summary:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:episode_budget]}"
+            # Phase 3: prefer query-relevant memories; fall back to static truncation
+            profile_text = self._relevant_facts or self._user_profile
+            episode_text = self._relevant_episodes or self._episode_summary
+            if profile_text:
+                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {profile_text[:profile_budget]}"
+            if episode_text:
+                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {episode_text[:episode_budget]}"
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -447,6 +467,9 @@ class ChatAgent:
 
         # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
         self._evermemos_store_bg(user_message, reply)
+
+        # ── Step 12: Fire async search for NEXT turn's injection ──
+        self._evermemos_search_bg(user_message)
 
     async def _evermemos_gather(self) -> dict:
         """
@@ -554,6 +577,54 @@ class ChatAgent:
             )
         except Exception as e:
             print(f"  [evermemos] create_task error: {e}")
+
+    def _evermemos_search_bg(self, user_message: str) -> None:
+        """
+        Step 12: Fire async RRF search for the current user_message.
+        Results are collected at the START of the NEXT turn via _collect_search_results().
+        First turn fires search; second turn uses results + fires new search.
+        """
+        if not (self.evermemos and self.evermemos.available):
+            return
+        if not self._session_ctx or not self._session_ctx.has_history:
+            return
+        try:
+            self._search_task = asyncio.create_task(
+                self.evermemos.search_relevant_memories(
+                    query=user_message,
+                    user_id=self.evermemos_uid,
+                )
+            )
+        except Exception as e:
+            print(f"  [evermemos] search create_task error: {e}")
+            self._search_task = None
+
+    async def _collect_search_results(self) -> None:
+        """
+        Collect the previous turn's async search results (non-blocking).
+        Called at the start of each turn. If the task isn't done yet,
+        waits up to 0.5s (search is typically ~300ms). On timeout or
+        error, falls back to static profile/episode (empty relevant_*).
+        """
+        if self._search_task is None:
+            return
+
+        try:
+            facts, episodes = await asyncio.wait_for(
+                self._search_task, timeout=0.5
+            )
+            self._relevant_facts = facts
+            self._relevant_episodes = episodes
+        except asyncio.TimeoutError:
+            print("  [evermemos] 🔍 search timeout (>500ms), using static fallback")
+            self._relevant_facts = ""
+            self._relevant_episodes = ""
+        except Exception as e:
+            print(f"  [evermemos] 🔍 search collect error: {e}")
+            self._relevant_facts = ""
+            self._relevant_episodes = ""
+        finally:
+            self._search_task = None
 
     def get_status(self) -> dict:
         """Get comprehensive agent status including genome state."""
