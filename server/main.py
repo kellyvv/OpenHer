@@ -162,8 +162,16 @@ async def shutdown():
         memory_store.close()
     # Flush EverMemOS for all active sessions
     if evermemos and evermemos.available:
-        for sid, (agent, _) in active_sessions.items():
-            evermemos.flush(agent.evermemos_uid, agent.persona.persona_id)
+        tasks = [
+            evermemos.close_session(
+                user_id=agent.evermemos_uid,
+                persona_id=agent.persona.persona_id,
+                group_id=agent._group_id,
+            )
+            for _, (agent, _) in active_sessions.items()
+        ]
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
     print("✓ 状态已保存，服务关闭")
 
 
@@ -251,9 +259,15 @@ def _cleanup_expired_sessions() -> int:
     for sid, (agent, last_active) in active_sessions.items():
         if now - last_active > SESSION_TTL_SECONDS:
             _persist_agent(agent)
-            # Flush EverMemOS memory
+            # Flush EverMemOS memory (fire-and-forget from sync context)
             if evermemos and evermemos.available:
-                evermemos.flush(agent.evermemos_uid, agent.persona.persona_id)
+                asyncio.create_task(
+                    evermemos.close_session(
+                        user_id=agent.evermemos_uid,
+                        persona_id=agent.persona.persona_id,
+                        group_id=agent._group_id,
+                    )
+                )
             expired.append(sid)
     for sid in expired:
         del active_sessions[sid]
@@ -286,10 +300,14 @@ def get_or_create_session(
     # Use persona_id hash as seed for deterministic personality per persona
     genome_seed = hash(persona_id) % 100000
 
+    # Use user_name as stable user_id for EverMemOS cross-session identity.
+    # Fallback to session_id (sid) if no user_name provided.
+    stable_user_id = user_name if user_name else sid
+
     agent = ChatAgent(
         persona=persona,
         llm=llm_client,
-        user_id=sid,
+        user_id=stable_user_id,
         user_name=user_name,
         skills_prompt=skills_prompt or None,
         memory_store=memory_store,
