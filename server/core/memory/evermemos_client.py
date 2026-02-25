@@ -38,6 +38,7 @@ class SessionContext:
     interaction_count: int     # Total past interactions with this user
     has_history: bool          # True if user has any stored memories
     relationship_depth: float  # 0~1, semantic richness-based (not pure count)
+    pending_foresight: float   # 0~1, whether there are active foresight memories
 
 
 class EverMemOSClient:
@@ -96,17 +97,18 @@ class EverMemOSClient:
             interaction_count=0,
             has_history=False,
             relationship_depth=0.0,
+            pending_foresight=0.0,
         )
 
         if not self.available:
             return empty
 
         try:
-            # Pull profile + event_log + episodic_memory for full context
+            # Pull profile + event_log + episodic_memory + foresight for full context
             response = await self._mem.get(
                 extra_query={
                     "user_id": user_id,
-                    "memory_type": "profile,event_log,episodic_memory",
+                    "memory_type": "profile,event_log,episodic_memory,foresight",
                 },
                 timeout=8.0,
             )
@@ -118,6 +120,7 @@ class EverMemOSClient:
             profile_lines = []
             fact_lines = []
             episode_lines = []
+            foresight_count = 0
             interaction_count = 0
 
             for mem in memories:
@@ -146,6 +149,10 @@ class EverMemOSClient:
                     )
                     if summary and summary.strip():
                         episode_lines.append(summary.strip())
+
+                elif "Foresight" in type_name:
+                    # Foresight: predictive/pending memories with validity windows
+                    foresight_count += 1
 
             # Build readable profile text (expanded limits for richer injection)
             parts = []
@@ -176,19 +183,24 @@ class EverMemOSClient:
             if data_richness == 0 and interaction_count > 0:
                 depth = 1.0 - math.exp(-interaction_count / 40.0)
 
+            # Foresight signal: saturates at 3 foresights → 1.0
+            pending_fs = 1.0 - math.exp(-foresight_count / 1.5) if foresight_count > 0 else 0.0
+
             ctx = SessionContext(
                 user_profile=user_profile,
                 episode_summary=episode_summary,
                 interaction_count=interaction_count,
                 has_history=bool(memories),
                 relationship_depth=round(depth, 3),
+                pending_foresight=round(pending_fs, 3),
             )
 
             if ctx.has_history:
                 print(
                     f"  [evermemos] 📚 loaded: {interaction_count} interactions, "
                     f"depth={depth:.2f}, {len(fact_lines)} facts, "
-                    f"{len(profile_lines)} profile attrs, {len(episode_lines)} episodes"
+                    f"{len(profile_lines)} profile attrs, {len(episode_lines)} episodes, "
+                    f"{foresight_count} foresights"
                 )
 
             return ctx
@@ -279,14 +291,14 @@ class EverMemOSClient:
 
     def relationship_vector(self, ctx: SessionContext) -> dict:
         """
-        Build the 4D relationship vector from SessionContext.
-        No keyword matching — pure numerical derivation.
+        Build the 4D relationship PRIOR vector from SessionContext.
+        These are deterministic priors; Critic provides deltas each turn.
 
         Returns dict with keys matching CONTEXT_FEATURES:
           - relationship_depth:  gradual growth curve (new user = 0)
-          - emotional_valence:   0.0 (derived from Critic, not here)
+          - emotional_valence:   0.0 (Critic provides delta each turn)
           - trust_level:         proxy from interaction depth
-          - pending_foresight:   0.0 (EverMemOS handles internally)
+          - pending_foresight:   from foresight query
         """
         import math
         depth = ctx.relationship_depth
@@ -295,40 +307,9 @@ class EverMemOSClient:
 
         return {
             'relationship_depth': round(depth, 3),
-            'emotional_valence': 0.0,   # Set by Critic, not memory
+            'emotional_valence': 0.0,   # Prior=0; Critic delta activates each turn
             'trust_level': round(trust, 3),
-            'pending_foresight': 0.0,   # EverMemOS stores internally
+            'pending_foresight': round(ctx.pending_foresight, 3),
         }
 
-    # ─────────────────────────────────────────────────────────────
-    # Drive Evolution (for ChatAgent Step 0.6)
-    # ─────────────────────────────────────────────────────────────
 
-    def compute_drive_evolution(self, ctx: SessionContext) -> dict:
-        """
-        Compute drive baseline shifts from SessionContext.
-        No keyword matching — pure relationship depth curves.
-
-        New user = all zeros (identical to vanilla v10 behavior).
-        Returns dict of {drive_name: delta} — small adjustments (±0.15 max).
-        """
-        DRIVES = ['connection', 'play', 'novelty', 'expression', 'safety']
-        deltas = {d: 0.0 for d in DRIVES}
-
-        if not ctx.has_history or ctx.interaction_count < 3:
-            return deltas  # Not enough history
-
-        depth = ctx.relationship_depth
-        n = ctx.interaction_count
-
-        # As relationship deepens: more connection, braver (less safety)
-        # These are gentle asymptotic curves, max ±0.15
-        max_delta = 0.15
-        deltas['connection'] = min(max_delta, depth * 0.12)
-        deltas['safety'] = -min(max_delta, depth * 0.08)     # More daring
-
-        # Mild novelty boost for long-term users (they expect surprises)
-        if n > 20:
-            deltas['novelty'] = min(0.08, (n - 20) / 200.0)
-
-        return deltas

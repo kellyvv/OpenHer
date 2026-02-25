@@ -4,7 +4,11 @@ ChatAgent — Genome v10 Hybrid lifecycle-powered conversational agent.
 Per-turn lifecycle (with EverMemOS async memory):
   0.  EverMemOS session context (first turn only: async load profile)
   1.  Time metabolism (DriveMetabolism)
-  2.  Critic perception (LLM → 8D context + frustration delta)
+  2.  Critic perception (LLM → 8D context + frustration delta + relationship delta)
+  2.5 Semi-emergent relationship update:
+       posterior = clip(prior + LLM_delta)
+       alpha = clip(0.15 + 0.5*depth, 0.15, 0.65)
+       ema_state = alpha*posterior + (1-alpha)*prev
   3.  LLM metabolism (apply frustration delta → reward)
   3.5 Critic-driven Drive baseline evolution (BASELINE_LR=0.003, every turn)
        frustration_delta > 0 → drive not satisfied → baseline rises
@@ -140,6 +144,9 @@ class ChatAgent:
         self._episode_summary: str = ""   # Narrative history for Critic + Actor
         self._session_ctx = None   # SessionContext loaded on first turn
 
+        # ── Phase 1 Emergence: Relationship EMA state ──
+        self._relationship_ema: dict = {}  # Populated on first turn from prior
+
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
@@ -165,20 +172,24 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS session context (first turn only) ──
-        relationship_4d = await self._evermemos_gather()
-
+        relationship_prior = await self._evermemos_gather()
 
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
-        # ── Step 2: Critic perception (8D context + delta) ──
+        # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(
+        context, frustration_delta, rel_delta = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
-            episode_summary=self._episode_summary,  # narrative history
+            episode_summary=self._episode_summary,
         )
         self._last_critic = context
+
+        # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
+        relationship_4d = self._apply_relationship_ema(
+            relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
+        )
         context.update(relationship_4d)  # Merge 8D + 4D → 12D
 
         # ── Step 3: LLM metabolism → reward ──
@@ -283,19 +294,25 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS session context (first turn only) ──
-        relationship_4d = await self._evermemos_gather()
+        relationship_prior = await self._evermemos_gather()
 
-        # ── Step 3: Metabolism + 3.5 Critic-driven Drive baseline evolution ──
+        # ── Step 1: Metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
-        # ── Step 2: Critic perception (8D context + delta) ──
+        # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(
+        context, frustration_delta, rel_delta = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
-            episode_summary=self._episode_summary,  # narrative history
+            episode_summary=self._episode_summary,
         )
         self._last_critic = context
+
+        # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
+        relationship_4d = self._apply_relationship_ema(
+            relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
+        )
         context.update(relationship_4d)  # Merge 8D + 4D → 12D
+
         reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)
         self._last_reward = reward
@@ -407,6 +424,62 @@ class ChatAgent:
             return empty_4d
 
         return self.evermemos.relationship_vector(self._session_ctx)
+
+    def _apply_relationship_ema(
+        self,
+        prior: dict,
+        rel_delta: dict,
+        conversation_depth: float,
+    ) -> dict:
+        """
+        Step 2.5: Semi-emergent relationship update.
+
+        Pattern: posterior = clip(prior + LLM_delta) → EMA smooth
+          alpha = clip(0.15 + 0.5 * depth, 0.15, 0.65)
+          state_t = alpha * posterior + (1 - alpha) * state_{t-1}
+
+        First turn initializes EMA from prior (no delta applied).
+        """
+        # Map Critic output keys → context feature keys
+        delta_map = {
+            'relationship_depth': rel_delta.get('relationship_delta', 0.0),
+            'emotional_valence': rel_delta.get('emotional_valence', 0.0),
+            'trust_level': rel_delta.get('trust_delta', 0.0),
+            'pending_foresight': 0.0,  # No delta for foresight (data-driven only)
+        }
+
+        # Initialize EMA on first turn
+        if not self._relationship_ema:
+            self._relationship_ema = dict(prior)
+
+        # Compute posterior = clip(prior + delta)
+        posterior = {}
+        for k in prior:
+            lo = -1.0 if k == 'emotional_valence' else 0.0
+            posterior[k] = max(lo, min(1.0, prior[k] + delta_map.get(k, 0.0)))
+
+        # Depth-modulated alpha: shallow → trust prior, deep → trust LLM
+        alpha = max(0.15, min(0.65, 0.15 + 0.5 * conversation_depth))
+
+        # EMA smooth
+        ema = {}
+        for k in prior:
+            prev = self._relationship_ema.get(k, prior[k])
+            ema[k] = round(alpha * posterior[k] + (1 - alpha) * prev, 4)
+        self._relationship_ema = ema
+
+        # Observability log
+        print(
+            f"  [emergence] α={alpha:.2f} | "
+            f"depth: prior={prior['relationship_depth']:.2f} "
+            f"δ={delta_map['relationship_depth']:+.2f} → ema={ema['relationship_depth']:.3f} | "
+            f"trust: prior={prior['trust_level']:.2f} "
+            f"δ={delta_map['trust_level']:+.2f} → ema={ema['trust_level']:.3f} | "
+            f"valence: δ={delta_map['emotional_valence']:+.2f} → ema={ema['emotional_valence']:.3f} | "
+            f"foresight={ema['pending_foresight']:.2f}"
+        )
+
+        return ema
 
     def _evermemos_store_bg(self, user_message: str, reply: str) -> None:
         """Step 11: Fire-and-forget EverMemOS storage (asyncio.create_task)."""

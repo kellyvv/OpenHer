@@ -2,7 +2,8 @@
 Critic — LLM-based perception of user intent signals (v10 Hybrid).
 
 v10 change: Directly outputs 8D context + 5D frustration delta.
-Eliminates the 3D→8D hand-written mapping formula.
+Phase 1 emergence: Also outputs 3 relationship deltas for semi-emergent
+  relationship_depth / trust_level / emotional_valence.
 
 Extracted from genome_v8_timearrow.py, upgraded to v10 architecture.
 """
@@ -17,7 +18,7 @@ from core.llm.client import LLMClient, ChatMessage
 from core.genome.genome_engine import DRIVES, CONTEXT_FEATURES
 
 
-CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出两组数据：
+CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出三组数据：
 
 1. 对话上下文感知（8 维，0.0~1.0）：
   - user_emotion: 用户情绪（-1=负面, 0=中性, 1=正面）
@@ -31,6 +32,11 @@ CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用
 
 2. Agent 5 个驱力的挫败变化量（正=更挫败，负=被缓解）
 
+3. 关系感知变化量（基于用户画像和历史叙事判断）：
+  - relationship_delta: 这轮对话让你们的关系变深(+)还是变浅(-)（-1~1）
+  - trust_delta: 信任度变化（-1~1）
+  - emotional_valence: 这轮对话的整体情感基调（-1=非常负面, 0=中性, 1=非常正面）
+
 Agent 当前挫败值（0=满足, 5=极度渴望）：
 {frustration_json}
 
@@ -39,13 +45,15 @@ Agent 当前挫败值（0=满足, 5=极度渴望）：
 严格输出纯 JSON：
 {
   "context": {"user_emotion": 0.3, "topic_intimacy": 0.8, "conversation_depth": 0.5, "user_engagement": 0.7, "conflict_level": 0.1, "novelty_level": 0.3, "user_vulnerability": 0.6, "time_of_day": 0.5},
-  "frustration_delta": {"connection": -0.3, "novelty": 0.0, "expression": 0.1, "safety": -0.2, "play": 0.0}
+  "frustration_delta": {"connection": -0.3, "novelty": 0.0, "expression": 0.1, "safety": -0.2, "play": 0.0},
+  "relationship_delta": 0.1, "trust_delta": 0.05, "emotional_valence": 0.3
 }"""
 
 
 # Default values when Critic fails
 _DEFAULT_CONTEXT = {f: 0.5 for f in CONTEXT_FEATURES}
 _DEFAULT_DELTA = {d: 0.0 for d in DRIVES}
+_DEFAULT_REL_DELTA = {'relationship_delta': 0.0, 'trust_delta': 0.0, 'emotional_valence': 0.0}
 
 
 async def critic_sense(
@@ -54,15 +62,15 @@ async def critic_sense(
     frustration: dict = None,
     user_profile: str = "",
     episode_summary: str = "",
-) -> Tuple[dict, dict]:
+) -> Tuple[dict, dict, dict]:
     """
-    Measure user input → 8D context + 5D frustration delta.
+    Measure user input → 8D context + 5D frustration delta + 3D relationship delta.
 
     Args:
         user_profile: EverMemOS user profile for relationship-aware perception.
         episode_summary: Narrative episode history so Critic knows past conversations.
 
-    Returns: (context_8d, frustration_delta)
+    Returns: (context_8d, frustration_delta, relationship_delta)
     """
     frust_json = json.dumps(
         frustration or _DEFAULT_DELTA,
@@ -127,8 +135,15 @@ async def critic_sense(
             v = float(raw_delta.get(d, 0.0))
             frustration_delta[d] = max(-3.0, min(3.0, v))
 
-        return context, frustration_delta
+        # Parse relationship deltas (Phase 1 emergence)
+        rel_delta = {
+            'relationship_delta': max(-1.0, min(1.0, float(data.get('relationship_delta', 0.0)))),
+            'trust_delta': max(-1.0, min(1.0, float(data.get('trust_delta', 0.0)))),
+            'emotional_valence': max(-1.0, min(1.0, float(data.get('emotional_valence', 0.0)))),
+        }
+
+        return context, frustration_delta, rel_delta
 
     except (json.JSONDecodeError, ValueError, TypeError, Exception) as e:
         print(f"[critic] Parse error: {e}")
-        return dict(_DEFAULT_CONTEXT), dict(_DEFAULT_DELTA)
+        return dict(_DEFAULT_CONTEXT), dict(_DEFAULT_DELTA), dict(_DEFAULT_REL_DELTA)
