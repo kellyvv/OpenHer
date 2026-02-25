@@ -14,7 +14,7 @@ Per-turn lifecycle (with EverMemOS async memory):
        frustration_delta > 0 → drive not satisfied → baseline rises
        frustration_delta < 0 → drive satisfied → baseline eases
        No math formula. Purely LLM-judged, same structure as Hebbian learning.
-  4.  Crystallization gate (reward > 0.3 → crystallize last action)
+  4.  Crystallization gate (composite score: reward + novelty×engagement + conflict penalty)
   5.  Compute signals (Agent neural network, 12D context)
   6.  Thermodynamic noise injection
   7.  KNN retrieval (ContinuousStyleMemory)
@@ -163,6 +163,59 @@ class ChatAgent:
             signal_injection=signal_injection,
         )
 
+    def _should_crystallize(self, reward: float, context: dict) -> bool:
+        """
+        Step 4 gate: decide if the PREVIOUS turn's action is worth crystallizing.
+
+        Composite score replaces the fixed `reward > 0.3` threshold.
+        Uses current-turn Critic context as user-reaction feedback (RL pattern).
+
+        Hard floor: never crystallize when reward < -0.5 (clearly bad turn).
+        Hard ceiling: always crystallize when reward > 0.8 (clearly great turn).
+        """
+        if reward < -0.5:
+            return False
+        if reward > 0.8:
+            return True
+
+        novelty = context.get('novelty_level', 0.0)
+        engagement = context.get('user_engagement', 0.0)
+        conflict = context.get('conflict_level', 0.0)
+
+        # Composite: reward matters most, novelty×engagement captures "interesting",
+        # low conflict captures "safe to remember"
+        crystal_score = (
+            0.4 * reward
+            + 0.3 * (novelty * engagement)
+            + 0.3 * (1.0 - conflict)
+        )
+
+        should = crystal_score > 0.35
+        if should:
+            print(f"  [crystal] score={crystal_score:.3f} "
+                  f"(reward={reward:.2f}, novelty={novelty:.2f}×eng={engagement:.2f}, "
+                  f"conflict={conflict:.2f}) → crystallize")
+        return should
+
+    def _memory_injection_budget(self, context: dict) -> tuple[int, int]:
+        """
+        Step 8.5: compute dynamic character budgets for profile and episode injection.
+
+        Deep/intimate conversations get more memory context (up to 800/600).
+        Shallow/casual chats get minimal context (200/150).
+        Linear interpolation based on max(conversation_depth, topic_intimacy).
+
+        Returns: (profile_budget, episode_budget) in characters.
+        """
+        depth = context.get('conversation_depth', 0.0)
+        intimacy = context.get('topic_intimacy', 0.0)
+        # Use the higher of depth/intimacy as the driver
+        t = max(depth, intimacy)
+        # Linear interpolation: t=0 → min, t=1 → max
+        profile_budget = int(200 + 600 * t)   # 200..800
+        episode_budget = int(150 + 450 * t)   # 150..600
+        return profile_budget, episode_budget
+
     async def chat(self, user_message: str) -> str:
         """
         Process a user message through the full Genome v10 lifecycle.
@@ -209,7 +262,7 @@ class ChatAgent:
             ))
 
         # ── Step 4: Crystallization gate (last action) ──
-        if self._last_action and reward > 0.3:
+        if self._last_action and self._should_crystallize(reward, context):
             self.style_memory.set_clock(now)
             self.style_memory.crystallize(
                 self._last_action['signals'],
@@ -235,10 +288,11 @@ class ChatAgent:
 
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
+            profile_budget, episode_budget = self._memory_injection_budget(context)
             if self._user_profile:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:600]}"
+                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:profile_budget]}"
             if self._episode_summary:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:400]}"
+                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:episode_budget]}"
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -327,7 +381,7 @@ class ChatAgent:
 
 
         # ── Step 4: Crystallization ──
-        if self._last_action and reward > 0.3:
+        if self._last_action and self._should_crystallize(reward, context):
             self.style_memory.set_clock(now)
             self.style_memory.crystallize(
                 self._last_action['signals'],
@@ -349,10 +403,11 @@ class ChatAgent:
 
         # ── Step 8.5: Memory injection (profile + episode) ──
         if self._session_ctx and self._session_ctx.has_history:
+            profile_budget, episode_budget = self._memory_injection_budget(context)
             if self._user_profile:
-                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:600]}"
+                system_prompt += f"\n\n[关于{self.user_name or self.user_id}的偏好] {self._user_profile[:profile_budget]}"
             if self._episode_summary:
-                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:400]}"
+                system_prompt += f"\n\n[与{self.user_name or self.user_id}过去发生的事] {self._episode_summary[:episode_budget]}"
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
