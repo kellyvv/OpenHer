@@ -154,7 +154,9 @@ class ChatAgent:
         self._search_turn_id: int = 0       # Turn that fired the search (concurrency guard)
         self._search_hit: int = 0           # Observability: successful search collections
         self._search_timeout: int = 0       # Observability: timeout fallbacks
-        self._search_fallback: int = 0      # Observability: used static instead of relevant
+        self._search_fallback: int = 0      # Observability: turns that used static (per-turn)
+        self._search_relevant_used: int = 0 # Observability: turns that injected relevant
+        self._turn_used_fallback: bool = False  # Per-turn flag, reset each turn
 
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
@@ -233,19 +235,26 @@ class ChatAgent:
 
         Strategy: 80% relevant + 20% static floor ensures long-term profile
         stability even when search results are highly focused.
+        When static is empty, relevant gets full budget (no waste).
         Falls back to pure static when no relevant results available.
         """
         if not relevant and not static:
             return ""
         if not relevant:
-            self._search_fallback += 1
+            # Mark this turn as fallback (only once per turn)
+            if not self._turn_used_fallback:
+                self._turn_used_fallback = True
+                self._search_fallback += 1
             return static[:budget]
-        # 80/20 split: relevant gets 80% of budget, static gets 20%
+        # Has relevant: mark turn as relevant-injected
+        if not static:
+            # No static → give relevant full budget (no 20% waste)
+            return relevant[:budget]
+        # Both present → 80/20 split
         rel_budget = int(budget * 0.8)
         sta_budget = budget - rel_budget
         blended = relevant[:rel_budget]
-        if static:
-            blended += "；" + static[:sta_budget]
+        blended += "；" + static[:sta_budget]
         return blended
 
     async def chat(self, user_message: str) -> str:
@@ -254,6 +263,7 @@ class ChatAgent:
         Returns only the reply (monologue is stored internally).
         """
         self._turn_count += 1
+        self._turn_used_fallback = False  # Reset per-turn fallback flag
         now = time.time()
 
         # ── Step 0: EverMemOS session context (first turn only) ──
@@ -335,6 +345,9 @@ class ChatAgent:
                 system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
                 system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+            # Track if this turn used relevant content
+            if self._relevant_facts or self._relevant_episodes:
+                self._search_relevant_used += 1
 
         # ── Step 9: LLM Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -390,6 +403,7 @@ class ChatAgent:
         Steps 1-8 run first (Critic, metabolism, KNN), then Actor streams.
         """
         self._turn_count += 1
+        self._turn_used_fallback = False  # Reset per-turn fallback flag
         now = time.time()
 
         # ── Step 0: EverMemOS session context (first turn only) ──
@@ -463,6 +477,9 @@ class ChatAgent:
                 system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
                 system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+            # Track if this turn used relevant content
+            if self._relevant_facts or self._relevant_episodes:
+                self._search_relevant_used += 1
 
         # ── Step 9: Stream Actor ──
         messages = [ChatMessage(role="system", content=system_prompt)]
@@ -698,13 +715,13 @@ class ChatAgent:
 
         dominant_drive = self.agent.get_dominant_drive()
 
-        # Phase 3 metrics
+        # Phase 3 metrics (all per-turn denominators)
         total_searches = self._search_hit + self._search_timeout
         search_hit_rate = self._search_hit / total_searches if total_searches else 0.0
         search_timeout_rate = self._search_timeout / total_searches if total_searches else 0.0
-        fallback_rate = self._search_fallback / max(self._turn_count, 1)
-        relevant_injections = self._search_hit - self._search_fallback
-        relevant_injection_ratio = relevant_injections / max(self._turn_count, 1)
+        turns = max(self._turn_count, 1)
+        fallback_rate = self._search_fallback / turns
+        relevant_injection_ratio = self._search_relevant_used / turns
 
         return {
             "persona": self.persona.name,
