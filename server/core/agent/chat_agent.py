@@ -184,13 +184,13 @@ class ChatAgent:
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
         )
-        self._last_critic = context
 
         # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
         relationship_4d = self._apply_relationship_ema(
             relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
         )
         context.update(relationship_4d)  # Merge 8D + 4D → 12D
+        self._last_critic = context  # Store full 12D context (after merge)
 
         # ── Step 3: LLM metabolism → reward ──
         reward = self.metabolism.apply_llm_delta(frustration_delta)
@@ -305,13 +305,13 @@ class ChatAgent:
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
         )
-        self._last_critic = context
 
         # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
         relationship_4d = self._apply_relationship_ema(
             relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
         )
         context.update(relationship_4d)  # Merge 8D + 4D → 12D
+        self._last_critic = context  # Store full 12D context (after merge)
 
         reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)

@@ -15,7 +15,7 @@ import re
 from typing import Optional, Tuple
 
 from core.llm.client import LLMClient, ChatMessage
-from core.genome.genome_engine import DRIVES, CONTEXT_FEATURES
+from core.genome.genome_engine import DRIVES
 
 
 CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出三组数据：
@@ -50,8 +50,12 @@ Agent 当前挫败值（0=满足, 5=极度渴望）：
 }"""
 
 
-# Default values when Critic fails
-_DEFAULT_CONTEXT = {f: 0.5 for f in CONTEXT_FEATURES}
+# Default values when Critic fails (8 Critic-output dims only; 4 EverMemOS dims set by ChatAgent)
+_CRITIC_CONTEXT_KEYS = [
+    'user_emotion', 'topic_intimacy', 'time_of_day', 'conversation_depth',
+    'user_engagement', 'conflict_level', 'novelty_level', 'user_vulnerability',
+]
+_DEFAULT_CONTEXT = {f: 0.5 for f in _CRITIC_CONTEXT_KEYS}
 _DEFAULT_DELTA = {d: 0.0 for d in DRIVES}
 _DEFAULT_REL_DELTA = {'relationship_delta': 0.0, 'trust_delta': 0.0, 'emotional_valence': 0.0}
 
@@ -118,10 +122,10 @@ async def critic_sense(
 
         data = json.loads(cleaned)
 
-        # Parse 8D context
+        # Parse 8D context (Critic-output dims only; EverMemOS 4D set by EMA in ChatAgent)
         raw_ctx = data.get('context', {})
         context = {}
-        for feat in CONTEXT_FEATURES:
+        for feat in _CRITIC_CONTEXT_KEYS:
             v = float(raw_ctx.get(feat, 0.5))
             if feat == 'user_emotion':
                 context[feat] = max(-1.0, min(1.0, v))
