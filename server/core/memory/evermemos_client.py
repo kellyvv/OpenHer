@@ -486,48 +486,25 @@ class EverMemOSClient:
     # Deep Integration: Foresight Extraction
     # ──────────────────────────────────────────────
 
-    def extract_and_store_foresight(
+    def store_foresight(
         self,
         user_id: str,
         persona_id: str,
-        user_message: str,
-        reply: str,
-    ) -> Optional[str]:
+        content: str,
+    ) -> bool:
         """
-        Detect future-oriented user intents and store as foresight.
-        Returns the foresight text if found, None otherwise.
-
-        Detects patterns like:
-        - "明天/下周/周一要..." → time-specific events
-        - "打算/计划/准备..." → future plans
-        - "想要辞职/创业/搬家..." → life changes
+        Store a Critic-detected future intent as foresight.
+        Called only when Critic's mentions_future > 0.5.
+        No keyword detection — the Critic LLM already decided.
         """
         if not self.available:
-            return None
+            return False
 
-        # Future intent keywords
-        time_markers = ['明天', '后天', '下周', '下个月', '周一', '周二',
-                        '周三', '周四', '周五', '下次', '过几天', '月底']
-        intent_markers = ['打算', '计划', '准备', '想要', '决定', '考虑',
-                          '辞职', '创业', '搬家', '面试', '考试', '结婚',
-                          '分手', '旅行', '手术', '毕业']
-
-        msg_lower = user_message.lower()
-
-        # Check for future intent
-        has_time = any(m in msg_lower for m in time_markers)
-        has_intent = any(m in msg_lower for m in intent_markers)
-
-        if not (has_time or has_intent):
-            return None
-
-        # Build foresight text
-        foresight = user_message[:80]  # Cap at 80 chars
-        if len(user_message) > 80:
+        foresight = content[:80]
+        if len(content) > 80:
             foresight += "…"
 
         try:
-            # Store as a special "foresight" type message
             self.store_message(
                 user_id=user_id,
                 persona_id=persona_id,
@@ -535,11 +512,11 @@ class EverMemOSClient:
                 sender_name="foresight",
                 content=f"[预见] {foresight}",
             )
-            print(f"  [foresight] 💡 detected: {foresight[:40]}...")
-            return foresight
+            print(f"  [foresight] 💡 stored: {foresight[:40]}...")
+            return True
         except Exception as e:
             print(f"⚠ EverMemOS foresight store error: {e}")
-            return None
+            return False
 
     def build_memory_hint(
         self,
@@ -582,59 +559,32 @@ class EverMemOSClient:
             print(f"⚠ EverMemOS build_memory_hint error: {e}")
             return ""
 
-    def build_deep_recall(
+    def retrieve_deep_recall(
         self,
         user_id: str,
-        persona_id: str,
-        user_message: str,
-    ) -> tuple:
+        query: str,
+    ) -> str:
         """
-        Detect past-referencing triggers and build a rich memory block.
+        Retrieve deep memories for Critic-triggered recall.
+        Called only when Critic's references_past > 0.5.
 
-        Triggers: "上次说的..." "你还记得..." "之前聊过..." etc.
-        Returns: (is_triggered: bool, recall_block: str)
+        No keyword detection — the Critic LLM already decided
+        this message references the past. We just do the retrieval.
 
-        When triggered, pulls up to 5 relevant memories and formats them
-        as a [深层记忆唤醒] block for temporary Actor Prompt injection.
-        When not triggered, returns (False, "").
+        Returns: recall_block str (empty if nothing found).
         """
         if not self.available:
-            return False, ""
+            return ""
 
-        # ── Trigger detection ──
-        recall_triggers = [
-            '上次', '之前', '以前', '你还记得', '记不记得',
-            '那次', '我们聊过', '说过', '提过', '你忘了',
-            '还记得吗', '那时候', '当时', '前几天',
-        ]
-
-        msg_lower = user_message.lower()
-        triggered = any(t in msg_lower for t in recall_triggers)
-
-        if not triggered:
-            return False, ""
-
-        # ── Deep retrieval ──
         try:
-            # Search with user's message as query for semantic relevance
             results = self.search(
                 user_id=user_id,
-                query=user_message,
+                query=query,
                 top_k=5,
             )
 
             if not results:
-                return True, ""  # Triggered but no memories found
-
-            # Also pull profile for context
-            profile = self.get_profile(user_id)
-            profile_snippets = []
-            if profile:
-                for p in profile[:2]:
-                    text = p.content.strip()
-                    if len(text) > 60:
-                        text = text[:57] + "…"
-                    profile_snippets.append(text)
+                return ""
 
             # Build recall block
             lines = ["[深层记忆唤醒] 你的海马体突然被激活，涌出以下记忆碎片："]
@@ -646,23 +596,18 @@ class EverMemOSClient:
                 mem_type = r.memory_type or "记忆"
                 lines.append(f"  · [{mem_type}] {text}")
 
-            if profile_snippets:
-                lines.append(f"  · [画像] {'；'.join(profile_snippets)}")
-
             lines.append("（请自然地在回复中体现你记得这些，但不要逐条念出。用你的性格方式提及。）")
 
             recall_block = "\n".join(lines)
 
-            # Cap total length
             if len(recall_block) > 400:
                 recall_block = recall_block[:397] + "…"
 
-            print(f"  [deep-recall] 🧠 triggered! {len(results)} memories retrieved ({len(recall_block)}ch)")
-            return True, recall_block
+            return recall_block
 
         except Exception as e:
-            print(f"⚠ EverMemOS build_deep_recall error: {e}")
-            return True, ""
+            print(f"  [deep-recall] ⚠ retrieval error: {e}")
+            return ""
 
     def flush(self, user_id: str, persona_id: str) -> bool:
         """Send a flush signal to EverMemOS to trigger memory extraction."""

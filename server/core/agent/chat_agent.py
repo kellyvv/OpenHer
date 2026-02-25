@@ -158,8 +158,8 @@ class ChatAgent:
         self._turn_count += 1
         now = time.time()
 
-        # ── Step 0: EverMemOS context gathering ──
-        user_profile, memory_hint, relationship_4d, deep_recall = self._evermemos_gather(user_message)
+        # ── Step 0: EverMemOS context gathering (no trigger detection) ──
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
 
         # ── Step 0.5: Foresight → drive injection (first turn only) ──
         if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
@@ -180,13 +180,26 @@ class ChatAgent:
         # ── Step 1: Time metabolism ──
         delta_h = self.metabolism.time_metabolism(now)
 
-        # ── Step 2: Critic perception (8D context + delta) ──
+        # ── Step 2: Critic perception (8D context + delta + memory signals) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(
+        context, frustration_delta, memory_signals = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
         )
         self._last_critic = context
+
+        # ── Step 2.5: Critic-driven deep recall ──
+        deep_recall = ""
+        if memory_signals.get('references_past', 0) > 0.5 and self.evermemos and self.evermemos.available:
+            deep_recall = self.evermemos.retrieve_deep_recall(
+                user_id=self.evermemos_uid,
+                query=user_message,
+            )
+            if deep_recall:
+                print(f"  [deep-recall] 🧠 Critic triggered (ref_past={memory_signals['references_past']:.1f}), {len(deep_recall)}ch")
+
+        if memory_signals.get('mentions_future', 0) > 0.5:
+            print(f"  [foresight] 💡 Critic detected future intent (={memory_signals['mentions_future']:.1f})")
 
         # Merge Critic's 8D with EverMemOS's 4D → 12D context
         context.update(relationship_4d)
@@ -267,16 +280,15 @@ class ChatAgent:
 
         print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
-        # ── Step 11: EverMemOS conversation storage (background) ──
+        # ── Step 11: EverMemOS conversation storage ──
         self._evermemos_store(user_message, reply, noisy_signals)
 
-        # ── Step 12: Foresight extraction ──
-        if self.evermemos and self.evermemos.available:
-            self.evermemos.extract_and_store_foresight(
+        # ── Step 12: Critic-driven foresight storage ──
+        if memory_signals.get('mentions_future', 0) > 0.5 and self.evermemos and self.evermemos.available:
+            self.evermemos.store_foresight(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
-                user_message=user_message,
-                reply=reply,
+                content=user_message,
             )
 
         return {'reply': reply, 'modality': modality}
@@ -289,8 +301,8 @@ class ChatAgent:
         self._turn_count += 1
         now = time.time()
 
-        # ── Step 0: EverMemOS context gathering ──
-        user_profile, memory_hint, relationship_4d, deep_recall = self._evermemos_gather(user_message)
+        # ── Step 0: EverMemOS context gathering (no trigger detection) ──
+        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
 
         # ── Step 0.5: Foresight → drive injection (first turn only) ──
         if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
@@ -308,14 +320,25 @@ class ChatAgent:
                 delta_str = " ".join(f"{d}={v:+.2f}" for d, v in drive_deltas.items() if abs(v) > 0.01)
                 print(f"  [进化] 🧬 drive baseline shift: {delta_str}")
 
-        # ── Steps 1-3: Metabolism + Critic (12D) ──
+        # ── Steps 1-2: Metabolism + Critic (12D + memory signals) ──
         delta_h = self.metabolism.time_metabolism(now)
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta = await critic_sense(
+        context, frustration_delta, memory_signals = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
         )
         self._last_critic = context
+
+        # ── Step 2.5: Critic-driven deep recall ──
+        deep_recall = ""
+        if memory_signals.get('references_past', 0) > 0.5 and self.evermemos and self.evermemos.available:
+            deep_recall = self.evermemos.retrieve_deep_recall(
+                user_id=self.evermemos_uid,
+                query=user_message,
+            )
+            if deep_recall:
+                print(f"  [deep-recall] 🧠 Critic triggered (ref_past={memory_signals['references_past']:.1f}), {len(deep_recall)}ch")
+
         context.update(relationship_4d)  # Merge 8D + 4D → 12D
         reward = self.metabolism.apply_llm_delta(frustration_delta)
         self.metabolism.sync_to_agent(self.agent)
@@ -387,23 +410,22 @@ class ChatAgent:
         # ── Step 11: EverMemOS conversation storage ──
         self._evermemos_store(user_message, reply, noisy_signals)
 
-        # ── Step 12: Foresight extraction ──
-        if self.evermemos and self.evermemos.available:
-            self.evermemos.extract_and_store_foresight(
+        # ── Step 12: Critic-driven foresight storage ──
+        if memory_signals.get('mentions_future', 0) > 0.5 and self.evermemos and self.evermemos.available:
+            self.evermemos.store_foresight(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
-                user_message=user_message,
-                reply=reply,
+                content=user_message,
             )
 
     def _evermemos_gather(self, user_message: str) -> tuple:
         """
-        Step 0: EverMemOS context gathering.
-        Returns: (user_profile, memory_hint, relationship_4d, deep_recall_block)
+        Step 0: EverMemOS context gathering (no trigger detection).
+        Trigger detection is now Critic-driven (Step 2.5/12).
+        Returns: (user_profile, memory_hint, relationship_4d)
         """
         user_profile = ""
         memory_hint = ""
-        deep_recall = ""
         relationship_4d = {
             'relationship_depth': 0.0,
             'emotional_valence': 0.0,
@@ -412,31 +434,23 @@ class ChatAgent:
         }
 
         if not (self.evermemos and self.evermemos.available):
-            return user_profile, memory_hint, relationship_4d, deep_recall
+            return user_profile, memory_hint, relationship_4d
 
         try:
-            # 0a. Check for deep recall trigger first
-            recall_triggered, deep_recall = self.evermemos.build_deep_recall(
+            # 0a. Build memory hint (≤60 chars, for prompt postscript)
+            memory_hint = self.evermemos.build_memory_hint(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
-                user_message=user_message,
-            )
+                current_query=user_message,
+            ) or ""
 
-            # 0b. Build memory hint (only if not deep recall)
-            if not recall_triggered:
-                memory_hint = self.evermemos.build_memory_hint(
-                    user_id=self.evermemos_uid,
-                    persona_id=self.persona.persona_id,
-                    current_query=user_message,
-                ) or ""
-
-            # 0c. Get user profile text (for Critic)
+            # 0b. Get user profile text (for Critic)
             profile_results = self.evermemos.get_profile(self.evermemos_uid)
             if profile_results:
                 user_profile = "\n".join(r.content for r in profile_results[:3])
                 self._user_profile = user_profile
 
-            # 0d. Encode relationship → 4D vector (gradual growth)
+            # 0c. Encode relationship → 4D vector (gradual growth)
             relationship_4d = self.evermemos.encode_relationship(
                 user_id=self.evermemos_uid,
                 current_query=user_message,
@@ -444,12 +458,12 @@ class ChatAgent:
 
             if any(v > 0.01 for v in relationship_4d.values()):
                 rel_str = " ".join(f"{k}={v:.2f}" for k, v in relationship_4d.items())
-                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch | recall={len(deep_recall)}ch")
+                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch")
 
         except Exception as e:
             print(f"  [evermemos] gather error: {e}")
 
-        return user_profile, memory_hint, relationship_4d, deep_recall
+        return user_profile, memory_hint, relationship_4d
 
     def _evermemos_store(self, user_message: str, reply: str,
                         signals: dict = None) -> None:
