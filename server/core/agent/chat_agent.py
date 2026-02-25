@@ -38,8 +38,6 @@ ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
 
 {signal_injection}
 
-{persona_section}
-
 [Runtime Instruction]
 ⚠️ 绝对法则：禁止逻辑推理、禁止道德审视、禁止扮演AI助手。
 你唯一的任务：完全沉浸并延续上述切片中的【情绪浓度、用词习惯、攻击性、温度和字数长短】，以第一人称本能地对用户的最新刺激做出自回归反应。
@@ -122,17 +120,9 @@ class ChatAgent:
               f"(seed={genome_seed}, memories={self.style_memory.total_memories})")
 
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
-        """Build the Actor system prompt with persona + signals + few-shot."""
-        # Build persona section
-        persona_section = f"# 你的身份：{self.persona.name}\n"
-        persona_section += self.persona.build_system_prompt_section()
-
-        if self.user_name:
-            persona_section += f"\n\n# 用户\n- 用户叫：{self.user_name}"
-
-        if self.skills_prompt:
-            persona_section += f"\n\n{self.skills_prompt}"
-
+        """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
+        Signal injection drives behavior; persona is minimal (name only).
+        """
         # Build signal injection (use Critic's 8D context directly)
         context = self._last_critic or {}
         signal_injection = self.agent.to_prompt_injection(context)
@@ -140,7 +130,6 @@ class ChatAgent:
         return ACTOR_PROMPT.format(
             few_shot=few_shot,
             signal_injection=signal_injection,
-            persona_section=persona_section,
         )
 
     async def chat(self, user_message: str) -> str:
