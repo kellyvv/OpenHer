@@ -343,11 +343,17 @@ class Agent:
         }
 
     def to_prompt_injection(self, context: dict) -> str:
-        """
-        Convert current behavioral signals into text for LLM system prompt.
-        v10: Injects ALL 8 signals (5^8 = 390,625 combinations) instead of top-3.
+        """Legacy compat: compute signals from context, then format.
+        Prefer to_prompt_injection_from_signals() when signals are pre-computed.
         """
         signals = self.compute_signals(context)
+        return self.to_prompt_injection_from_signals(signals)
+
+    def to_prompt_injection_from_signals(self, signals: dict) -> str:
+        """
+        Convert pre-computed behavioral signals into text for LLM system prompt.
+        v10: Injects ALL 8 signals (5^8 = 390,625 combinations) instead of top-3.
+        """
         dominant_drive = self.get_dominant_drive()
 
         descriptions = {

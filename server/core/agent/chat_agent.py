@@ -148,9 +148,8 @@ class ChatAgent:
         """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
         Signal injection drives behavior; persona is minimal (name only).
         """
-        # Build signal injection (use Critic's 8D context directly)
-        context = self._last_critic or {}
-        signal_injection = self.agent.to_prompt_injection(context)
+        # Use pre-computed signals (same as KNN retrieval) — no re-computation
+        signal_injection = self.agent.to_prompt_injection_from_signals(signals)
 
         return ACTOR_PROMPT.format(
             few_shot=few_shot,

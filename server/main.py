@@ -318,7 +318,7 @@ def get_or_create_session(
 
     # Hydrate from persisted state (if available)
     if state_store:
-        saved_agent, saved_metabolism = state_store.load_session(sid, persona_id)
+        saved_agent, saved_metabolism = state_store.load_session(stable_user_id, persona_id)
         if saved_agent:
             agent.agent = saved_agent
             print(f"  ↳ 恢复 Agent: age={saved_agent.age}, interactions={saved_agent.interaction_count}")
