@@ -159,7 +159,7 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS context gathering ──
-        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
+        user_profile, memory_hint, relationship_4d, deep_recall = self._evermemos_gather(user_message)
 
         # ── Step 0.5: Foresight → drive injection (first turn only) ──
         if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
@@ -221,8 +221,10 @@ class ChatAgent:
         # ── Step 8: Build Actor prompt ──
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
 
-        # ── Step 8.5: Append memory postscript (if cross-session memory exists) ──
-        if memory_hint:
+        # ── Step 8.5: Memory injection (deep recall or short hint) ──
+        if deep_recall:
+            system_prompt += f"\n\n{deep_recall}"
+        elif memory_hint:
             system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: LLM Actor ──
@@ -288,7 +290,7 @@ class ChatAgent:
         now = time.time()
 
         # ── Step 0: EverMemOS context gathering ──
-        user_profile, memory_hint, relationship_4d = self._evermemos_gather(user_message)
+        user_profile, memory_hint, relationship_4d, deep_recall = self._evermemos_gather(user_message)
 
         # ── Step 0.5: Foresight → drive injection (first turn only) ──
         if self._turn_count == 1 and relationship_4d.get('pending_foresight', 0) > 0.5:
@@ -340,8 +342,10 @@ class ChatAgent:
         few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
 
-        # ── Step 8.5: Append memory postscript ──
-        if memory_hint:
+        # ── Step 8.5: Memory injection (deep recall or short hint) ──
+        if deep_recall:
+            system_prompt += f"\n\n{deep_recall}"
+        elif memory_hint:
             system_prompt += f"\n\n[记忆碎片] {memory_hint}"
 
         # ── Step 9: Stream Actor ──
@@ -395,10 +399,11 @@ class ChatAgent:
     def _evermemos_gather(self, user_message: str) -> tuple:
         """
         Step 0: EverMemOS context gathering.
-        Returns: (user_profile, memory_hint, relationship_4d)
+        Returns: (user_profile, memory_hint, relationship_4d, deep_recall_block)
         """
         user_profile = ""
         memory_hint = ""
+        deep_recall = ""
         relationship_4d = {
             'relationship_depth': 0.0,
             'emotional_valence': 0.0,
@@ -407,23 +412,31 @@ class ChatAgent:
         }
 
         if not (self.evermemos and self.evermemos.available):
-            return user_profile, memory_hint, relationship_4d
+            return user_profile, memory_hint, relationship_4d, deep_recall
 
         try:
-            # 0a. Build memory hint (≤50 chars, for prompt postscript)
-            memory_hint = self.evermemos.build_memory_hint(
+            # 0a. Check for deep recall trigger first
+            recall_triggered, deep_recall = self.evermemos.build_deep_recall(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
-                current_query=user_message,
-            ) or ""
+                user_message=user_message,
+            )
 
-            # 0b. Get user profile text (for Critic)
+            # 0b. Build memory hint (only if not deep recall)
+            if not recall_triggered:
+                memory_hint = self.evermemos.build_memory_hint(
+                    user_id=self.evermemos_uid,
+                    persona_id=self.persona.persona_id,
+                    current_query=user_message,
+                ) or ""
+
+            # 0c. Get user profile text (for Critic)
             profile_results = self.evermemos.get_profile(self.evermemos_uid)
             if profile_results:
                 user_profile = "\n".join(r.content for r in profile_results[:3])
                 self._user_profile = user_profile
 
-            # 0c. Encode relationship → 4D vector (gradual growth)
+            # 0d. Encode relationship → 4D vector (gradual growth)
             relationship_4d = self.evermemos.encode_relationship(
                 user_id=self.evermemos_uid,
                 current_query=user_message,
@@ -431,12 +444,12 @@ class ChatAgent:
 
             if any(v > 0.01 for v in relationship_4d.values()):
                 rel_str = " ".join(f"{k}={v:.2f}" for k, v in relationship_4d.items())
-                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch")
+                print(f"  [evermemos] {rel_str} | hint={len(memory_hint)}ch | recall={len(deep_recall)}ch")
 
         except Exception as e:
             print(f"  [evermemos] gather error: {e}")
 
-        return user_profile, memory_hint, relationship_4d
+        return user_profile, memory_hint, relationship_4d, deep_recall
 
     def _evermemos_store(self, user_message: str, reply: str,
                         signals: dict = None) -> None:

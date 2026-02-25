@@ -582,6 +582,88 @@ class EverMemOSClient:
             print(f"⚠ EverMemOS build_memory_hint error: {e}")
             return ""
 
+    def build_deep_recall(
+        self,
+        user_id: str,
+        persona_id: str,
+        user_message: str,
+    ) -> tuple:
+        """
+        Detect past-referencing triggers and build a rich memory block.
+
+        Triggers: "上次说的..." "你还记得..." "之前聊过..." etc.
+        Returns: (is_triggered: bool, recall_block: str)
+
+        When triggered, pulls up to 5 relevant memories and formats them
+        as a [深层记忆唤醒] block for temporary Actor Prompt injection.
+        When not triggered, returns (False, "").
+        """
+        if not self.available:
+            return False, ""
+
+        # ── Trigger detection ──
+        recall_triggers = [
+            '上次', '之前', '以前', '你还记得', '记不记得',
+            '那次', '我们聊过', '说过', '提过', '你忘了',
+            '还记得吗', '那时候', '当时', '前几天',
+        ]
+
+        msg_lower = user_message.lower()
+        triggered = any(t in msg_lower for t in recall_triggers)
+
+        if not triggered:
+            return False, ""
+
+        # ── Deep retrieval ──
+        try:
+            # Search with user's message as query for semantic relevance
+            results = self.search(
+                user_id=user_id,
+                query=user_message,
+                top_k=5,
+            )
+
+            if not results:
+                return True, ""  # Triggered but no memories found
+
+            # Also pull profile for context
+            profile = self.get_profile(user_id)
+            profile_snippets = []
+            if profile:
+                for p in profile[:2]:
+                    text = p.content.strip()
+                    if len(text) > 60:
+                        text = text[:57] + "…"
+                    profile_snippets.append(text)
+
+            # Build recall block
+            lines = ["[深层记忆唤醒] 你的海马体突然被激活，涌出以下记忆碎片："]
+
+            for r in results:
+                text = r.content.strip()
+                if len(text) > 80:
+                    text = text[:77] + "…"
+                mem_type = r.memory_type or "记忆"
+                lines.append(f"  · [{mem_type}] {text}")
+
+            if profile_snippets:
+                lines.append(f"  · [画像] {'；'.join(profile_snippets)}")
+
+            lines.append("（请自然地在回复中体现你记得这些，但不要逐条念出。用你的性格方式提及。）")
+
+            recall_block = "\n".join(lines)
+
+            # Cap total length
+            if len(recall_block) > 400:
+                recall_block = recall_block[:397] + "…"
+
+            print(f"  [deep-recall] 🧠 triggered! {len(results)} memories retrieved ({len(recall_block)}ch)")
+            return True, recall_block
+
+        except Exception as e:
+            print(f"⚠ EverMemOS build_deep_recall error: {e}")
+            return True, ""
+
     def flush(self, user_id: str, persona_id: str) -> bool:
         """Send a flush signal to EverMemOS to trigger memory extraction."""
         if not self.available:
@@ -599,4 +681,5 @@ class EverMemOSClient:
         except Exception as e:
             print(f"⚠ EverMemOS flush error: {e}")
             return False
+
 
