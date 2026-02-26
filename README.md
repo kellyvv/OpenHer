@@ -86,7 +86,7 @@ from core.memory.evermemos_client import EverMemOSClient
 
 async def main():
     loader = PersonaLoader("personas")
-    persona = loader.get("xiaoyun")
+    persona = loader.get("vivian")  # or "luna", "iris"
     llm = LLMClient(provider="dashscope", model="qwen3-max")
     evermemos = EverMemOSClient()
 
@@ -155,15 +155,15 @@ EverMemOS (remember)  →  Critic (reason)  →  Actor (act)
 
 ## Personas
 
-OpenHer ships with three sample personas:
+OpenHer ships with three sample personas, each defined by a unique **drive baseline** (genome seed):
 
-| Persona | Personality | Style |
-|:--------|:------------|:------|
-| **小云** (Xiaoyun) | Tsundere — sharp tongue, warm heart | Confrontational yet caring |
-| **墨墨** (Momo) | Gentle intellectual | Thoughtful, literary references |
-| **玲玲** (Lingling) | Energetic optimist | Playful, emoji-heavy |
+| Persona | MBTI | Drive Signature | Emergent Style |
+|:--------|:-----|:---------------|:---------------|
+| **Vivian** | INTJ | Low connection, high safety | Sharp wit, secretly caring |
+| **Luna** | ENFP | High connection, high play | Bright, bubbly, sweet |
+| **Iris** | INFP | High expression, high safety | Gentle, poetic, dreamy |
 
-Create your own by adding a folder in `personas/` with a `persona.yaml` and `PERSONA.md`.
+Create your own by adding a folder in `personas/` with a `PERSONA.md` (pure YAML with display layer + genome seed).
 
 ## Tech Stack
 

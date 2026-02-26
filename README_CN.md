@@ -85,13 +85,13 @@ from core.memory.evermemos_client import EverMemOSClient
 
 async def main():
     loader = PersonaLoader("personas")
-    persona = loader.get("xiaoyun")
+    persona = loader.get("vivian")  # 或 "luna", "iris"
     llm = LLMClient(provider="dashscope", model="qwen3-max")
     evermemos = EverMemOSClient()
 
     agent = ChatAgent(
         persona=persona, llm=llm,
-        user_id="demo_user", user_name="小明",
+        user_id="demo_user", user_name="Alex",
         evermemos=evermemos,
     )
 
@@ -149,13 +149,15 @@ EverMemOS（记忆）→ Critic（推理）→ Actor（行动）
 
 ## 内置人设
 
-| 人设 | 性格 | 风格 |
-|:-----|:-----|:-----|
-| **小云** | 傲娇——嘴硬心软 | 呛人却关心 |
-| **墨墨** | 温柔知性 | 有思想、爱引用 |
-| **玲玲** | 元气乐观 | 活泼、多表情 |
+每个角色由唯一的**驱力基线**（基因种子）定义，人格从驱力中涌现：
 
-在 `personas/` 下添加文件夹，放入 `persona.yaml` 和 `PERSONA.md` 即可创建自己的人设。
+| 角色 | MBTI | 驱力签名 | 涌现风格 |
+|:-----|:-----|:---------|:---------|
+| **Vivian** | INTJ | 低联结、高安全 | 毒舌知性、反差萌 |
+| **Luna** | ENFP | 高联结、高玩闹 | 元气甜系、活泼 |
+| **Iris** | INFP | 高表达、高安全 | 文艺安静、治愈 |
+
+在 `personas/` 下添加文件夹，放入 `PERSONA.md`（纯 YAML 格式：展示层 + 基因种子）即可创建自己的角色。
 
 ## 技术栈
 
