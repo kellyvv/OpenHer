@@ -255,13 +255,23 @@ class EverMemOSClient:
 
         t0 = time.monotonic()
         try:
-            response = await self._mem.get(
-                extra_query={
-                    "user_id": user_id,
-                    "memory_type": "profile,event_log,episodic_memory,foresight",
-                },
-                timeout=_CFG["load_timeout_sec"],
-            )
+            # Try list format first (v1.2+), fallback to comma-string
+            try:
+                response = await self._mem.get(
+                    extra_query={
+                        "user_id": user_id,
+                        "memory_type": ["profile", "event_log", "episodic_memory", "foresight"],
+                    },
+                    timeout=_CFG["load_timeout_sec"],
+                )
+            except Exception:
+                response = await self._mem.get(
+                    extra_query={
+                        "user_id": user_id,
+                        "memory_types": ["profile", "event_log", "episodic_memory", "foresight"],
+                    },
+                    timeout=_CFG["load_timeout_sec"],
+                )
 
             if not response or not response.result or not response.result.memories:
                 # P1b: healthy request (0 results) — reset failure count
@@ -506,7 +516,7 @@ class EverMemOSClient:
                 retrieve_method = "agentic"
 
         # P1: Include profile in search types
-        memory_types = "event_log,episodic_memory,profile"
+        memory_types = ["event_log", "episodic_memory", "profile"]
 
         try:
             query_params = {
@@ -521,7 +531,7 @@ class EverMemOSClient:
                     timeout=_CFG["search_timeout_sec"],
                 )
             except Exception:
-                # SDK compat fallback
+                # SDK compat fallback: try singular key
                 query_params_alt = {
                     "query": query,
                     "user_id": user_id,
