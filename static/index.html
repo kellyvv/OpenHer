@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,11 @@
             --glass: rgba(26, 26, 46, 0.85);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
@@ -34,28 +39,59 @@
 
         /* ── Background Ambience ── */
         .bg-orbs {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
         }
+
         .bg-orbs::before {
             content: '';
             position: absolute;
-            top: -20%; left: -10%;
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(255,107,157,0.08) 0%, transparent 70%);
+            top: -20%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 107, 157, 0.08) 0%, transparent 70%);
             border-radius: 50%;
             animation: float1 20s ease-in-out infinite;
         }
+
         .bg-orbs::after {
             content: '';
             position: absolute;
-            bottom: -20%; right: -10%;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%);
+            bottom: -20%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.06) 0%, transparent 70%);
             border-radius: 50%;
             animation: float2 25s ease-in-out infinite;
         }
-        @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(80px,60px); } }
-        @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-60px,-40px); } }
+
+        @keyframes float1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(80px, 60px);
+            }
+        }
+
+        @keyframes float2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(-60px, -40px);
+            }
+        }
 
         /* ── Layout ── */
         .app {
@@ -74,10 +110,12 @@
             flex-direction: column;
             flex-shrink: 0;
         }
+
         .sidebar-header {
             padding: 24px 20px 16px;
             border-bottom: 1px solid var(--border);
         }
+
         .sidebar-header h1 {
             font-size: 20px;
             font-weight: 700;
@@ -86,6 +124,7 @@
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
+
         .sidebar-header p {
             font-size: 12px;
             color: var(--text-muted);
@@ -106,33 +145,39 @@
             border: 1px solid transparent;
             transition: all 0.2s ease;
         }
+
         .persona-card:hover {
             background: var(--bg-card);
             border-color: var(--border);
         }
+
         .persona-card.active {
             background: var(--accent-glow);
-            border-color: rgba(255,107,157,0.2);
+            border-color: rgba(255, 107, 157, 0.2);
         }
+
         .persona-card .name {
             font-size: 15px;
             font-weight: 600;
             margin-bottom: 4px;
         }
+
         .persona-card .tags {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
+
         .persona-card .tag {
             font-size: 11px;
             padding: 2px 8px;
             border-radius: 10px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-secondary);
         }
+
         .persona-card.active .tag {
-            background: rgba(255,107,157,0.1);
+            background: rgba(255, 107, 157, 0.1);
             color: var(--accent-pink);
         }
 
@@ -142,16 +187,30 @@
             border-top: 1px solid var(--border);
             background: var(--bg-secondary);
         }
+
         .status-item {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
             margin-bottom: 6px;
         }
-        .status-item .label { color: var(--text-muted); }
-        .status-item .value { color: var(--text-secondary); font-weight: 500; }
-        .status-item .value.emotion { color: var(--accent-pink); }
-        .status-item .value.intimacy { color: var(--accent-purple); }
+
+        .status-item .label {
+            color: var(--text-muted);
+        }
+
+        .status-item .value {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .status-item .value.emotion {
+            color: var(--accent-pink);
+        }
+
+        .status-item .value.intimacy {
+            color: var(--accent-purple);
+        }
 
         /* ── Chat Area ── */
         .chat-area {
@@ -170,8 +229,10 @@
             align-items: center;
             gap: 12px;
         }
+
         .chat-header .avatar {
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
             display: flex;
@@ -180,16 +241,34 @@
             font-size: 16px;
             font-weight: 600;
         }
-        .chat-header .info .name { font-size: 14px; font-weight: 600; }
-        .chat-header .info .detail { font-size: 11px; color: var(--text-muted); }
+
+        .chat-header .info .name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .chat-header .info .detail {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
         .connection-dot {
-            width: 8px; height: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             margin-left: auto;
             transition: background 0.3s;
         }
-        .connection-dot.connected { background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.4); }
-        .connection-dot.disconnected { background: #f87171; box-shadow: 0 0 8px rgba(248,113,113,0.4); }
+
+        .connection-dot.connected {
+            background: #4ade80;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+        }
+
+        .connection-dot.disconnected {
+            background: #f87171;
+            box-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+        }
 
         /* ── Messages ── */
         .messages {
@@ -208,11 +287,24 @@
             max-width: 75%;
             animation: msgIn 0.3s ease;
         }
+
         @keyframes msgIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
         .message .bubble {
             padding: 12px 16px;
             border-radius: 18px;
@@ -220,18 +312,22 @@
             line-height: 1.6;
             word-break: break-word;
         }
+
         .message.assistant .bubble {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-bottom-left-radius: 6px;
         }
+
         .message.user .bubble {
-            background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(192,132,252,0.15));
-            border: 1px solid rgba(255,107,157,0.15);
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(192, 132, 252, 0.15));
+            border: 1px solid rgba(255, 107, 157, 0.15);
             border-bottom-right-radius: 6px;
         }
+
         .message .msg-avatar {
-            width: 32px; height: 32px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             flex-shrink: 0;
             display: flex;
@@ -239,11 +335,13 @@
             justify-content: center;
             font-size: 14px;
         }
+
         .message.assistant .msg-avatar {
             background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
         }
+
         .message.user .msg-avatar {
-            background: rgba(96,165,250,0.2);
+            background: rgba(96, 165, 250, 0.2);
             color: var(--accent-blue);
         }
 
@@ -257,18 +355,39 @@
             border-bottom-left-radius: 6px;
             border: 1px solid var(--border);
         }
-        .typing-indicator.visible { display: flex; gap: 4px; }
+
+        .typing-indicator.visible {
+            display: flex;
+            gap: 4px;
+        }
+
         .typing-indicator span {
-            width: 6px; height: 6px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--text-muted);
             animation: typeBounce 1.4s ease-in-out infinite;
         }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
         @keyframes typeBounce {
-            0%,80%,100% { transform: translateY(0); }
-            40% { transform: translateY(-6px); }
+
+            0%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-6px);
+            }
         }
 
         /* ── Input Area ── */
@@ -278,11 +397,13 @@
             background: var(--glass);
             backdrop-filter: blur(20px);
         }
+
         .input-wrapper {
             display: flex;
             gap: 10px;
             align-items: center;
         }
+
         .input-wrapper input {
             flex: 1;
             background: var(--bg-input);
@@ -295,14 +416,18 @@
             outline: none;
             transition: border-color 0.2s;
         }
+
         .input-wrapper input:focus {
-            border-color: rgba(255,107,157,0.3);
+            border-color: rgba(255, 107, 157, 0.3);
         }
+
         .input-wrapper input::placeholder {
             color: var(--text-muted);
         }
+
         .send-btn {
-            width: 44px; height: 44px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
@@ -315,11 +440,23 @@
             transition: transform 0.15s, opacity 0.15s;
             flex-shrink: 0;
         }
-        .send-btn:hover { transform: scale(1.05); }
-        .send-btn:active { transform: scale(0.95); }
-        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
         .tts-btn {
-            width: 44px; height: 44px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 1px solid var(--border);
             background: var(--bg-input);
@@ -332,7 +469,11 @@
             transition: all 0.2s;
             flex-shrink: 0;
         }
-        .tts-btn:hover { border-color: rgba(255,107,157,0.3); color: var(--accent-pink); }
+
+        .tts-btn:hover {
+            border-color: rgba(255, 107, 157, 0.3);
+            color: var(--accent-pink);
+        }
 
         /* ── Welcome ── */
         .welcome {
@@ -344,21 +485,47 @@
             gap: 16px;
             color: var(--text-muted);
         }
-        .welcome .emoji { font-size: 48px; }
-        .welcome h2 { font-size: 18px; font-weight: 500; color: var(--text-secondary); }
-        .welcome p { font-size: 13px; max-width: 300px; text-align: center; line-height: 1.6; }
+
+        .welcome .emoji {
+            font-size: 48px;
+        }
+
+        .welcome h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .welcome p {
+            font-size: 13px;
+            max-width: 300px;
+            text-align: center;
+            line-height: 1.6;
+        }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
 
         /* Mobile */
         @media (max-width: 768px) {
-            .sidebar { display: none; }
+            .sidebar {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="bg-orbs"></div>
     <div class="app">
@@ -645,9 +812,15 @@
                     $headerName.textContent = first.name;
                     $headerDetail.textContent = `${first.persona_id} · AI Companion`;
                     $headerAvatar.textContent = PERSONA_EMOJIS[first.persona_id] || '✨';
+                    // Sync sidebar active state
+                    document.querySelectorAll('.persona-card').forEach(card => {
+                        const name = card.querySelector('.name')?.textContent || '';
+                        card.classList.toggle('active', name.includes(first.name));
+                    });
                 }
             } catch (e) { /* loadPersonas will handle */ }
         }, 500);
     </script>
 </body>
+
 </html>
