@@ -47,6 +47,18 @@
     cursor: grabbing;
 }
 
+/* ── Photo Image — covers entire card ── */
+.card-photo-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1;
+}
+
 /* ── Photo Letter — centered in entire card, very subtle ── */
 .card-photo-letter {
     position: absolute;
@@ -169,17 +181,46 @@
     transform: rotate(-12deg);
 }
 
-/* ── Action Buttons — solid filled with glow ── */
+/* ── Action Buttons — blur glow behind ── */
 .actions {
     display: flex;
-    gap: 48px;
+    justify-content: center;
+    gap: 36px;
     padding: 28px 0 12px;
     z-index: 20;
 }
 
+.action-wrap {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Blur glow layer behind button */
+.action-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    filter: blur(30px);
+    opacity: 0.25;
+    transition: opacity 0.2s;
+}
+
+.action-wrap:active .action-glow {
+    opacity: 0.5;
+}
+
+.skip-glow {
+    background: #e54b4b;
+}
+
+.like-glow {
+    background: #5b86e5;
+}
+
 .action-btn {
-    width: 76px;
-    height: 76px;
+    position: relative;
+    width: 78px;
+    height: 78px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
@@ -187,33 +228,16 @@
     align-items: center;
     justify-content: center;
     color: #fff;
-    transition: box-shadow 0.3s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s;
 }
 
 .action-btn.skip {
-    background: #d4726f;
-    box-shadow:
-        0 0 28px rgba(212, 114, 111, 0.5),
-        0 0 64px rgba(212, 114, 111, 0.2);
-}
-
-.action-btn.skip:hover {
-    box-shadow:
-        0 0 40px rgba(212, 114, 111, 0.65),
-        0 0 80px rgba(212, 114, 111, 0.3);
+    background: #e54b4b;
 }
 
 .action-btn.like {
-    background: #5b7cfa;
-    box-shadow:
-        0 0 28px rgba(91, 124, 250, 0.5),
-        0 0 64px rgba(91, 124, 250, 0.2);
-}
-
-.action-btn.like:hover {
-    box-shadow:
-        0 0 40px rgba(91, 124, 250, 0.65),
-        0 0 80px rgba(91, 124, 250, 0.3);
+    background: #5b86e5;
 }
 
 /* ── States ── */

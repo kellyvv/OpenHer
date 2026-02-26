@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { X, Heart } from 'lucide-react'
 import { fetchPersonas } from '../services/api'
 import './Discover.css'
 
@@ -53,8 +54,12 @@ function SwipeCard({ persona, index, onSwipe, isTop, total }) {
             animate={{ scale, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-            {/* Photo placeholder — letter sits in center of entire card */}
-            <div className="card-photo-letter">{persona.name?.[0]}</div>
+            {/* Photo or gradient fallback */}
+            {persona.avatar_url ? (
+                <img className="card-photo-img" src={persona.avatar_url} alt={persona.name} draggable={false} />
+            ) : (
+                <div className="card-photo-letter">{persona.name?.[0]}</div>
+            )}
 
             {/* Gradient fade into info — seamless blend */}
             <div className="card-gradient-fade" />
@@ -143,26 +148,20 @@ export default function Discover() {
 
             {visibleCards.length > 0 && (
                 <div className="actions">
-                    <motion.button
-                        className="action-btn skip"
-                        whileTap={{ scale: 0.85 }}
-                        whileHover={{ scale: 1.08 }}
-                        onClick={() => handleSwipe('skip', visibleCards[0])}
-                    >
-                        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                            <path d="M5 5L21 21M21 5L5 21" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                        </svg>
-                    </motion.button>
-                    <motion.button
-                        className="action-btn like"
-                        whileTap={{ scale: 0.85 }}
-                        whileHover={{ scale: 1.08 }}
-                        onClick={() => handleSwipe('like', visibleCards[0])}
-                    >
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                    </motion.button>
+                    {/* Skip — blur glow + lucide X */}
+                    <div className="action-wrap" onClick={() => handleSwipe('skip', visibleCards[0])}>
+                        <div className="action-glow skip-glow" />
+                        <motion.button className="action-btn skip" whileTap={{ scale: 0.9 }}>
+                            <X size={34} strokeWidth={2.5} />
+                        </motion.button>
+                    </div>
+                    {/* Like — blur glow + lucide Heart */}
+                    <div className="action-wrap" onClick={() => handleSwipe('like', visibleCards[0])}>
+                        <div className="action-glow like-glow" />
+                        <motion.button className="action-btn like" whileTap={{ scale: 0.9 }}>
+                            <Heart size={32} fill="currentColor" stroke="none" />
+                        </motion.button>
+                    </div>
                 </div>
             )}
         </div>

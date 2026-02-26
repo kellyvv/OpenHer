@@ -7,7 +7,8 @@ export const MOCK_PERSONAS = [
         age: 26,
         gender: 'female',
         mbti: 'INTJ',
-        tags: ['sharp', 'witty', 'secretly caring'],
+        avatar_url: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=800',
+        tags: ['Deep Thinker', 'Creative Soul', 'Bookworm'],
         bio: {
             en: 'Product manager at a tech company. Logic 10/10, emotional availability 2/10. Roasts you but remembers every little thing you told her. Has a British Shorthair cat named Sherlock.',
             zh: '互联网大厂产品经理。逻辑满分、情商装死。嘴上嫌弃你但默默记住你说过的每一件事。',
