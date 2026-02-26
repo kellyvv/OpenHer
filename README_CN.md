@@ -38,21 +38,7 @@ OpenHer 是一款基于**热力学人格引擎 (Thermodynamic Persona Engine, TP
 
 <div align="center">
 
-```
-┌─────────────────────── 每轮 12-Step 生命周期 ────────────────────────┐
-│                                                                       │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐          │
-│  │  Session  │──▶│  Critic  │──▶│  Genome  │──▶│  Actor   │──▶ 回复  │
-│  │ EverMemOS │   │  (LLM)   │   │  Engine  │   │  (LLM)   │          │
-│  └──────────┘   └──────────┘   └──────────┘   └──────────┘          │
-│   Step 0          Step 2        Step 3-7        Step 8-9             │
-│   加载画像 +       8D 上下文      5 驱力代谢       信号驱动              │
-│   叙事记忆 +       3D 关系 delta  结晶门控          few-shot prompt      │
-│   Foresight       5D 驱力 delta  行为信号          独白+回复+modality   │
-│                                                                       │
-│  ── Step 11-12: EverMemOS 异步存储 + RRF 检索（下轮注入）──            │
-└───────────────────────────────────────────────────────────────────────┘
-```
+![OpenHer 架构图](docs/assets/architecture.png)
 
 </div>
 

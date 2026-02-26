@@ -38,20 +38,7 @@ Unlike typical AI chatbots that reset every session, OpenHer:
 
 <div align="center">
 
-```
-┌─────────────────────── Per-Turn Lifecycle (12 Steps) ───────────────────────┐
-│                                                                              │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐  │
-│  │  Session  │──▶│  Critic  │──▶│ Genome   │──▶│  Actor   │──▶│  Store   │  │
-│  │ EverMemOS │   │  (LLM)   │   │ Engine   │   │  (LLM)   │   │ + Search │  │
-│  └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘  │
-│   Step 0          Step 2        Step 3-7        Step 8-9       Step 11-12   │
-│   Profile +       8D Context    5-Drive         Signal-driven  Async store  │
-│   Episode +       3D Rel Delta  Metabolism       few-shot       + RRF       │
-│   Foresight       5D Frust Δ    Crystallize      prompt build   retrieval   │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+![OpenHer Architecture](docs/assets/architecture.png)
 
 </div>
 
