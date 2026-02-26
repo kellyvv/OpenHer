@@ -178,12 +178,10 @@
 }
 
 .action-btn {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
     border: none;
-    font-size: 30px;
-    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -193,29 +191,29 @@
 }
 
 .action-btn.skip {
-    background: #c85c58;
+    background: #d4726f;
     box-shadow:
-        0 0 20px rgba(200, 92, 88, 0.4),
-        0 6px 28px rgba(200, 92, 88, 0.3);
+        0 0 28px rgba(212, 114, 111, 0.5),
+        0 0 64px rgba(212, 114, 111, 0.2);
 }
 
 .action-btn.skip:hover {
     box-shadow:
-        0 0 32px rgba(200, 92, 88, 0.55),
-        0 8px 36px rgba(200, 92, 88, 0.4);
+        0 0 40px rgba(212, 114, 111, 0.65),
+        0 0 80px rgba(212, 114, 111, 0.3);
 }
 
 .action-btn.like {
-    background: #6c8cff;
+    background: #5b7cfa;
     box-shadow:
-        0 0 20px rgba(108, 140, 255, 0.4),
-        0 6px 28px rgba(108, 140, 255, 0.3);
+        0 0 28px rgba(91, 124, 250, 0.5),
+        0 0 64px rgba(91, 124, 250, 0.2);
 }
 
 .action-btn.like:hover {
     box-shadow:
-        0 0 32px rgba(108, 140, 255, 0.55),
-        0 8px 36px rgba(108, 140, 255, 0.4);
+        0 0 40px rgba(91, 124, 250, 0.65),
+        0 0 80px rgba(91, 124, 250, 0.3);
 }
 
 /* ── States ── */
