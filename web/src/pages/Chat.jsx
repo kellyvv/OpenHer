@@ -103,7 +103,6 @@ export default function Chat() {
                         </div>
                         <div className="bubble">
                             {msg.content}
-                            {msg.streaming && <span className="cursor-blink">▊</span>}
                         </div>
                     </div>
                 ))}

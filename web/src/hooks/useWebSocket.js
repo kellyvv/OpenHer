@@ -34,29 +34,20 @@ export function useWebSocket() {
                     setSessionId(msg.session_id)
                     setStreaming(true)
                     streamContentRef.current = ''
-                    setMessages(prev => [...prev, { role: 'assistant', content: '', streaming: true }])
                     break
                 case 'chat_chunk':
+                    // Buffer silently
                     streamContentRef.current += msg.content
-                    setMessages(prev => {
-                        const updated = [...prev]
-                        const last = updated[updated.length - 1]
-                        if (last?.streaming) {
-                            updated[updated.length - 1] = { ...last, content: streamContentRef.current }
-                        }
-                        return updated
-                    })
                     break
                 case 'chat_end':
                     setStreaming(false)
-                    setMessages(prev => {
-                        const updated = [...prev]
-                        const last = updated[updated.length - 1]
-                        if (last?.streaming) {
-                            updated[updated.length - 1] = { ...last, streaming: false }
-                        }
-                        return updated
-                    })
+                    // Push complete message at once
+                    if (streamContentRef.current) {
+                        setMessages(prev => [...prev, {
+                            role: 'assistant',
+                            content: streamContentRef.current,
+                        }])
+                    }
                     setStatus({ dominantDrive: msg.dominant_drive, turnCount: msg.turn_count })
                     break
                 case 'persona_switched':
