@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   Discover — pixel-perfect reference match
+   Discover — 100% reference match
    ══════════════════════════════════════════ */
 
 .discover-page {
@@ -11,7 +11,8 @@
     position: relative;
     z-index: 1;
     overflow: hidden;
-    padding: 24px 20px 20px;
+    /* Side padding matches reference card margins */
+    padding: 32px 24px 24px;
 }
 
 /* ── Card Area ── */
@@ -36,21 +37,22 @@
     will-change: transform;
     display: flex;
     flex-direction: column;
+    /* Subtle light border around card — matches reference */
+    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.5),
-        0 2px 8px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+        0 12px 48px rgba(0, 0, 0, 0.6),
+        0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .swipe-card:active {
     cursor: grabbing;
 }
 
-/* ── Photo ── */
+/* ── Photo Area ── */
 .card-photo {
     width: 100%;
-    /* Photo takes ~75% of card */
-    aspect-ratio: 9 / 12;
+    /* Reference: photo ~72% of card height */
+    aspect-ratio: 3 / 4;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,67 +63,81 @@
 .card-photo-letter {
     font-size: 140px;
     font-weight: 900;
-    color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.05);
     text-transform: uppercase;
     user-select: none;
     line-height: 1;
 }
 
-/* ── Info Section (bottom of card) ── */
+/* ── Info Section ── */
 .card-info {
-    background: rgba(20, 20, 30, 0.95);
-    padding: 20px 22px 22px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* Solid dark bg, slight transparency for depth */
+    background: rgba(16, 16, 24, 0.96);
+    /* Match reference padding exactly */
+    padding: 22px 24px 24px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
+/* Name row: "Vivian, 26  [INTJ]" */
 .card-name-row {
     display: flex;
-    align-items: baseline;
-    gap: 2px;
-    margin-bottom: 14px;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 16px;
 }
 
 .card-name {
-    font-size: 32px;
+    /* Reference: very large bold, ~36px */
+    font-size: 36px;
     font-weight: 800;
     color: #fff;
     letter-spacing: -0.5px;
+    line-height: 1.1;
 }
 
 .card-age {
-    font-size: 32px;
+    /* Same size as name, lighter weight */
+    font-size: 36px;
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.85);
-    margin-right: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    /* Space before MBTI badge */
+    margin-right: 16px;
 }
 
+/* MBTI badge: solid blue, rounded rectangle (NOT pill) */
 .card-mbti {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    padding: 5px 16px;
-    border-radius: 8px;
+    padding: 6px 18px;
+    /* Rounded rect, not full pill */
+    border-radius: 10px;
     background: #6c8cff;
     color: #fff;
     letter-spacing: 0.5px;
+    line-height: 1.2;
+    /* Vertically center with the baseline of name text */
     align-self: center;
 }
 
-/* ── Tags ── */
+/* ── Tags — match reference exactly ── */
 .card-tags {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .card-tag {
+    /* Reference: ~14px, medium weight, pill shape */
     font-size: 14px;
     font-weight: 500;
-    padding: 8px 18px;
-    border-radius: 20px;
+    padding: 9px 20px;
+    border-radius: 24px;
+    /* Subtle frosted glass bg */
     background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    letter-spacing: 0.2px;
 }
 
 /* ── Swipe Stamps ── */
@@ -129,7 +145,7 @@
     position: absolute;
     top: 50px;
     z-index: 5;
-    padding: 8px 24px;
+    padding: 10px 28px;
     border-radius: 8px;
     font-size: 32px;
     font-weight: 900;
@@ -151,45 +167,49 @@
     transform: rotate(-12deg);
 }
 
-/* ── Action Buttons (solid filled circles) ── */
+/* ── Action Buttons — solid filled, below card ── */
 .actions {
     display: flex;
-    gap: 40px;
-    padding: 24px 0 8px;
+    /* Reference: wide gap between buttons */
+    gap: 48px;
+    padding: 28px 0 12px;
     z-index: 20;
 }
 
 .action-btn {
+    /* Reference: large solid circles ~72px */
     width: 72px;
     height: 72px;
     border-radius: 50%;
     border: none;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    transition: box-shadow 0.3s;
+    transition: box-shadow 0.3s, transform 0.15s;
 }
 
+/* Skip: muted / dusty red */
 .action-btn.skip {
     background: #c85c58;
-    box-shadow: 0 4px 24px rgba(200, 92, 88, 0.3);
+    box-shadow: 0 6px 28px rgba(200, 92, 88, 0.35);
 }
 
 .action-btn.skip:hover {
-    box-shadow: 0 6px 32px rgba(200, 92, 88, 0.45);
+    box-shadow: 0 8px 36px rgba(200, 92, 88, 0.5);
 }
 
+/* Like: calm blue matching INTJ badge */
 .action-btn.like {
     background: #6c8cff;
-    box-shadow: 0 4px 24px rgba(108, 140, 255, 0.3);
+    box-shadow: 0 6px 28px rgba(108, 140, 255, 0.35);
 }
 
 .action-btn.like:hover {
-    box-shadow: 0 6px 32px rgba(108, 140, 255, 0.45);
+    box-shadow: 0 8px 36px rgba(108, 140, 255, 0.5);
 }
 
 /* ── States ── */
