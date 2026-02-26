@@ -1,21 +1,27 @@
-const API_BASE = ''  // Use Vite proxy in dev
+import { MOCK_PERSONAS, MOCK_REPLIES } from './mockData'
+
+const USE_MOCK = true  // Toggle: true = mock data, false = real backend
 
 export async function fetchPersonas() {
-    const res = await fetch(`${API_BASE}/api/personas`)
+    if (USE_MOCK) return MOCK_PERSONAS
+
+    const res = await fetch('/api/personas')
     const data = await res.json()
     return data.personas || []
 }
 
 export async function fetchDiscover(count = 5) {
-    const res = await fetch(`${API_BASE}/api/discover?count=${count}`)
+    if (USE_MOCK) return MOCK_PERSONAS.slice(0, count)
+
+    const res = await fetch(`/api/discover?count=${count}`)
     const data = await res.json()
     return data.candidates || []
 }
 
 export async function selectPersona(personaId) {
-    const res = await fetch(`${API_BASE}/api/persona/select/${personaId}`, {
-        method: 'POST',
-    })
+    if (USE_MOCK) return { ok: true, persona_id: personaId }
+
+    const res = await fetch(`/api/persona/select/${personaId}`, { method: 'POST' })
     return res.json()
 }
 
@@ -24,4 +30,10 @@ export function getWsUrl() {
     return `${proto}//${window.location.host}/ws/chat`
 }
 
-export { API_BASE }
+// Mock chat helper
+export function getMockReply(personaId) {
+    const replies = MOCK_REPLIES[personaId] || MOCK_REPLIES.vivian
+    return replies[Math.floor(Math.random() * replies.length)]
+}
+
+export { USE_MOCK }

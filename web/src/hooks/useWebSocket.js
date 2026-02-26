@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getWsUrl } from '../services/api'
+import { getWsUrl, USE_MOCK, getMockReply } from '../services/api'
 
 export function useWebSocket() {
     const wsRef = useRef(null)
-    const [connected, setConnected] = useState(false)
+    const [connected, setConnected] = useState(USE_MOCK)
     const [messages, setMessages] = useState([])
     const [streaming, setStreaming] = useState(false)
     const [sessionId, setSessionId] = useState(null)
@@ -11,8 +11,12 @@ export function useWebSocket() {
     const streamContentRef = useRef('')
 
     const connect = useCallback(() => {
-        if (wsRef.current?.readyState === WebSocket.OPEN) return
+        if (USE_MOCK) {
+            setConnected(true)
+            return
+        }
 
+        if (wsRef.current?.readyState === WebSocket.OPEN) return
         const ws = new WebSocket(getWsUrl())
         wsRef.current = ws
 
@@ -25,7 +29,6 @@ export function useWebSocket() {
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data)
-
             switch (msg.type) {
                 case 'chat_start':
                     setSessionId(msg.session_id)
@@ -33,7 +36,6 @@ export function useWebSocket() {
                     streamContentRef.current = ''
                     setMessages(prev => [...prev, { role: 'assistant', content: '', streaming: true }])
                     break
-
                 case 'chat_chunk':
                     streamContentRef.current += msg.content
                     setMessages(prev => {
@@ -45,7 +47,6 @@ export function useWebSocket() {
                         return updated
                     })
                     break
-
                 case 'chat_end':
                     setStreaming(false)
                     setMessages(prev => {
@@ -56,16 +57,11 @@ export function useWebSocket() {
                         }
                         return updated
                     })
-                    setStatus({
-                        dominantDrive: msg.dominant_drive,
-                        turnCount: msg.turn_count,
-                    })
+                    setStatus({ dominantDrive: msg.dominant_drive, turnCount: msg.turn_count })
                     break
-
                 case 'persona_switched':
                     setSessionId(msg.session_id)
                     break
-
                 case 'error':
                     console.error('WS error:', msg.content)
                     setStreaming(false)
@@ -75,19 +71,55 @@ export function useWebSocket() {
     }, [])
 
     const sendMessage = useCallback((text, personaId, userName = 'User') => {
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+        // Add user message
         setMessages(prev => [...prev, { role: 'user', content: text }])
+
+        if (USE_MOCK) {
+            // Simulate streaming response
+            setStreaming(true)
+            const reply = getMockReply(personaId)
+            let i = 0
+            setMessages(prev => [...prev, { role: 'assistant', content: '', streaming: true }])
+
+            const interval = setInterval(() => {
+                i += 2
+                const partial = reply.slice(0, i)
+                setMessages(prev => {
+                    const updated = [...prev]
+                    const last = updated[updated.length - 1]
+                    if (last?.streaming) {
+                        updated[updated.length - 1] = { ...last, content: partial }
+                    }
+                    return updated
+                })
+                if (i >= reply.length) {
+                    clearInterval(interval)
+                    setStreaming(false)
+                    setMessages(prev => {
+                        const updated = [...prev]
+                        const last = updated[updated.length - 1]
+                        if (last?.streaming) {
+                            updated[updated.length - 1] = { ...last, streaming: false }
+                        }
+                        return updated
+                    })
+                    setStatus({ dominantDrive: '🔗 connection', turnCount: (status.turnCount || 0) + 1 })
+                }
+            }, 30)
+            return
+        }
+
+        // Real WebSocket
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
         wsRef.current.send(JSON.stringify({
-            type: 'chat',
-            content: text,
-            persona_id: personaId,
-            user_name: userName,
+            type: 'chat', content: text, persona_id: personaId, user_name: userName,
         }))
-    }, [])
+    }, [status.turnCount])
 
     const clearMessages = useCallback(() => {
         setMessages([])
         setSessionId(null)
+        setStatus({})
     }, [])
 
     useEffect(() => {
