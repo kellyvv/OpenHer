@@ -208,13 +208,23 @@ class ChatAgent:
         """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
         Signal injection drives behavior; persona is minimal (name only).
         """
+        import time as _time
+        import datetime as _dt
+
         # Use pre-computed signals (same as KNN retrieval) — no re-computation
         signal_injection = self.agent.to_prompt_injection_from_signals(signals)
+
+        # Inject real wall-clock time so the LLM doesn't fabricate it
+        now = _dt.datetime.now()
+        time_str = now.strftime("%H:%M")
+        date_str = now.strftime("%Y年%m月%d日")
+        signal_injection += f"\n\n【当前时间】{date_str} {time_str}"
 
         return ACTOR_PROMPT.format(
             few_shot=few_shot,
             signal_injection=signal_injection,
         )
+
 
     def _should_crystallize(self, reward: float, context: dict) -> bool:
         """
