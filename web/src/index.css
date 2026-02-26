@@ -1,26 +1,35 @@
 /* ══════════════════════════════════════════
    OpenHer Design System
-   Mobile-first, 9:16 phone frame
+   Gender-neutral, mobile-first, 9:16 frame
    ══════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: #1a1a2e;
-  --bg-input: #16162a;
-  --bg-elevated: #1e1e36;
-  --text-primary: #e8e8f0;
-  --text-secondary: #8888a8;
-  --text-muted: #555570;
-  --accent-pink: #ff6b9d;
-  --accent-purple: #c084fc;
-  --accent-blue: #60a5fa;
-  --accent-green: #4ade80;
-  --accent-glow: rgba(255, 107, 157, 0.15);
+  /* ── Neutral Dark Theme ── */
+  --bg-primary: #0c0c10;
+  --bg-secondary: #131318;
+  --bg-card: #1a1a22;
+  --bg-input: #15151d;
+  --bg-elevated: #1e1e28;
+  --text-primary: #ececf0;
+  --text-secondary: #9494a8;
+  --text-muted: #5c5c70;
+
+  /* ── Accent: cool blue + warm gold ── */
+  --accent-primary: #6c8cff;
+  /* calm blue */
+  --accent-secondary: #e8a838;
+  /* warm gold */
+  --accent-teal: #50c8b8;
+  /* teal */
+  --accent-green: #5cd87c;
+  --accent-red: #e8605c;
+  --accent-glow: rgba(108, 140, 255, 0.1);
   --border: rgba(255, 255, 255, 0.06);
-  --glass: rgba(18, 18, 26, 0.88);
+  --glass: rgba(18, 18, 24, 0.88);
+
+  /* ── Layout ── */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -39,7 +48,7 @@ body,
 #root {
   height: 100%;
   overflow: hidden;
-  background: #050508;
+  background: #060608;
 }
 
 body {
@@ -58,7 +67,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #050508;
+  background: #060608;
 }
 
 .phone-screen {
@@ -71,7 +80,6 @@ body {
   overflow: hidden;
 }
 
-/* Desktop: show the phone frame with rounded corners + shadow */
 @media (min-width: 481px) {
   .phone-screen {
     border-radius: 40px;
@@ -80,11 +88,10 @@ body {
       0 0 0 1px rgba(255, 255, 255, 0.02),
       0 25px 80px rgba(0, 0, 0, 0.6),
       0 8px 30px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 }
 
-/* Mobile: full-screen, no frame */
 @media (max-width: 480px) {
   .phone-screen {
     max-width: none;
@@ -93,7 +100,7 @@ body {
   }
 }
 
-/* ── Background Ambience ── */
+/* ── Background Ambience (neutral) ── */
 .bg-orbs {
   position: absolute;
   inset: 0;
@@ -109,7 +116,7 @@ body {
   left: -15%;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(255, 107, 157, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(108, 140, 255, 0.06) 0%, transparent 70%);
   border-radius: 50%;
   animation: float1 20s ease-in-out infinite;
 }
@@ -121,7 +128,7 @@ body {
   right: -15%;
   width: 250px;
   height: 250px;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(232, 168, 56, 0.04) 0%, transparent 70%);
   border-radius: 50%;
   animation: float2 25s ease-in-out infinite;
 }
@@ -166,7 +173,7 @@ body {
 
 /* ── Utility ── */
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

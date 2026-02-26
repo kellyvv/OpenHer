@@ -36,14 +36,14 @@
 }
 
 .back-btn:hover {
-    color: var(--accent-pink);
+    color: var(--accent-primary);
 }
 
 .header-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,8 +77,8 @@
     font-weight: 600;
     padding: 1px 6px;
     border-radius: var(--radius-full);
-    background: rgba(192, 132, 252, 0.15);
-    color: var(--accent-purple);
+    background: rgba(108, 140, 255, 0.15);
+    color: var(--accent-primary);
     letter-spacing: 0.5px;
 }
 
@@ -97,12 +97,12 @@
 
 .connection-dot.connected {
     background: var(--accent-green);
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 8px rgba(92, 216, 124, 0.4);
 }
 
 .connection-dot.disconnected {
-    background: #f87171;
-    box-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+    background: var(--accent-red);
+    box-shadow: 0 0 8px rgba(232, 96, 92, 0.3);
 }
 
 /* ── Messages ── */
@@ -152,7 +152,7 @@
 }
 
 .message.assistant .msg-avatar {
-    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal));
 }
 
 .message.user .msg-avatar {
@@ -175,14 +175,14 @@
 }
 
 .message.user .bubble {
-    background: linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(192, 132, 252, 0.15));
-    border: 1px solid rgba(255, 107, 157, 0.12);
+    background: linear-gradient(135deg, rgba(108, 140, 255, 0.1), rgba(80, 200, 184, 0.1));
+    border: 1px solid rgba(108, 140, 255, 0.1);
     border-bottom-right-radius: 6px;
 }
 
 .cursor-blink {
     animation: blink 0.8s step-end infinite;
-    color: var(--accent-pink);
+    color: var(--accent-primary);
     margin-left: 2px;
 }
 
@@ -208,14 +208,14 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal));
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 36px;
     font-weight: 700;
     margin-bottom: 8px;
-    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.2);
+    box-shadow: 0 8px 32px rgba(108, 140, 255, 0.15);
 }
 
 .welcome h2 {
@@ -281,7 +281,7 @@
 }
 
 .input-wrapper input:focus {
-    border-color: rgba(255, 107, 157, 0.3);
+    border-color: rgba(108, 140, 255, 0.25);
 }
 
 .input-wrapper input::placeholder {
@@ -297,7 +297,7 @@
     height: 44px;
     border-radius: 50%;
     border: none;
-    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-teal));
     color: white;
     font-size: 18px;
     cursor: pointer;
@@ -306,7 +306,7 @@
     justify-content: center;
     transition: transform 0.15s, opacity 0.15s;
     flex-shrink: 0;
-    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.25);
+    box-shadow: 0 4px 16px rgba(108, 140, 255, 0.2);
 }
 
 .send-btn:hover {

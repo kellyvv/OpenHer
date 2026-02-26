@@ -155,12 +155,12 @@
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 20px;
-    background: rgba(192, 132, 252, 0.25);
-    color: #d4a5ff;
+    background: rgba(108, 140, 255, 0.2);
+    color: #8eaaff;
     letter-spacing: 1px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(192, 132, 252, 0.2);
+    border: 1px solid rgba(108, 140, 255, 0.15);
 }
 
 .card-tags {
@@ -206,18 +206,18 @@
 
 .swipe-indicator.like {
     right: 24px;
-    color: #4ade80;
-    border-color: #4ade80;
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
     transform: rotate(12deg);
-    text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+    text-shadow: 0 0 20px rgba(108, 140, 255, 0.4);
 }
 
 .swipe-indicator.nope {
     left: 24px;
-    color: #f87171;
-    border-color: #f87171;
+    color: var(--accent-red);
+    border-color: var(--accent-red);
     transform: rotate(-12deg);
-    text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
+    text-shadow: 0 0 20px rgba(232, 96, 92, 0.4);
 }
 
 /* ── Action Buttons ── */
@@ -242,25 +242,25 @@
 }
 
 .action-circle.nope {
-    background: rgba(248, 113, 113, 0.12);
-    color: #f87171;
-    box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
-    border: 2px solid rgba(248, 113, 113, 0.2);
+    background: rgba(232, 96, 92, 0.1);
+    color: var(--accent-red);
+    box-shadow: 0 4px 20px rgba(232, 96, 92, 0.1);
+    border: 2px solid rgba(232, 96, 92, 0.15);
 }
 
 .action-circle.nope:hover {
-    box-shadow: 0 4px 30px rgba(248, 113, 113, 0.3);
+    box-shadow: 0 4px 30px rgba(232, 96, 92, 0.2);
 }
 
 .action-circle.like {
-    background: rgba(74, 222, 128, 0.12);
-    color: #4ade80;
-    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.15);
-    border: 2px solid rgba(74, 222, 128, 0.2);
+    background: rgba(108, 140, 255, 0.1);
+    color: var(--accent-primary);
+    box-shadow: 0 4px 20px rgba(108, 140, 255, 0.1);
+    border: 2px solid rgba(108, 140, 255, 0.15);
 }
 
 .action-circle.like:hover {
-    box-shadow: 0 4px 30px rgba(74, 222, 128, 0.3);
+    box-shadow: 0 4px 30px rgba(108, 140, 255, 0.2);
 }
 
 /* ── States ── */
@@ -285,9 +285,9 @@
 .btn-pill {
     padding: 12px 32px;
     border-radius: 50px;
-    border: 1px solid rgba(255, 107, 157, 0.2);
-    background: rgba(255, 107, 157, 0.08);
-    color: var(--accent-pink);
+    border: 1px solid rgba(108, 140, 255, 0.2);
+    background: rgba(108, 140, 255, 0.08);
+    color: var(--accent-primary);
     font-family: var(--font);
     font-size: 15px;
     font-weight: 600;
@@ -296,15 +296,15 @@
 }
 
 .btn-pill:hover {
-    background: rgba(255, 107, 157, 0.15);
-    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.2);
+    background: rgba(108, 140, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(108, 140, 255, 0.15);
 }
 
 .spinner {
     width: 36px;
     height: 36px;
     border: 3px solid rgba(255, 255, 255, 0.06);
-    border-top-color: var(--accent-pink);
+    border-top-color: var(--accent-primary);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
 }
