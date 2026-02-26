@@ -144,6 +144,14 @@ class ChatAgent:
         # ── Genome v8 Engine ──
         self.agent = Agent(seed=genome_seed)
         self.metabolism = DriveMetabolism()
+
+        # Apply persona-specific genome seed (initial conditions only)
+        if persona.drive_baseline:
+            for d, v in persona.drive_baseline.items():
+                if d in self.agent.drive_baseline:
+                    self.agent.drive_baseline[d] = float(v)
+                    self.agent.drive_state[d] = float(v)
+
         self.style_memory = ContinuousStyleMemory(
             agent_id=f"{persona.persona_id}_{user_id}",
             db_dir=genome_data_dir,

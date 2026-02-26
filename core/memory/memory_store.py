@@ -36,9 +36,9 @@ class MemoryStore:
 
     Usage:
         store = MemoryStore("/path/to/memory.db")
-        store.add("user1", "xiaoyun", "用户说他叫小明", category="fact", importance=0.9)
-        memories = store.search("user1", "xiaoyun", "小明")
-        context = store.build_memory_context("user1", "xiaoyun", "今天过得怎么样")
+        store.add("user1", "persona_a", "User's name is Alex", category="fact", importance=0.9)
+        memories = store.search("user1", "persona_a", "Alex")
+        context = store.build_memory_context("user1", "persona_a", "How was your day")
     """
 
     def __init__(self, db_path: str):

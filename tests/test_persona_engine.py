@@ -30,8 +30,9 @@ def test_persona_loader():
         print(f"  Age: {p.age}, Gender: {p.gender}, MBTI: {p.mbti}")
         print(f"  Tags: {p.tags}")
         assert p.name, "Name should not be empty"
-        assert p.personality, "Personality section should be parsed"
-        assert p.speaking_style, "Speaking style section should be parsed"
+        assert p.drive_baseline, f"{pid} should have drive_baseline"
+        print(f"  Drive baseline: {p.drive_baseline}")
+        assert p.bio, f"{pid} should have bio"
 
     print("\n✅ PersonaLoader tests PASSED")
 

@@ -1,7 +1,7 @@
 """
 WebSocket integration test — Tests end-to-end chat via WebSocket protocol.
 Requires a running server at localhost:8800 and pytest-asyncio.
-Skipped gracefully if dependencies are missing.
+Skipped gracefully if dependencies are missing or server not running.
 """
 import asyncio
 import json
@@ -24,6 +24,10 @@ try:
 except ImportError:
     _HAS_ASYNC = False
 
+# Use first available persona (dynamic, not hardcoded)
+_PERSONA_A = "vivian"
+_PERSONA_B = "luna"
+
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(not _HAS_WS, reason="websockets not installed")
@@ -32,7 +36,7 @@ async def test_websocket():
     import websockets
 
     print("=" * 60)
-    print("WebSocket 端到端测试")
+    print("WebSocket E2E Test")
     print("=" * 60)
 
     uri = "ws://localhost:8800/ws/chat"
@@ -45,16 +49,15 @@ async def test_websocket():
         return
 
     try:
-        # ── Test 1: Chat with xiaoyun ──
-        print("\n📤 发送聊天消息 → 小云")
+        # ── Test 1: Chat with first persona ──
+        print(f"\n📤 Chat → {_PERSONA_A}")
         await ws.send(json.dumps({
             "type": "chat",
-            "content": "嘿，在干嘛呢？",
-            "persona_id": "xiaoyun",
-            "user_name": "测试用户",
+            "content": "Hey, what's up?",
+            "persona_id": _PERSONA_A,
+            "user_name": "Tester",
         }))
 
-        # Collect response
         full_response = ""
         chat_started = False
         while True:
@@ -67,8 +70,7 @@ async def test_websocket():
             elif msg["type"] == "chat_chunk":
                 full_response += msg["content"]
             elif msg["type"] == "chat_end":
-                print(f"  💬 小云: {full_response}")
-                print(f"  📊 情绪: {msg['emotion']}, 亲密度: {msg['intimacy']}")
+                print(f"  💬 {_PERSONA_A}: {full_response}")
                 break
             elif msg["type"] == "error":
                 print(f"  ❌ Error: {msg['content']}")
@@ -77,24 +79,24 @@ async def test_websocket():
         assert chat_started, "Should have received chat_start"
         assert full_response, "Should have received response content"
 
-        # ── Test 2: Switch to lingling ──
-        print("\n📤 切换角色 → 玲玲")
+        # ── Test 2: Switch persona ──
+        print(f"\n📤 Switch → {_PERSONA_B}")
         await ws.send(json.dumps({
             "type": "switch_persona",
-            "persona_id": "lingling",
-            "user_name": "测试用户",
+            "persona_id": _PERSONA_B,
+            "user_name": "Tester",
         }))
 
         raw = await asyncio.wait_for(ws.recv(), timeout=5)
         msg = json.loads(raw)
         assert msg["type"] == "persona_switched"
-        print(f"  ✅ 切换成功: {msg['persona']}, session: {msg['session_id']}")
+        print(f"  ✅ Switched: {msg['persona']}, session: {msg['session_id']}")
 
-        # ── Test 3: Chat with lingling ──
-        print("\n📤 和玲玲聊天")
+        # ── Test 3: Chat with second persona ──
+        print(f"\n📤 Chat → {_PERSONA_B}")
         await ws.send(json.dumps({
             "type": "chat",
-            "content": "你好啊玲玲",
+            "content": "Hi there!",
         }))
 
         full_response = ""
@@ -106,23 +108,22 @@ async def test_websocket():
             elif msg["type"] == "chat_chunk":
                 full_response += msg["content"]
             elif msg["type"] == "chat_end":
-                print(f"  💬 玲玲: {full_response}")
-                print(f"  📊 情绪: {msg['emotion']}, 亲密度: {msg['intimacy']}")
+                print(f"  💬 {_PERSONA_B}: {full_response}")
                 break
 
-        assert full_response, "Lingling should respond"
+        assert full_response, "Second persona should respond"
 
         # ── Test 4: Status check ──
-        print("\n📤 查询状态")
+        print("\n📤 Status check")
         await ws.send(json.dumps({"type": "status"}))
         raw = await asyncio.wait_for(ws.recv(), timeout=5)
         msg = json.loads(raw)
-        print(f"  ✅ 状态: {msg}")
+        print(f"  ✅ Status: {msg}")
     finally:
         await ws_conn.__aexit__(None, None, None)
 
     print(f"\n{'=' * 60}")
-    print("🎉 WebSocket 测试全部通过!")
+    print("🎉 WebSocket tests passed!")
     print(f"{'=' * 60}")
 
 

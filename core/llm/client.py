@@ -66,7 +66,7 @@ class LLMClient:
     Usage:
         client = LLMClient(provider="dashscope", model="qwen-max")
         response = await client.chat([
-            ChatMessage("system", "你是小云..."),
+            ChatMessage("system", "You are a companion..."),
             ChatMessage("user", "你好呀"),
         ])
         print(response.content)

@@ -28,8 +28,8 @@ class StateStore:
 
     Usage:
         store = StateStore("/path/to/openher.db")
-        store.save_session("user123", "xiaoyun", agent, metabolism)
-        agent, metabolism = store.load_session("user123", "xiaoyun")
+        store.save_session("user123", "persona_a", agent, metabolism)
+        agent, metabolism = store.load_session("user123", "persona_a")
     """
 
     def __init__(self, db_path: str):

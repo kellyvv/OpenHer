@@ -71,7 +71,9 @@ class CronScheduler:
 
         For each skill × persona combination, a job is created.
         """
-        persona_ids = persona_ids or ["xiaoyun"]
+        if not persona_ids:
+            print("[cron] ⚠️ No persona_ids provided, skipping registration")
+            return
 
         for skill in skills:
             if not skill.cron_schedule:

@@ -51,12 +51,18 @@ class Persona:
     voice: VoiceConfig = field(default_factory=VoiceConfig)
     image: ImageConfig = field(default_factory=ImageConfig)
 
-    # Content sections (from markdown body)
+    # Display layer
+    bio: dict = field(default_factory=dict)  # {"en": ..., "zh": ...}
+
+    # Content sections (from markdown body, legacy)
     personality: str = ""                 # 性格描述
     speaking_style: str = ""              # 说话风格
     background: str = ""                  # 背景故事
     behavioral_rules: str = ""            # 行为规则
     raw_content: str = ""                 # Full markdown body (fallback)
+
+    # Engine seed
+    drive_baseline: dict = field(default_factory=dict)  # genome_seed.drive_baseline
 
     # Source
     base_dir: str = ""                    # Absolute path to persona directory
@@ -200,6 +206,14 @@ class PersonaLoader:
         # Parse body sections
         sections = self._parse_sections(post.content)
 
+        # Genome seed (engine layer)
+        genome_seed = meta.get("genome_seed", {})
+        drive_baseline = genome_seed.get("drive_baseline", {}) if isinstance(genome_seed, dict) else {}
+
+        # Bio (display layer, may be dict or string)
+        bio_raw = meta.get("bio", {})
+        bio = bio_raw if isinstance(bio_raw, dict) else {"en": str(bio_raw)}
+
         persona = Persona(
             name=meta.get("name", persona_id),
             persona_id=persona_id,
@@ -209,12 +223,14 @@ class PersonaLoader:
             tags=meta.get("tags", []),
             voice=voice,
             image=image,
+            bio=bio,
             personality=sections.get("personality", ""),
             speaking_style=sections.get("speaking_style", ""),
             background=sections.get("background", ""),
             behavioral_rules=sections.get("behavioral_rules", ""),
             raw_content=post.content,
             base_dir=str(persona_dir),
+            drive_baseline=drive_baseline,
         )
         return persona
 

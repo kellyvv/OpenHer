@@ -418,7 +418,7 @@ async def demo_app():
 class ChatRequest(BaseModel):
     """REST API chat request."""
     message: str
-    persona_id: str = "xiaoyun"
+    persona_id: str  # required, no default
     session_id: Optional[str] = None
     user_name: Optional[str] = None
 
@@ -505,7 +505,7 @@ def _cleanup_expired_sessions() -> int:
 
 def get_or_create_session(
     session_id: Optional[str],
-    persona_id: str = "xiaoyun",
+    persona_id: str,
     user_name: Optional[str] = None,
 ) -> tuple[str, ChatAgent]:
     """Get existing session or create a new one (with state hydration)."""
@@ -673,7 +673,7 @@ async def websocket_chat(ws: WebSocket):
     WebSocket endpoint for real-time persona chat with Genome v8.
 
     Protocol:
-      Client → Server: {"type": "chat", "content": "hello", "persona_id": "xiaoyun"}
+      Client → Server: {"type": "chat", "content": "hello", "persona_id": "vivian"}
       Server → Client: {"type": "chat_start", "session_id": "abc123"}
       Server → Client: {"type": "chat_chunk", "content": "嘿～"}  (streamed)
       Server → Client: {"type": "chat_end", "dominant_drive": "🔗 联结", ...}
@@ -699,7 +699,10 @@ async def websocket_chat(ws: WebSocket):
                 if not text:
                     continue
 
-                persona_id = msg.get("persona_id", "xiaoyun")
+                persona_id = msg.get("persona_id", "")
+                if not persona_id:
+                    await websocket.send_json({"type": "error", "content": "persona_id is required"})
+                    continue
                 user_name = msg.get("user_name")
 
                 try:
