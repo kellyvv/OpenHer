@@ -28,6 +28,8 @@ Per-turn lifecycle (with EverMemOS async memory):
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import uuid
 import re
 import time
 from typing import AsyncIterator, Optional
@@ -60,14 +62,27 @@ ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
 【最终回复】
 直接对用户说出口的话，不要加括号动作描写
 【表达方式】
-你决定用什么方式发这条消息。可选：文字 / 语音 / 表情 / 多条拆分 / 照片。可组合。说明理由（一句话）。"""
+你决定用什么方式发这条消息。可选：文字 / 语音 / 表情 / 多条拆分 / 照片 / 静默。可组合。说明理由（一句话）。
+（当你认为现在不应该说话时，选“静默”。）"""
+
+# -- Modality Parsing --
+MODALITY_ENUM = ("静默", "文字", "语音", "表情", "多条拆分", "照片")
+
+def _parse_modality(raw: str) -> str:
+    """Extract primary modality from Actor output. Ordered enum, first-token match."""
+    cleaned = raw.strip().lstrip("\uff1a: \n")
+    candidate = cleaned[:4]
+    for m in MODALITY_ENUM:
+        if candidate.startswith(m):
+            return m
+    return "文字"
 
 
 def extract_reply(raw: str) -> tuple[str, str, str]:
     """Extract monologue, reply, and modality from Actor output."""
     monologue = ""
     reply = ""
-    modality = ""
+    modality_raw = ""
 
     # Parse structured sections
     parts = re.split(r'【(内心独白|最终回复|表达方式)】', raw)
@@ -77,16 +92,23 @@ def extract_reply(raw: str) -> tuple[str, str, str]:
         elif parts[j] == '最终回复' and j+1 < len(parts):
             reply = parts[j+1].strip()
         elif parts[j] == '表达方式' and j+1 < len(parts):
-            modality = parts[j+1].strip()
+            modality_raw = parts[j+1].strip()
+
+    # Parse modality with strict enum (R11/R22)
+    modality = _parse_modality(modality_raw) if modality_raw else "文字"
+
+    # Silence short-circuit: Actor chose not to speak
+    if modality == "静默":
+        return monologue, "", "静默"
 
     if not reply:
         # Fallback: strip action descriptions
-        reply = re.sub(r'[（(][^）)]*[）)]', '', raw).strip()
+        reply = re.sub(r'[(（(][^)）)]*[)）)]', '', raw).strip()
         reply = re.sub(r'\*[^*]+\*', '', reply).strip()
         if not reply:
             reply = "..."
 
-    return monologue, reply, modality
+    return monologue, reply, modality_raw or modality
 
 
 class ChatAgent:
@@ -135,6 +157,14 @@ class ChatAgent:
         self._last_signals: Optional[dict] = None
         self._last_reward: float = 0.0
         self._last_modality: str = ""
+
+        # ── Concurrency lock (R2: serialize chat/stream/proactive_tick) ──
+        self._turn_lock = asyncio.Lock()
+
+        # ── Proactive tick state ──
+        self._last_active: float = time.time()
+        self._state_version: int = 0
+        self._interaction_cadence: float = 0.0  # EMA of interaction interval (seconds)
 
         # ── EverMemOS Async Memory ──
         self.evermemos = evermemos
@@ -264,9 +294,23 @@ class ChatAgent:
         Process a user message through the full Genome v10 lifecycle.
         Returns only the reply (monologue is stored internally).
         """
+        async with self._turn_lock:
+            return await self._chat_inner(user_message)
+
+    async def _chat_inner(self, user_message: str) -> str:
+        """Inner chat implementation (called under lock)."""
         self._turn_count += 1
         self._turn_used_fallback = False  # Reset per-turn fallback flag
         now = time.time()
+
+        # Update interaction cadence (EMA)
+        if self._last_active > 0:
+            delta = now - self._last_active
+            if self._interaction_cadence > 0:
+                self._interaction_cadence = 0.3 * delta + 0.7 * self._interaction_cadence
+            else:
+                self._interaction_cadence = delta
+        self._last_active = now
 
         # ── Step 0: EverMemOS session context (first turn only) ──
         relationship_prior = await self._evermemos_gather()
@@ -410,132 +454,139 @@ class ChatAgent:
         Stream a response through the Genome v10 lifecycle.
         Steps 1-8 run first (Critic, metabolism, KNN), then Actor streams.
         """
-        self._turn_count += 1
-        self._turn_used_fallback = False  # Reset per-turn fallback flag
-        now = time.time()
+        await self._turn_lock.acquire()
+        try:
+            self._turn_count += 1
+            self._turn_used_fallback = False
+            now = time.time()
 
-        # ── Step 0: EverMemOS session context (first turn only) ──
-        relationship_prior = await self._evermemos_gather()
+            # Update interaction cadence (EMA)
+            if self._last_active > 0:
+                delta = now - self._last_active
+                if self._interaction_cadence > 0:
+                    self._interaction_cadence = 0.3 * delta + 0.7 * self._interaction_cadence
+                else:
+                    self._interaction_cadence = delta
+            self._last_active = now
 
-        # ── Step 1: Metabolism ──
-        delta_h = self.metabolism.time_metabolism(now)
-        # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
-        frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta, rel_delta = await critic_sense(
-            user_message, self.llm, frust_dict,
-            user_profile=self._user_profile,
-            episode_summary=self._episode_summary,
-        )
+            # ── Step 0: EverMemOS session context (first turn only) ──
+            relationship_prior = await self._evermemos_gather()
 
-        # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
-        relationship_4d = self._apply_relationship_ema(
-            relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
-        )
-        context.update(relationship_4d)  # Merge 8D + 4D → 12D
-        self._last_critic = context  # Store full 12D context (after merge)
+            # ── Step 1: Metabolism ──
+            delta_h = self.metabolism.time_metabolism(now)
+            # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
+            frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+            context, frustration_delta, rel_delta = await critic_sense(
+                user_message, self.llm, frust_dict,
+                user_profile=self._user_profile,
+                episode_summary=self._episode_summary,
+            )
 
-        reward = self.metabolism.apply_llm_delta(frustration_delta)
-        self.metabolism.sync_to_agent(self.agent)
-        self._last_reward = reward
+            # ── Step 2.5: Semi-emergent relationship update ──
+            relationship_4d = self._apply_relationship_ema(
+                relationship_prior, rel_delta, context.get('conversation_depth', 0.0)
+            )
+            context.update(relationship_4d)
+            self._last_critic = context
 
-        # ── Step 3.5: Critic-driven Drive baseline evolution ──
-        BASELINE_LR = 0.003
-        for d in DRIVES:
-            shift = frustration_delta.get(d, 0.0) * BASELINE_LR
-            self.agent.drive_baseline[d] = max(0.1, min(0.95,
-                self.agent.drive_baseline[d] + shift
-            ))
+            reward = self.metabolism.apply_llm_delta(frustration_delta)
+            self.metabolism.sync_to_agent(self.agent)
+            self._last_reward = reward
 
+            # ── Step 3.5: Critic-driven Drive baseline evolution ──
+            BASELINE_LR = 0.003
+            for d in DRIVES:
+                shift = frustration_delta.get(d, 0.0) * BASELINE_LR
+                self.agent.drive_baseline[d] = max(0.1, min(0.95,
+                    self.agent.drive_baseline[d] + shift
+                ))
 
-        # ── Step 4: Crystallization ──
-        if self._last_action and self._should_crystallize(reward, context):
+            # ── Step 4: Crystallization ──
+            if self._last_action and self._should_crystallize(reward, context):
+                self.style_memory.set_clock(now)
+                self.style_memory.crystallize(
+                    self._last_action['signals'],
+                    self._last_action['monologue'],
+                    self._last_action['reply'],
+                    self._last_action['user_input'],
+                )
+
+            # ── Steps 5-6: Signals + noise ──
+            base_signals = self.agent.compute_signals(context)
+            total_frust = self.metabolism.total()
+            noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+            self._last_signals = noisy_signals
+
+            # ── Step 7-8: KNN + Actor prompt ──
             self.style_memory.set_clock(now)
-            self.style_memory.crystallize(
-                self._last_action['signals'],
-                self._last_action['monologue'],
-                self._last_action['reply'],
-                self._last_action['user_input'],
-            )
+            few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
+            system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
 
-        # ── Steps 5-6: Signals + noise ──
-        base_signals = self.agent.compute_signals(context)
-        total_frust = self.metabolism.total()
-        noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
-        self._last_signals = noisy_signals
+            # ── Step 8.5: Memory injection ──
+            if self._session_ctx and self._session_ctx.has_history:
+                await self._collect_search_results()
+                profile_budget, episode_budget = self._memory_injection_budget(context)
+                profile_text = self._blend_injection(
+                    self._relevant_facts, self._user_profile, profile_budget
+                )
+                episode_text = self._blend_injection(
+                    self._relevant_episodes, self._episode_summary, episode_budget
+                )
+                name = self.user_name or self.user_id
+                if profile_text:
+                    system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                if episode_text:
+                    system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                if self._foresight_text:
+                    system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                if self._relevant_profile:
+                    system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
+                if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
+                    self._search_relevant_used += 1
 
-        # ── Step 7-8: KNN + Actor prompt ──
-        self.style_memory.set_clock(now)
-        few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+            # ── Step 9: Stream Actor ──
+            messages = [ChatMessage(role="system", content=system_prompt)]
+            messages.extend(self.history)
+            messages.append(ChatMessage(role="user", content=user_message))
 
-        # ── Step 8.5: Memory injection (profile + episode + foresight) ──
-        if self._session_ctx and self._session_ctx.has_history:
-            # Collect search results right before injection (not at turn start)
-            await self._collect_search_results()
-            profile_budget, episode_budget = self._memory_injection_budget(context)
-            # Phase 3: blend relevant (80%) + static (20%) for stability
-            profile_text = self._blend_injection(
-                self._relevant_facts, self._user_profile, profile_budget
-            )
-            episode_text = self._blend_injection(
-                self._relevant_episodes, self._episode_summary, episode_budget
-            )
-            name = self.user_name or self.user_id
-            if profile_text:
-                system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
-            if episode_text:
-                system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
-            # P1: Inject foresight prediction text
-            if self._foresight_text:
-                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
-            # P1: Inject profile from search
-            if self._relevant_profile:
-                system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
-            # Track if this turn used relevant content
-            if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
-                self._search_relevant_used += 1
+            full_response = []
+            async for chunk in self.llm.chat_stream(messages):
+                full_response.append(chunk)
+                yield chunk
 
-        # ── Step 9: Stream Actor ──
-        messages = [ChatMessage(role="system", content=system_prompt)]
-        messages.extend(self.history)
-        messages.append(ChatMessage(role="user", content=user_message))
+            # ── Post-stream processing ──
+            raw_text = "".join(full_response)
+            monologue, reply, modality = extract_reply(raw_text)
 
-        full_response = []
-        async for chunk in self.llm.chat_stream(messages):
-            full_response.append(chunk)
-            yield chunk
+            # Step 10: Hebbian learning
+            clamped_reward = max(-1.0, min(1.0, reward))
+            self.agent.step(context, reward=clamped_reward)
 
-        # ── Post-stream processing ──
-        raw_text = "".join(full_response)
-        monologue, reply, modality = extract_reply(raw_text)
+            # Update history
+            self.history.append(ChatMessage(role="user", content=user_message))
+            self.history.append(ChatMessage(role="assistant", content=reply))
 
-        # Step 10: Hebbian learning
-        clamped_reward = max(-1.0, min(1.0, reward))
-        self.agent.step(context, reward=clamped_reward)
+            if len(self.history) > self.max_history:
+                self.history = self.history[-self.max_history:]
 
-        # Update history (store only the reply, not monologue)
-        self.history.append(ChatMessage(role="user", content=user_message))
-        self.history.append(ChatMessage(role="assistant", content=reply))
+            self._last_action = {
+                'signals': noisy_signals,
+                'monologue': monologue,
+                'reply': reply,
+                'modality': modality,
+                'user_input': user_message,
+            }
+            self._last_modality = modality
 
-        if len(self.history) > self.max_history:
-            self.history = self.history[-self.max_history:]
+            print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
 
-        self._last_action = {
-            'signals': noisy_signals,
-            'monologue': monologue,
-            'reply': reply,
-            'modality': modality,
-            'user_input': user_message,
-        }
-        self._last_modality = modality
+            # ── Step 11: EverMemOS store_turn ──
+            self._evermemos_store_bg(user_message, reply)
 
-        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
-
-        # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
-        self._evermemos_store_bg(user_message, reply)
-
-        # ── Step 12: Fire async search for NEXT turn's injection ──
-        self._evermemos_search_bg(user_message)
+            # ── Step 12: Fire async search for NEXT turn ──
+            self._evermemos_search_bg(user_message)
+        finally:
+            self._turn_lock.release()
 
     async def _evermemos_gather(self) -> dict:
         """
@@ -767,4 +818,178 @@ class ChatAgent:
             "search_timeout_rate": round(search_timeout_rate, 3),
             "fallback_rate": round(fallback_rate, 3),
             "relevant_injection_ratio": round(relevant_injection_ratio, 3),
+        }
+
+    # ────────────────────────────────────────────
+    # Proactive Tick: Drive-driven autonomous messaging
+    # ────────────────────────────────────────────
+
+    # Config defaults (can be overridden by memory_config.yaml)
+    _IMPULSE_THRESHOLD = 0.8
+
+    def _has_impulse(self) -> Optional[tuple]:
+        """
+        Drive self-check: is any drive significantly above its baseline?
+
+        Returns (drive_id, description) if impulse detected, else None.
+        Baseline is emergent (Step 3.5 evolves it each turn via Critic).
+        Score = (normalized_frustration - baseline) / baseline.
+        Score >= threshold means current desire is significantly above "normal".
+        """
+        strongest = None
+        max_score = 0.0
+        for d in DRIVES:
+            norm_frust = self.metabolism.frustration[d] / 5.0  # 0~1
+            baseline = self.agent.drive_baseline[d]             # 0~1
+            # Relative deviation from baseline
+            score = (norm_frust - baseline) / max(baseline, 0.05)
+            if score > max_score:
+                max_score = score
+                strongest = d
+
+        if max_score >= self._IMPULSE_THRESHOLD and strongest:
+            desc = f"内心的{DRIVE_LABELS[strongest]}冲动正在变强。"
+            return (strongest, desc)
+        return None
+
+    async def proactive_tick(self) -> Optional[dict]:
+        """
+        Drive-driven autonomous tick. No user input required.
+
+        Flow:
+          1. Advance metabolism (Drive energy evolves with time)
+          2. Check impulse (Drive deviation from baseline)
+          3. If impulse → memory flashback + build stimulus
+          4. Critic/Actor pipeline (same as chat, frozen learning)
+          5. Actor decides: speak or stay silent
+
+        Returns:
+            {'reply': str, 'modality': str, 'monologue': str,
+             'proactive': True, 'drive_id': str, 'tick_id': str}
+            or None (no impulse / decided to stay silent)
+        """
+        async with self._turn_lock:
+            return await self._proactive_tick_inner()
+
+    async def _proactive_tick_inner(self) -> Optional[dict]:
+        """Inner proactive tick (called under lock)."""
+        start = time.time()
+        tick_id = str(uuid.uuid4())
+
+        # ── Step 1: Advance metabolism ──
+        self.metabolism.time_metabolism(start)
+
+        # ── Step 2: Drive self-check ──
+        impulse = self._has_impulse()
+        if not impulse:
+            return None  # No impulse → zero cost (no LLM calls)
+
+        drive_id, impulse_desc = impulse
+        print(f"  [proactive] 💭 impulse detected: {impulse_desc}")
+
+        # ── Step 3: Memory flashback ──
+        # Search EverMemOS using impulse content — simulates "a memory pops up"
+        flashback_parts = []
+        if self.evermemos and self.evermemos.available:
+            try:
+                facts, episodes, profile = await self.evermemos.search_relevant_memories(
+                    query=impulse_desc,
+                    user_id=self.evermemos_uid,
+                )
+                if episodes:
+                    flashback_parts.append(f"[记忆闪回] {episodes}")
+                if facts:
+                    flashback_parts.append(f"[闪回细节] {facts}")
+            except Exception as e:
+                print(f"  [proactive] flashback search failed: {e}")
+
+        # ── Step 4: Build stimulus (data formatting, not decision logic) ──
+        name = self.user_name or self.user_id
+        hours = (start - self._last_active) / 3600 if self._last_active > 0 else 0
+
+        parts = [f"[内在状态] 已{hours:.0f}小时未与{name}互动。{impulse_desc}"]
+        parts.extend(flashback_parts)
+        if self._foresight_text:
+            parts.append(f"[预感] {self._foresight_text}")
+
+        stimulus = "\n".join(parts)
+
+        # ── Step 5: Load session context (if not already cached) ──
+        relationship_prior = await self._evermemos_gather()
+
+        # ── Step 6: Critic perception (same pipeline, stimulus instead of user_message) ──
+        frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+        context, frustration_delta, rel_delta = await critic_sense(
+            stimulus, self.llm, frust_dict,
+            user_profile=self._user_profile,
+            episode_summary=self._episode_summary,
+        )
+
+        # ── R1: FROZEN — Do NOT update relationship EMA (no user feedback) ──
+        # Read-only: use prior values without writing to EMA
+        relationship_4d = {
+            'relationship_depth': self._relationship_ema.get('relationship_depth', 0.0),
+            'trust_level': self._relationship_ema.get('trust_level', 0.0),
+            'emotional_valence': self._relationship_ema.get('emotional_valence', 0.0),
+            'foresight': self._relationship_ema.get('foresight', 0.0),
+        }
+        context.update(relationship_4d)
+
+        # ── Step 7: Metabolism → reward (frustration release) ──
+        reward = self.metabolism.apply_llm_delta(frustration_delta)
+        self.metabolism.sync_to_agent(self.agent)
+
+        # ── R1: FROZEN — Do NOT evolve drive baselines (Step 3.5) ──
+        # ── R1: FROZEN — Do NOT do Hebbian learning (Step 10) ──
+
+        # ── Step 8: Compute signals + noise ──
+        base_signals = self.agent.compute_signals(context)
+        total_frust = self.metabolism.total()
+        noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+
+        # ── Step 9: Build Actor prompt ──
+        self.style_memory.set_clock(start)
+        few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
+        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+
+        # ── Step 9.5: Memory injection (foresight is key driver here) ──
+        if self._session_ctx and self._session_ctx.has_history:
+            if self._user_profile:
+                system_prompt += f"\n\n[关于{name}的偏好] {self._user_profile[:300]}"
+            if self._episode_summary:
+                system_prompt += f"\n\n[与{name}过去发生的事] {self._episode_summary[:300]}"
+            if self._foresight_text:
+                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+
+        # ── Step 10: LLM Actor (no history, no fake user_message) ──
+        messages = [
+            ChatMessage(role="system", content=system_prompt),
+            ChatMessage(role="user", content=stimulus),
+        ]
+        response = await self.llm.chat(messages)
+        monologue, reply, modality = extract_reply(response.content)
+
+        elapsed = start and (time.time() - start) or 0
+        if elapsed > 300:
+            print(f"  [proactive] ⚠️ tick took {elapsed:.0f}s, approaching TTL")
+
+        # ── Actor decided to stay silent ──
+        if modality == "静默" or not reply.strip():
+            print(f"  [proactive] 🤫 decided to stay silent: {monologue[:60]}")
+            return None
+
+        # ── Actor decided to speak ──
+        print(f"  [proactive] 💬 sending: {reply[:40]}...")
+
+        # Update last_active (proactive message counts as activity)
+        self._last_active = time.time()
+        self._state_version += 1
+
+        return {
+            'reply': reply,
+            'modality': modality,
+            'monologue': monologue,
+            'proactive': True,
+            'drive_id': drive_id,
+            'tick_id': tick_id,
         }

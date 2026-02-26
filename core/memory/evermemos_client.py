@@ -444,6 +444,48 @@ class EverMemOSClient:
             self._cb.record_failure()
             print(f"  [evermemos] store_turn error: {e}")
 
+    async def store_proactive_turn(
+        self,
+        persona_id: str,
+        persona_name: str,
+        group_id: str,
+        reply: str,
+        tick_id: str,
+    ) -> None:
+        """
+        Store a proactive message (AI-initiated, no user_message).
+        Uses message_id=tick_id for idempotent retry (R25).
+        Uses refer_list for metadata marking with fallback (R20).
+        """
+        if not self.available:
+            return
+
+        now_iso = time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime())
+        msg_id = f"proactive_{tick_id}"
+
+        kwargs = dict(
+            content=reply,
+            create_time=now_iso,
+            message_id=msg_id,
+            sender=persona_id,
+            sender_name=persona_name,
+            role="assistant",
+            group_id=group_id,
+        )
+
+        try:
+            # Try with refer_list metadata marking (R16)
+            try:
+                await self._mem.add(**kwargs, refer_list=["proactive"])
+            except (TypeError, Exception):
+                # refer_list not supported in this SDK version → fallback
+                await self._mem.add(**kwargs)
+            self._cb.record_success()
+            print(f"  [evermemos] stored proactive turn (tick={tick_id[:8]})")
+        except Exception as e:
+            self._cb.record_failure()
+            print(f"  [evermemos] store_proactive error: {e}")
+
     async def close_session(
         self,
         user_id: str,

@@ -28,3 +28,9 @@ evermemos:
   # Logging / metrics
   log_hit_rates: true            # Log foresight/profile/fact hit rates per turn
   log_latency: true              # Log retrieval latency (ms)
+
+  # Proactive tick (Drive-driven autonomous messaging)
+  impulse_threshold: 0.8         # Drive deviation score threshold (0~2, lower = more proactive)
+  proactive_cooldown_hours: 4    # Min hours between proactive messages per user
+  proactive_max_pending: 3       # Max pending outbox messages per user
+  proactive_lock_ttl_sec: 600    # Lease TTL for cross-instance lock

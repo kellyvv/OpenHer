@@ -25,6 +25,8 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import uuid as _uuid
+
 from core.persona import PersonaLoader
 from core.llm import LLMClient
 from core.agent.chat_agent import ChatAgent
@@ -80,6 +82,11 @@ active_sessions: dict[str, tuple[ChatAgent, float]] = {}
 
 # Session TTL: auto-clean sessions older than 30 minutes
 SESSION_TTL_SECONDS = 30 * 60
+
+# Proactive heartbeat
+_proactive_task: Optional[asyncio.Task] = None
+_INSTANCE_ID = str(_uuid.uuid4())[:8]  # unique per server instance
+_PROACTIVE_INTERVAL = 300  # seconds between heartbeat sweeps
 
 
 @app.on_event("startup")
@@ -145,6 +152,11 @@ async def startup():
     if os.path.isdir(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
+    # 10. Start proactive heartbeat loop
+    global _proactive_task
+    _proactive_task = asyncio.create_task(_proactive_heartbeat_loop())
+    print("✓ 主动消息心跳已启动")
+
     print("✓ OpenHer 服务启动完成 (v0.5.0 — Genome v10 Hybrid Engine)")
     print("  → 演示页面: http://localhost:8800/app")
 
@@ -152,6 +164,13 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     """Save all active sessions and close DBs."""
+    # Stop proactive heartbeat
+    if _proactive_task and not _proactive_task.done():
+        _proactive_task.cancel()
+        try:
+            await _proactive_task
+        except asyncio.CancelledError:
+            pass
     if cron_scheduler:
         cron_scheduler.stop()
     if state_store:
@@ -204,6 +223,100 @@ async def _cron_deliver_message(persona_id: str, skill_id: str, message: str) ->
             category="event",
             importance=0.6,
         )
+
+
+# ──────────────────────────────────────────────────────────────
+# Proactive Heartbeat — Drive-driven autonomous messaging
+# ──────────────────────────────────────────────────────────────
+
+async def _proactive_heartbeat_loop():
+    """
+    Background loop: sweep active sessions, run proactive_tick,
+    enqueue results to outbox, deliver pending messages.
+    """
+    await asyncio.sleep(60)  # Initial delay: let sessions warm up
+    while True:
+        try:
+            await _proactive_sweep()
+        except Exception as e:
+            print(f"[proactive] ❌ heartbeat error: {e}")
+        await asyncio.sleep(_PROACTIVE_INTERVAL)
+
+
+async def _proactive_sweep():
+    """One sweep: iterate active sessions and run proactive_tick."""
+    if not state_store or not active_sessions:
+        return
+
+    for sid, (agent, _last) in list(active_sessions.items()):
+        uid = agent.user_id
+        pid = agent.persona.persona_id
+
+        # Cross-instance lock (R7/R23/R28)
+        if not state_store.try_acquire_lock(uid, pid, _INSTANCE_ID):
+            continue  # Another instance is handling this user
+
+        try:
+            result = await agent.proactive_tick()
+            if result is None:
+                continue  # No impulse or Actor chose silence
+
+            # Build structured dedup key (R26)
+            drive_id = result.get('drive_id', 'unknown')
+            depth = agent._relationship_ema.get('relationship_depth', 0.0)
+            band = 'deep' if depth > 0.6 else 'mid' if depth > 0.3 else 'shallow'
+            bucket = int(time.time() // (4 * 3600))
+            dedup_key = f"{drive_id}:{band}:{bucket}"
+
+            # 3-layer outbox guard (R15)
+            if not state_store.outbox_can_enqueue(uid, pid, dedup_key):
+                print(f"  [proactive] 🛑 outbox guard blocked: {dedup_key}")
+                continue
+
+            # Enqueue (R10/R31)
+            state_store.outbox_insert(
+                uid, pid, result['tick_id'],
+                result['reply'], result.get('modality', '文字'),
+                result.get('monologue', ''), drive_id, dedup_key,
+            )
+
+            # Immediate delivery attempt for online users
+            await _deliver_proactive(agent, result)
+
+        finally:
+            state_store.release_lock(uid, pid, _INSTANCE_ID)
+
+
+async def _deliver_proactive(agent: ChatAgent, result: dict):
+    """Deliver one proactive message: outbox state machine + EverMemOS storage."""
+    uid = agent.user_id
+    pid = agent.persona.persona_id
+    tick_id = result['tick_id']
+
+    # Outbox: pending → sending (R31)
+    msg = state_store.outbox_try_send(uid, pid, tick_id)
+    if not msg:
+        return  # Already taken by another instance
+
+    try:
+        # Store in EverMemOS (idempotent via message_id, R25)
+        if evermemos and evermemos.available:
+            await evermemos.store_proactive_turn(
+                persona_id=pid,
+                persona_name=agent.persona.name,
+                group_id=agent._group_id,
+                reply=result['reply'],
+                tick_id=tick_id,
+            )
+
+        # Mark delivered (R31)
+        state_store.outbox_mark_delivered(uid, pid, tick_id)
+        print(f"  [proactive] ✅ delivered: {result['reply'][:40]}")
+
+    except Exception as e:
+        # Mark failed → back to pending for retry (R31)
+        state_store.outbox_mark_failed(uid, pid, tick_id)
+        print(f"  [proactive] ❌ delivery failed, will retry: {e}")
 
 
 @app.get("/app")

@@ -40,7 +40,7 @@ CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用
 Agent 当前挫败值（0=满足, 5=极度渴望）：
 {frustration_json}
 
-{user_profile_section}{episode_section}用户说了："{user_input}"
+{user_profile_section}{episode_section}当前刺激："{stimulus}"
 
 严格输出纯 JSON：
 {
@@ -61,7 +61,7 @@ _DEFAULT_REL_DELTA = {'relationship_delta': 0.0, 'trust_delta': 0.0, 'emotional_
 
 
 async def critic_sense(
-    user_input: str,
+    stimulus: str,
     llm: LLMClient,
     frustration: dict = None,
     user_profile: str = "",
@@ -94,7 +94,7 @@ async def critic_sense(
     prompt = CRITIC_PROMPT.replace(
         "{frustration_json}", frust_json
     ).replace(
-        "{user_input}", user_input
+        "{stimulus}", stimulus
     ).replace(
         "{user_profile_section}", profile_section
     ).replace(
@@ -103,7 +103,7 @@ async def critic_sense(
 
     messages = [
         ChatMessage(role="system", content=prompt),
-        ChatMessage(role="user", content=user_input),
+        ChatMessage(role="user", content=stimulus),
     ]
 
     try:
