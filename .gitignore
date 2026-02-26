@@ -24,3 +24,5 @@ server/venv/
 server/.cache/
 server/.data/
 server/__pycache__/
+web/node_modules/
+web/dist/

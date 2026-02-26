@@ -1,0 +1,290 @@
+/* ── Discover Page ── */
+
+.discover-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.discover-header {
+    padding: 24px 20px 16px;
+    text-align: center;
+}
+
+.discover-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.discover-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ── Card Stack ── */
+.card-stack {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 20px;
+}
+
+.swipe-card {
+    position: absolute;
+    width: 100%;
+    max-width: 360px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    touch-action: pan-y;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.swipe-card:active {
+    cursor: grabbing;
+}
+
+/* ── Card Avatar ── */
+.card-avatar {
+    width: 100%;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-avatar-gradient {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg,
+            rgba(255, 107, 157, 0.3),
+            rgba(192, 132, 252, 0.3),
+            rgba(96, 165, 250, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-avatar-letter {
+    font-size: 96px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.15);
+    text-transform: uppercase;
+}
+
+/* ── Card Info ── */
+.card-info {
+    padding: 20px 24px 24px;
+}
+
+.card-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.card-name {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.card-age {
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text-secondary);
+}
+
+.card-mbti {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(192, 132, 252, 0.15);
+    color: var(--accent-purple);
+    letter-spacing: 0.5px;
+}
+
+.card-bio {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.card-tag {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+/* ── Swipe Labels ── */
+.swipe-label {
+    position: absolute;
+    top: 24px;
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    border: 3px solid;
+    transform: rotate(-15deg);
+}
+
+.swipe-label.like {
+    right: 24px;
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+    transform: rotate(15deg);
+}
+
+.swipe-label.skip {
+    left: 24px;
+    color: #f87171;
+    border-color: #f87171;
+    transform: rotate(-15deg);
+}
+
+/* ── Action Buttons ── */
+.action-buttons {
+    display: flex;
+    gap: 32px;
+    padding: 24px 0 40px;
+}
+
+.action-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:active {
+    transform: scale(0.9);
+}
+
+.skip-btn {
+    color: #f87171;
+}
+
+.skip-btn:hover {
+    border-color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.like-btn {
+    color: var(--accent-green);
+}
+
+.like-btn:hover {
+    border-color: var(--accent-green);
+    background: rgba(74, 222, 128, 0.1);
+}
+
+/* ── Empty & Loading States ── */
+.empty-state,
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+}
+
+.empty-emoji {
+    font-size: 56px;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.btn-reset {
+    margin-top: 8px;
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reset:hover {
+    border-color: var(--accent-pink);
+    background: var(--accent-glow);
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-pink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+    .card-avatar {
+        height: 260px;
+    }
+
+    .card-name {
+        font-size: 22px;
+    }
+
+    .card-bio {
+        font-size: 13px;
+    }
+
+    .action-buttons {
+        padding: 16px 0 32px;
+    }
+}
