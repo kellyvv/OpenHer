@@ -102,7 +102,11 @@ export default function Chat() {
                             )}
                         </div>
                         <div className="bubble">
-                            {msg.content}
+                            {msg.typing ? (
+                                <span className="typing-dots">
+                                    <span /><span /><span />
+                                </span>
+                            ) : msg.content}
                         </div>
                     </div>
                 ))}
