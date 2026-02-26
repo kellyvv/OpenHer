@@ -48,7 +48,6 @@ export default function Chat() {
 
     return (
         <div className="chat-page">
-            <div className="bg-orbs" />
 
             {/* Header */}
             <header className="chat-header">

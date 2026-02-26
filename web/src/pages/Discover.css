@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════
    Discover Page — Tinder-style Card Swipe
-   9:16 mobile-first, premium dark mode
+   Lives inside .phone-screen
    ══════════════════════════════════════════ */
 
 .discover-page {
@@ -11,8 +11,6 @@
     position: relative;
     z-index: 1;
     overflow: hidden;
-    max-width: 430px;
-    margin: 0 auto;
 }
 
 /* ── Header ── */
@@ -40,17 +38,15 @@
     align-items: center;
     justify-content: center;
     padding: 0 16px;
-    /* 9:16 aspect ratio constraint */
-    max-height: calc(100% - 140px);
 }
 
 /* ── Swipe Card ── */
 .swipe-card {
     position: absolute;
     width: calc(100% - 32px);
-    max-width: 398px;
-    /* 9:16 ratio */
-    aspect-ratio: 9 / 14;
+    /* Fill most of the container height */
+    height: 85%;
+    max-height: 600px;
     border-radius: 20px;
     overflow: hidden;
     cursor: grab;
@@ -141,7 +137,7 @@
 }
 
 .card-name {
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: -0.5px;
     color: #fff;
@@ -149,7 +145,7 @@
 }
 
 .card-age {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 300;
     color: rgba(255, 255, 255, 0.75);
 }
@@ -186,9 +182,9 @@
 }
 
 .card-bio {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.55);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -228,16 +224,16 @@
 .actions {
     display: flex;
     gap: 40px;
-    padding: 16px 0 36px;
+    padding: 16px 0 32px;
     z-index: 20;
 }
 
 .action-circle {
-    width: 68px;
-    height: 68px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     border: none;
-    font-size: 28px;
+    font-size: 26px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -316,50 +312,5 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-/* ── Desktop: center the 9:16 frame ── */
-@media (min-width: 481px) {
-    .discover-page {
-        padding-top: 20px;
-    }
-
-    .card-container {
-        max-height: 680px;
-    }
-}
-
-/* ── Mobile ── */
-@media (max-width: 480px) {
-    .discover-header {
-        padding: 12px 16px 4px;
-    }
-
-    .logo {
-        font-size: 20px;
-    }
-
-    .card-overlay {
-        padding: 20px;
-    }
-
-    .card-name {
-        font-size: 28px;
-    }
-
-    .card-age {
-        font-size: 22px;
-    }
-
-    .actions {
-        padding: 12px 0 28px;
-        gap: 32px;
-    }
-
-    .action-circle {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
     }
 }

@@ -1,4 +1,7 @@
-/* ── OpenHer Design System ── */
+/* ══════════════════════════════════════════
+   OpenHer Design System
+   Mobile-first, 9:16 phone frame
+   ══════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -17,7 +20,7 @@
   --accent-green: #4ade80;
   --accent-glow: rgba(255, 107, 157, 0.15);
   --border: rgba(255, 255, 255, 0.06);
-  --glass: rgba(26, 26, 46, 0.85);
+  --glass: rgba(18, 18, 26, 0.88);
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -25,50 +28,141 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   overflow: hidden;
+  background: #050508;
 }
 
 body {
   font-family: var(--font);
-  background: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ══════════════════════════════════════════
+   Phone Frame — 9:16 centered on desktop
+   ══════════════════════════════════════════ */
+.phone-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050508;
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 430px;
+  max-height: 932px;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Desktop: show the phone frame with rounded corners + shadow */
+@media (min-width: 481px) {
+  .phone-screen {
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.02),
+      0 25px 80px rgba(0, 0, 0, 0.6),
+      0 8px 30px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* Mobile: full-screen, no frame */
+@media (max-width: 480px) {
+  .phone-screen {
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+  }
+}
+
 /* ── Background Ambience ── */
 .bg-orbs {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
+
 .bg-orbs::before {
   content: '';
   position: absolute;
-  top: -20%; left: -10%;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(255,107,157,0.08) 0%, transparent 70%);
+  top: -15%;
+  left: -15%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 107, 157, 0.1) 0%, transparent 70%);
   border-radius: 50%;
   animation: float1 20s ease-in-out infinite;
 }
+
 .bg-orbs::after {
   content: '';
   position: absolute;
-  bottom: -20%; right: -10%;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%);
+  bottom: -15%;
+  right: -15%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.08) 0%, transparent 70%);
   border-radius: 50%;
   animation: float2 25s ease-in-out infinite;
 }
-@keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(80px,60px); } }
-@keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-60px,-40px); } }
+
+@keyframes float1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(60px, 40px);
+  }
+}
+
+@keyframes float2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(-40px, -30px);
+  }
+}
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
 
 /* ── Utility ── */
 .gradient-text {

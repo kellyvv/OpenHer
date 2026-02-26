@@ -122,7 +122,6 @@ export default function Discover() {
 
     return (
         <div className="discover-page">
-            <div className="bg-orbs" />
 
             {/* Header */}
             <header className="discover-header">

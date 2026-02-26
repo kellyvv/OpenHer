@@ -1,4 +1,6 @@
-/* ── Chat Page ── */
+/* ══════════════════════════════════════════
+   Chat Page — Lives inside .phone-screen
+   ══════════════════════════════════════════ */
 
 .chat-page {
     height: 100%;
@@ -10,7 +12,7 @@
 
 /* ── Header ── */
 .chat-header {
-    padding: 12px 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--glass);
     backdrop-filter: blur(20px);
@@ -25,11 +27,12 @@
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: var(--radius-sm);
     transition: color 0.2s;
+    line-height: 1;
 }
 
 .back-btn:hover {
@@ -106,17 +109,17 @@
 .messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     scroll-behavior: smooth;
 }
 
 .message {
     display: flex;
     gap: 8px;
-    max-width: 80%;
+    max-width: 82%;
     animation: msgIn 0.3s ease;
 }
 
@@ -138,14 +141,14 @@
 }
 
 .msg-avatar {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .message.assistant .msg-avatar {
@@ -158,10 +161,10 @@
 }
 
 .bubble {
-    padding: 10px 16px;
+    padding: 10px 14px;
     border-radius: 18px;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.55;
     word-break: break-word;
 }
 
@@ -173,7 +176,7 @@
 
 .message.user .bubble {
     background: linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(192, 132, 252, 0.15));
-    border: 1px solid rgba(255, 107, 157, 0.15);
+    border: 1px solid rgba(255, 107, 157, 0.12);
     border-bottom-right-radius: 6px;
 }
 
@@ -198,7 +201,7 @@
     justify-content: center;
     gap: 12px;
     text-align: center;
-    padding: 40px 20px;
+    padding: 40px 24px;
 }
 
 .welcome-avatar {
@@ -212,17 +215,18 @@
     font-size: 36px;
     font-weight: 700;
     margin-bottom: 8px;
+    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.2);
 }
 
 .welcome h2 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
 }
 
 .welcome-bio {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
-    max-width: 320px;
+    max-width: 280px;
     line-height: 1.6;
 }
 
@@ -234,7 +238,7 @@
 }
 
 .welcome-tag {
-    font-size: 12px;
+    font-size: 11px;
     padding: 4px 12px;
     border-radius: var(--radius-full);
     background: rgba(255, 255, 255, 0.05);
@@ -250,7 +254,7 @@
 
 /* ── Input Area ── */
 .input-area {
-    padding: 12px 16px 24px;
+    padding: 10px 16px 20px;
     border-top: 1px solid var(--border);
     background: var(--glass);
     backdrop-filter: blur(20px);
@@ -268,7 +272,7 @@
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
-    padding: 12px 20px;
+    padding: 12px 18px;
     font-size: 14px;
     color: var(--text-primary);
     font-family: var(--font);
@@ -302,6 +306,7 @@
     justify-content: center;
     transition: transform 0.15s, opacity 0.15s;
     flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.25);
 }
 
 .send-btn:hover {
@@ -315,19 +320,5 @@
 .send-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-}
-
-/* ── Mobile ── */
-@media (max-width: 480px) {
-    .input-area {
-        padding: 10px 12px 20px;
-    }
-
-    .messages {
-        padding: 16px 12px;
-    }
-
-    .message {
-        max-width: 85%;
-    }
+    box-shadow: none;
 }

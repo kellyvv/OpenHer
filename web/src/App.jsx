@@ -6,11 +6,17 @@ import './index.css'
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/discover" replace />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/chat/:personaId" element={<Chat />} />
-      </Routes>
+      {/* Phone-frame wrapper: 9:16 on desktop, full-screen on mobile */}
+      <div className="phone-frame">
+        <div className="phone-screen">
+          <div className="bg-orbs" />
+          <Routes>
+            <Route path="/" element={<Navigate to="/discover" replace />} />
+            <Route path="/discover" element={<Discover />} />
+            <Route path="/chat/:personaId" element={<Chat />} />
+          </Routes>
+        </div>
+      </div>
     </BrowserRouter>
   )
 }
