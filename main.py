@@ -403,11 +403,23 @@ async def proactive_metrics():
     return m
 
 
-@app.get("/app")
-async def demo_app():
-    """Serve the demo web client."""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    html_path = os.path.join(base_dir, "static", "index.html")
+# ── Serve React SPA ──
+_base_dir = os.path.dirname(os.path.abspath(__file__))
+_static_dir = os.path.join(_base_dir, "static")
+_assets_dir = os.path.join(_static_dir, "assets")
+
+if os.path.isdir(_assets_dir):
+    app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
+
+@app.get("/", include_in_schema=False)
+@app.get("/app", include_in_schema=False)
+@app.get("/discover", include_in_schema=False)
+@app.get("/chat/{path:path}", include_in_schema=False)
+async def serve_spa(path: str = ""):
+    """Serve React SPA — all frontend routes return index.html."""
+    html_path = os.path.join(_static_dir, "index.html")
+    if not os.path.exists(html_path):
+        return HTMLResponse("<h1>Please run: cd web && npm run build</h1>", status_code=503)
     return HTMLResponse(open(html_path, encoding="utf-8").read())
 
 
