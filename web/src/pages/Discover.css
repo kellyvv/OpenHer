@@ -1,6 +1,5 @@
 /* ══════════════════════════════════════════
-   Discover Page — Tinder-style Card Swipe
-   Lives inside .phone-screen
+   Discover — pixel-perfect reference match
    ══════════════════════════════════════════ */
 
 .discover-page {
@@ -8,259 +7,189 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     position: relative;
     z-index: 1;
     overflow: hidden;
+    padding: 24px 20px 20px;
 }
 
-/* ── Header ── */
-.discover-header {
-    width: 100%;
-    padding: 16px 20px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-/* ── Card Container ── */
-.card-container {
+/* ── Card Area ── */
+.card-area {
     flex: 1;
     width: 100%;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
 }
 
-/* ── Swipe Card ── */
+/* ── Card ── */
 .swipe-card {
     position: absolute;
-    width: calc(100% - 32px);
-    /* Fill most of the container height */
-    height: 85%;
-    max-height: 600px;
-    border-radius: 20px;
+    width: 100%;
+    border-radius: 16px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
-    box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.4),
-        0 2px 10px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
     will-change: transform;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .swipe-card:active {
     cursor: grabbing;
 }
 
-/* ── Avatar Visual ── */
-.card-visual {
-    position: absolute;
-    inset: 0;
+/* ── Photo ── */
+.card-photo {
+    width: 100%;
+    /* Photo takes ~75% of card */
+    aspect-ratio: 9 / 12;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     overflow: hidden;
 }
 
-.card-visual-letter {
-    font-size: 160px;
+.card-photo-letter {
+    font-size: 140px;
     font-weight: 900;
-    color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.06);
     text-transform: uppercase;
     user-select: none;
     line-height: 1;
 }
 
-.card-visual-shimmer {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg,
-            transparent 40%,
-            rgba(255, 255, 255, 0.03) 45%,
-            rgba(255, 255, 255, 0.06) 50%,
-            rgba(255, 255, 255, 0.03) 55%,
-            transparent 60%);
-    background-size: 200% 100%;
-    animation: shimmer 6s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-
-    100% {
-        background-position: -200% 0;
-    }
-}
-
-/* ── Gradient Fade ── */
-.card-fade {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 55%;
-    background: linear-gradient(to top,
-            rgba(0, 0, 0, 0.92) 0%,
-            rgba(0, 0, 0, 0.6) 40%,
-            transparent 100%);
-    pointer-events: none;
-}
-
-/* ── Card Info Overlay ── */
-.card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 24px;
-    z-index: 2;
+/* ── Info Section (bottom of card) ── */
+.card-info {
+    background: rgba(20, 20, 30, 0.95);
+    padding: 20px 22px 22px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .card-name-row {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 2px;
+    margin-bottom: 14px;
 }
 
 .card-name {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 800;
-    letter-spacing: -0.5px;
     color: #fff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.5px;
 }
 
 .card-age {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.85);
+    margin-right: 14px;
 }
 
 .card-mbti {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: rgba(108, 140, 255, 0.2);
-    color: #8eaaff;
-    letter-spacing: 1px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(108, 140, 255, 0.15);
+    padding: 5px 16px;
+    border-radius: 8px;
+    background: #6c8cff;
+    color: #fff;
+    letter-spacing: 0.5px;
+    align-self: center;
 }
 
+/* ── Tags ── */
 .card-tags {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 10px;
 }
 
 .card-tag {
-    font-size: 12px;
-    padding: 4px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 18px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.card-bio {
-    font-size: 13px;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.55);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* ── Swipe Indicators ── */
-.swipe-indicator {
+/* ── Swipe Stamps ── */
+.swipe-stamp {
     position: absolute;
-    top: 40px;
+    top: 50px;
     z-index: 5;
     padding: 8px 24px;
     border-radius: 8px;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 900;
     letter-spacing: 4px;
     border: 4px solid;
 }
 
-.swipe-indicator.like {
+.swipe-stamp.like {
     right: 24px;
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
+    color: #6c8cff;
+    border-color: #6c8cff;
     transform: rotate(12deg);
-    text-shadow: 0 0 20px rgba(108, 140, 255, 0.4);
 }
 
-.swipe-indicator.nope {
+.swipe-stamp.nope {
     left: 24px;
-    color: var(--accent-red);
-    border-color: var(--accent-red);
+    color: #c85c58;
+    border-color: #c85c58;
     transform: rotate(-12deg);
-    text-shadow: 0 0 20px rgba(232, 96, 92, 0.4);
 }
 
-/* ── Action Buttons ── */
+/* ── Action Buttons (solid filled circles) ── */
 .actions {
     display: flex;
     gap: 40px;
-    padding: 16px 0 32px;
+    padding: 24px 0 8px;
     z-index: 20;
 }
 
-.action-circle {
-    width: 64px;
-    height: 64px;
+.action-btn {
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     border: none;
-    font-size: 26px;
+    font-size: 28px;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #fff;
     transition: box-shadow 0.3s;
 }
 
-.action-circle.nope {
-    background: rgba(232, 96, 92, 0.1);
-    color: var(--accent-red);
-    box-shadow: 0 4px 20px rgba(232, 96, 92, 0.1);
-    border: 2px solid rgba(232, 96, 92, 0.15);
+.action-btn.skip {
+    background: #c85c58;
+    box-shadow: 0 4px 24px rgba(200, 92, 88, 0.3);
 }
 
-.action-circle.nope:hover {
-    box-shadow: 0 4px 30px rgba(232, 96, 92, 0.2);
+.action-btn.skip:hover {
+    box-shadow: 0 6px 32px rgba(200, 92, 88, 0.45);
 }
 
-.action-circle.like {
-    background: rgba(108, 140, 255, 0.1);
-    color: var(--accent-primary);
-    box-shadow: 0 4px 20px rgba(108, 140, 255, 0.1);
-    border: 2px solid rgba(108, 140, 255, 0.15);
+.action-btn.like {
+    background: #6c8cff;
+    box-shadow: 0 4px 24px rgba(108, 140, 255, 0.3);
 }
 
-.action-circle.like:hover {
-    box-shadow: 0 4px 30px rgba(108, 140, 255, 0.2);
+.action-btn.like:hover {
+    box-shadow: 0 6px 32px rgba(108, 140, 255, 0.45);
 }
 
 /* ── States ── */
