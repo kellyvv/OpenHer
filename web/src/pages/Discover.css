@@ -1,4 +1,7 @@
-/* ── Discover Page ── */
+/* ══════════════════════════════════════════
+   Discover Page — Tinder-style Card Swipe
+   9:16 mobile-first, premium dark mode
+   ══════════════════════════════════════════ */
 
 .discover-page {
     height: 100%;
@@ -8,260 +11,306 @@
     position: relative;
     z-index: 1;
     overflow: hidden;
+    max-width: 430px;
+    margin: 0 auto;
 }
 
+/* ── Header ── */
 .discover-header {
-    padding: 24px 20px 16px;
-    text-align: center;
+    width: 100%;
+    padding: 16px 20px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
 }
 
-.discover-header h1 {
-    font-size: 28px;
+.logo {
+    font-size: 24px;
     font-weight: 800;
     letter-spacing: -0.5px;
 }
 
-.discover-header p {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: 4px;
-}
-
-/* ── Card Stack ── */
-.card-stack {
+/* ── Card Container ── */
+.card-container {
     flex: 1;
+    width: 100%;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    padding: 0 20px;
+    padding: 0 16px;
+    /* 9:16 aspect ratio constraint */
+    max-height: calc(100% - 140px);
 }
 
+/* ── Swipe Card ── */
 .swipe-card {
     position: absolute;
-    width: 100%;
-    max-width: 360px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    width: calc(100% - 32px);
+    max-width: 398px;
+    /* 9:16 ratio */
+    aspect-ratio: 9 / 14;
+    border-radius: 20px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.4),
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    will-change: transform;
 }
 
 .swipe-card:active {
     cursor: grabbing;
 }
 
-/* ── Card Avatar ── */
-.card-avatar {
-    width: 100%;
-    height: 320px;
+/* ── Avatar Visual ── */
+.card-visual {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     overflow: hidden;
 }
 
-.card-avatar-gradient {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg,
-            rgba(255, 107, 157, 0.3),
-            rgba(192, 132, 252, 0.3),
-            rgba(96, 165, 250, 0.2));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.card-avatar-letter {
-    font-size: 96px;
-    font-weight: 800;
-    color: rgba(255, 255, 255, 0.15);
+.card-visual-letter {
+    font-size: 160px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.08);
     text-transform: uppercase;
+    user-select: none;
+    line-height: 1;
 }
 
-/* ── Card Info ── */
-.card-info {
-    padding: 20px 24px 24px;
+.card-visual-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg,
+            transparent 40%,
+            rgba(255, 255, 255, 0.03) 45%,
+            rgba(255, 255, 255, 0.06) 50%,
+            rgba(255, 255, 255, 0.03) 55%,
+            transparent 60%);
+    background-size: 200% 100%;
+    animation: shimmer 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ── Gradient Fade ── */
+.card-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55%;
+    background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.92) 0%,
+            rgba(0, 0, 0, 0.6) 40%,
+            transparent 100%);
+    pointer-events: none;
+}
+
+/* ── Card Info Overlay ── */
+.card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    z-index: 2;
 }
 
 .card-name-row {
     display: flex;
     align-items: baseline;
     gap: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .card-name {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .card-age {
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 300;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.75);
 }
 
 .card-mbti {
     font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    background: rgba(192, 132, 252, 0.15);
-    color: var(--accent-purple);
-    letter-spacing: 0.5px;
-}
-
-.card-bio {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(192, 132, 252, 0.25);
+    color: #d4a5ff;
+    letter-spacing: 1px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(192, 132, 252, 0.2);
 }
 
 .card-tags {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+    margin-bottom: 10px;
 }
 
 .card-tag {
     font-size: 12px;
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* ── Swipe Labels ── */
-.swipe-label {
+.card-bio {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Swipe Indicators ── */
+.swipe-indicator {
     position: absolute;
-    top: 24px;
-    padding: 8px 20px;
-    border-radius: var(--radius-sm);
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    border: 3px solid;
-    transform: rotate(-15deg);
+    top: 40px;
+    z-index: 5;
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    border: 4px solid;
 }
 
-.swipe-label.like {
+.swipe-indicator.like {
     right: 24px;
-    color: var(--accent-green);
-    border-color: var(--accent-green);
-    transform: rotate(15deg);
+    color: #4ade80;
+    border-color: #4ade80;
+    transform: rotate(12deg);
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
 }
 
-.swipe-label.skip {
+.swipe-indicator.nope {
     left: 24px;
     color: #f87171;
     border-color: #f87171;
-    transform: rotate(-15deg);
+    transform: rotate(-12deg);
+    text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
 }
 
 /* ── Action Buttons ── */
-.action-buttons {
+.actions {
     display: flex;
-    gap: 32px;
-    padding: 24px 0 40px;
+    gap: 40px;
+    padding: 16px 0 36px;
+    z-index: 20;
 }
 
-.action-btn {
-    width: 64px;
-    height: 64px;
+.action-circle {
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    border: 2px solid var(--border);
-    background: var(--bg-card);
-    font-size: 24px;
+    border: none;
+    font-size: 28px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s;
 }
 
-.action-btn:active {
-    transform: scale(0.9);
-}
-
-.skip-btn {
+.action-circle.nope {
+    background: rgba(248, 113, 113, 0.12);
     color: #f87171;
+    box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
+    border: 2px solid rgba(248, 113, 113, 0.2);
 }
 
-.skip-btn:hover {
-    border-color: #f87171;
-    background: rgba(248, 113, 113, 0.1);
+.action-circle.nope:hover {
+    box-shadow: 0 4px 30px rgba(248, 113, 113, 0.3);
 }
 
-.like-btn {
-    color: var(--accent-green);
+.action-circle.like {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.15);
+    border: 2px solid rgba(74, 222, 128, 0.2);
 }
 
-.like-btn:hover {
-    border-color: var(--accent-green);
-    background: rgba(74, 222, 128, 0.1);
+.action-circle.like:hover {
+    box-shadow: 0 4px 30px rgba(74, 222, 128, 0.3);
 }
 
-/* ── Empty & Loading States ── */
-.empty-state,
-.loading-state {
+/* ── States ── */
+.state-msg {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     color: var(--text-muted);
 }
 
-.empty-emoji {
-    font-size: 56px;
+.state-emoji {
+    font-size: 64px;
 }
 
-.empty-state h3 {
-    font-size: 18px;
+.state-msg h3 {
+    font-size: 20px;
     color: var(--text-secondary);
+    font-weight: 600;
 }
 
-.btn-reset {
-    margin-top: 8px;
-    padding: 10px 24px;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-primary);
+.btn-pill {
+    padding: 12px 32px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 107, 157, 0.2);
+    background: rgba(255, 107, 157, 0.08);
+    color: var(--accent-pink);
     font-family: var(--font);
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.btn-reset:hover {
-    border-color: var(--accent-pink);
-    background: var(--accent-glow);
+.btn-pill:hover {
+    background: rgba(255, 107, 157, 0.15);
+    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.2);
 }
 
-.loading-spinner {
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--border);
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.06);
     border-top-color: var(--accent-pink);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
@@ -270,21 +319,47 @@
     }
 }
 
+/* ── Desktop: center the 9:16 frame ── */
+@media (min-width: 481px) {
+    .discover-page {
+        padding-top: 20px;
+    }
+
+    .card-container {
+        max-height: 680px;
+    }
+}
+
 /* ── Mobile ── */
 @media (max-width: 480px) {
-    .card-avatar {
-        height: 260px;
+    .discover-header {
+        padding: 12px 16px 4px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .card-overlay {
+        padding: 20px;
     }
 
     .card-name {
+        font-size: 28px;
+    }
+
+    .card-age {
         font-size: 22px;
     }
 
-    .card-bio {
-        font-size: 13px;
+    .actions {
+        padding: 12px 0 28px;
+        gap: 32px;
     }
 
-    .action-buttons {
-        padding: 16px 0 32px;
+    .action-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
     }
 }
