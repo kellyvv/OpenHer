@@ -42,7 +42,10 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────
 
 def _load_memory_config() -> dict:
-    """Load config/memory_config.yaml; fall back to safe defaults."""
+    """Load config/memory_config.yaml; fall back to safe defaults.
+    ENV override: OPENHER_MEMORY__<KEY>=value overrides any key.
+    Example: OPENHER_MEMORY__RETRIEVE_METHOD=agentic
+    """
     defaults = {
         "enabled": True,
         "retrieve_method": "rrf",
@@ -50,6 +53,7 @@ def _load_memory_config() -> dict:
         "search_timeout_sec": 3.0,
         "load_timeout_sec": 5.0,
         "foresight_max_items": 3,
+        "foresight_max_chars": 200,   # P2b: per-item char budget
         "profile_max_items": 5,
         "facts_max_items": 5,
         "episodes_max_items": 3,
@@ -64,10 +68,34 @@ def _load_memory_config() -> dict:
         try:
             data = yaml.safe_load(config_path.read_text()) or {}
             cfg = data.get("evermemos", data)
-            return {**defaults, **cfg}
+            merged = {**defaults, **cfg}
         except Exception as e:
             print(f"  [evermemos] config load error: {e} — using defaults")
-    return defaults
+            merged = dict(defaults)
+    else:
+        merged = dict(defaults)
+
+    # P2a: OPENHER_MEMORY__<KEY> env overrides (case-insensitive key)
+    prefix = "OPENHER_MEMORY__"
+    for env_key, env_val in os.environ.items():
+        if env_key.upper().startswith(prefix):
+            cfg_key = env_key[len(prefix):].lower()
+            if cfg_key in merged:
+                # Coerce type from existing default
+                orig = merged[cfg_key]
+                try:
+                    if isinstance(orig, bool):
+                        merged[cfg_key] = env_val.lower() in ("1", "true", "yes")
+                    elif isinstance(orig, int):
+                        merged[cfg_key] = int(env_val)
+                    elif isinstance(orig, float):
+                        merged[cfg_key] = float(env_val)
+                    else:
+                        merged[cfg_key] = env_val
+                except ValueError:
+                    pass  # Keep original on parse error
+
+    return merged
 
 _CFG = _load_memory_config()
 
@@ -147,10 +175,12 @@ class EverMemOSClient:
         self._client = None
         self._mem = None
         self._initialized = False
+        # P2a: honor circuit_breaker_enabled flag
+        cb_enabled = _CFG.get("circuit_breaker_enabled", True)
         self._cb = _CircuitBreaker(
-            threshold=_CFG["failure_threshold"],
+            threshold=_CFG["failure_threshold"] if cb_enabled else 10_000,
             recovery_sec=_CFG["recovery_timeout_sec"],
-        )
+        ) if cb_enabled else _CircuitBreaker(threshold=10_000, recovery_sec=60)
 
         if not _CFG.get("enabled", True):
             print("⚠ EverMemOS disabled via config")
@@ -217,6 +247,8 @@ class EverMemOSClient:
             )
 
             if not response or not response.result or not response.result.memories:
+                # P1b: healthy request (0 results) — reset failure count
+                self._cb.record_success()
                 return empty
 
             memories = response.result.memories
@@ -276,11 +308,12 @@ class EverMemOSClient:
             max_eps = _CFG["episodes_max_items"]
             episode_summary = "；".join(episode_lines[-max_eps:]) if episode_lines else ""
 
-            # P1: Foresight text injection (max N items)
+            # P1+P2b: Foresight text with item count AND per-item char budget
             max_fs = _CFG["foresight_max_items"]
+            max_fs_chars = _CFG.get("foresight_max_chars", 200)
             foresight_text = ""
             if foresight_lines:
-                fs_items = foresight_lines[:max_fs]
+                fs_items = [s[:max_fs_chars] for s in foresight_lines[:max_fs]]
                 foresight_text = "；".join(fs_items)
 
             # Semantic relationship depth (data richness based)
@@ -314,8 +347,10 @@ class EverMemOSClient:
             )
 
             if ctx.has_history and _CFG["log_hit_rates"]:
+                # P2a: honor log_latency flag separately
+                latency_str = f" ({elapsed_ms:.0f}ms)" if _CFG.get("log_latency", True) else ""
                 print(
-                    f"  [evermemos] 📚 loaded ({elapsed_ms:.0f}ms): "
+                    f"  [evermemos] 📚 loaded{latency_str}: "
                     f"{interaction_count} interactions, depth={depth:.2f}, "
                     f"facts={len(fact_lines)}, profile={len(profile_lines)}, "
                     f"episodes={len(episode_lines)}, foresights={foresight_count}"
@@ -531,8 +566,9 @@ class EverMemOSClient:
             self._cb.record_success()
 
             if _CFG["log_hit_rates"]:
+                latency_str = f" ({elapsed_ms:.0f}ms)" if _CFG.get("log_latency", True) else ""
                 print(
-                    f"  [evermemos] 🔍 search ({elapsed_ms:.0f}ms) [{retrieve_method}]: "
+                    f"  [evermemos] 🔍 search{latency_str} [{retrieve_method}]: "
                     f"facts={len(facts)}, episodes={len(episodes)}, profile={len(profile_attrs)}"
                 )
 

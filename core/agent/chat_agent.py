@@ -691,7 +691,9 @@ class ChatAgent:
             self._search_task = None
             self._relevant_facts = ""
             self._relevant_episodes = ""
+            self._relevant_profile = ""   # P1a fix: was missing, caused stale profile injection
             return
+
 
         try:
             facts, episodes, profile = await asyncio.wait_for(
