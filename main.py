@@ -737,11 +737,54 @@ async def websocket_chat(ws: WebSocket):
 
                 stream_error = False
                 try:
+                    # ── API filter layer: extract only 【最终回复】, strip （action）descriptions ──
+                    _buf = ""
+                    _in_reply = False
+                    _done_reply = False
+                    _REPLY_START = "【最终回复】"
+                    _REPLY_END = "【表达方式】"
+                    # Regex to strip parenthetical action descriptions: （...） or (...)
+                    import re as _re
+                    _paren_re = _re.compile(r'[（(][^（(）)]{1,30}[）)]')
+
                     async for chunk in agent.chat_stream(text):
-                        await ws.send_json({
-                            "type": "chat_chunk",
-                            "content": chunk,
-                        })
+                        if _done_reply:
+                            continue
+
+                        _buf += chunk
+
+                        if not _in_reply:
+                            idx = _buf.find(_REPLY_START)
+                            if idx != -1:
+                                _in_reply = True
+                                _buf = _buf[idx + len(_REPLY_START):]
+                            else:
+                                if len(_buf) > len(_REPLY_START) * 2:
+                                    _buf = _buf[-len(_REPLY_START):]
+                                continue
+
+                        if _in_reply:
+                            end_idx = _buf.find(_REPLY_END)
+                            if end_idx != -1:
+                                to_send = _buf[:end_idx].lstrip("\n")
+                                to_send = _paren_re.sub("", to_send).strip()
+                                if to_send:
+                                    await ws.send_json({"type": "chat_chunk", "content": to_send})
+                                _done_reply = True
+                                _buf = ""
+                            else:
+                                safe_len = max(0, len(_buf) - len(_REPLY_END))
+                                to_send = _buf[:safe_len]
+                                to_send = _paren_re.sub("", to_send)
+                                if to_send:
+                                    await ws.send_json({"type": "chat_chunk", "content": to_send})
+                                _buf = _buf[safe_len:]
+
+                    # Flush remaining buffer if stream ended without end marker
+                    if _in_reply and _buf and not _done_reply:
+                        to_send = _paren_re.sub("", _buf).strip()
+                        if to_send:
+                            await ws.send_json({"type": "chat_chunk", "content": to_send})
                 except Exception as e:
                     stream_error = True
                     print(f"[ws] stream 错误: {e}")
