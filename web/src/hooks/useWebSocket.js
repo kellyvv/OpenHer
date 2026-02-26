@@ -9,6 +9,7 @@ export function useWebSocket() {
     const [sessionId, setSessionId] = useState(null)
     const [status, setStatus] = useState({})
     const streamContentRef = useRef('')
+    const typingTimerRef = useRef(null)
 
     const connect = useCallback(() => {
         if (USE_MOCK) {
@@ -32,17 +33,23 @@ export function useWebSocket() {
             switch (msg.type) {
                 case 'chat_start':
                     setSessionId(msg.session_id)
-                    setStreaming(true)
                     streamContentRef.current = ''
-                    // Header will show "对方正在输入" via streaming state
+                    // Delay showing typing indicator — feels natural (not instant)
+                    typingTimerRef.current = setTimeout(() => {
+                        setStreaming(true)
+                    }, 1500)
                     break
                 case 'chat_chunk':
                     // Buffer silently
                     streamContentRef.current += msg.content
                     break
                 case 'chat_end':
+                    // Cancel typing indicator timer if reply arrived fast
+                    if (typingTimerRef.current) {
+                        clearTimeout(typingTimerRef.current)
+                        typingTimerRef.current = null
+                    }
                     setStreaming(false)
-                    // Use backend-cleaned reply (parentheticals stripped on full text)
                     if (msg.reply) {
                         setMessages(prev => [...prev, {
                             role: 'assistant',
