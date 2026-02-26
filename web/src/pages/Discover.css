@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   Discover — 100% reference match
+   Discover — seamless card, reference match
    ══════════════════════════════════════════ */
 
 .discover-page {
@@ -11,7 +11,6 @@
     position: relative;
     z-index: 1;
     overflow: hidden;
-    /* Side padding matches reference card margins */
     padding: 32px 24px 24px;
 }
 
@@ -25,61 +24,70 @@
     justify-content: center;
 }
 
-/* ── Card ── */
+/* ── Card — single unified element ── */
 .swipe-card {
     position: absolute;
     width: 100%;
+    /* Taller card like reference */
+    aspect-ratio: 9 / 15;
     border-radius: 16px;
     overflow: hidden;
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
     will-change: transform;
-    display: flex;
-    flex-direction: column;
-    /* Subtle light border around card — matches reference */
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Background gradient set inline, entire card is one piece */
+    border: 1px solid rgba(255, 255, 255, 0.07);
     box-shadow:
-        0 12px 48px rgba(0, 0, 0, 0.6),
-        0 4px 16px rgba(0, 0, 0, 0.4);
+        0 12px 48px rgba(0, 0, 0, 0.55),
+        0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .swipe-card:active {
     cursor: grabbing;
 }
 
-/* ── Photo Area ── */
-.card-photo {
-    width: 100%;
-    /* Reference: photo ~72% of card height */
-    aspect-ratio: 3 / 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
+/* ── Photo Letter — centered in entire card, very subtle ── */
 .card-photo-letter {
-    font-size: 140px;
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 180px;
     font-weight: 900;
-    color: rgba(255, 255, 255, 0.05);
+    /* Much more subtle than before */
+    color: rgba(255, 255, 255, 0.035);
     text-transform: uppercase;
     user-select: none;
     line-height: 1;
+    z-index: 1;
 }
 
-/* ── Info Section ── */
+/* ── Gradient fade — seamless blend into info ── */
+.card-gradient-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top,
+            rgba(10, 10, 16, 0.95) 0%,
+            rgba(10, 10, 16, 0.7) 30%,
+            rgba(10, 10, 16, 0.0) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ── Info — overlaid at bottom, no separate background ── */
 .card-info {
-    /* Solid dark bg, slight transparency for depth */
-    background: rgba(16, 16, 24, 0.96);
-    /* Match reference padding exactly */
-    padding: 22px 24px 24px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0 24px 28px;
+    z-index: 3;
 }
 
-/* Name row: "Vivian, 26  [INTJ]" */
 .card-name-row {
     display: flex;
     align-items: center;
@@ -88,39 +96,35 @@
 }
 
 .card-name {
-    /* Reference: very large bold, ~36px */
     font-size: 36px;
     font-weight: 800;
     color: #fff;
     letter-spacing: -0.5px;
     line-height: 1.1;
+    /* Small space between name and age */
+    margin-right: 4px;
 }
 
 .card-age {
-    /* Same size as name, lighter weight */
     font-size: 36px;
     font-weight: 300;
     color: rgba(255, 255, 255, 0.9);
-    /* Space before MBTI badge */
     margin-right: 16px;
 }
 
-/* MBTI badge: solid blue, rounded rectangle (NOT pill) */
+/* MBTI badge — solid blue, rounded rect */
 .card-mbti {
     font-size: 15px;
     font-weight: 700;
     padding: 6px 18px;
-    /* Rounded rect, not full pill */
     border-radius: 10px;
     background: #6c8cff;
     color: #fff;
     letter-spacing: 0.5px;
     line-height: 1.2;
-    /* Vertically center with the baseline of name text */
-    align-self: center;
 }
 
-/* ── Tags — match reference exactly ── */
+/* ── Tags ── */
 .card-tags {
     display: flex;
     gap: 10px;
@@ -128,12 +132,10 @@
 }
 
 .card-tag {
-    /* Reference: ~14px, medium weight, pill shape */
     font-size: 14px;
     font-weight: 500;
     padding: 9px 20px;
     border-radius: 24px;
-    /* Subtle frosted glass bg */
     background: rgba(255, 255, 255, 0.06);
     color: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -167,17 +169,15 @@
     transform: rotate(-12deg);
 }
 
-/* ── Action Buttons — solid filled, below card ── */
+/* ── Action Buttons — solid filled with glow ── */
 .actions {
     display: flex;
-    /* Reference: wide gap between buttons */
     gap: 48px;
     padding: 28px 0 12px;
     z-index: 20;
 }
 
 .action-btn {
-    /* Reference: large solid circles ~72px */
     width: 72px;
     height: 72px;
     border-radius: 50%;
@@ -192,24 +192,30 @@
     transition: box-shadow 0.3s, transform 0.15s;
 }
 
-/* Skip: muted / dusty red */
 .action-btn.skip {
     background: #c85c58;
-    box-shadow: 0 6px 28px rgba(200, 92, 88, 0.35);
+    box-shadow:
+        0 0 20px rgba(200, 92, 88, 0.4),
+        0 6px 28px rgba(200, 92, 88, 0.3);
 }
 
 .action-btn.skip:hover {
-    box-shadow: 0 8px 36px rgba(200, 92, 88, 0.5);
+    box-shadow:
+        0 0 32px rgba(200, 92, 88, 0.55),
+        0 8px 36px rgba(200, 92, 88, 0.4);
 }
 
-/* Like: calm blue matching INTJ badge */
 .action-btn.like {
     background: #6c8cff;
-    box-shadow: 0 6px 28px rgba(108, 140, 255, 0.35);
+    box-shadow:
+        0 0 20px rgba(108, 140, 255, 0.4),
+        0 6px 28px rgba(108, 140, 255, 0.3);
 }
 
 .action-btn.like:hover {
-    box-shadow: 0 8px 36px rgba(108, 140, 255, 0.5);
+    box-shadow:
+        0 0 32px rgba(108, 140, 255, 0.55),
+        0 8px 36px rgba(108, 140, 255, 0.4);
 }
 
 /* ── States ── */

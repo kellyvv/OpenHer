@@ -43,6 +43,7 @@ function SwipeCard({ persona, index, onSwipe, isTop, total }) {
                 scale,
                 y,
                 zIndex: 10 - index,
+                background: gradient,
             }}
             drag={isTop ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
@@ -52,15 +53,16 @@ function SwipeCard({ persona, index, onSwipe, isTop, total }) {
             animate={{ scale, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-            {/* Photo area */}
-            <div className="card-photo" style={{ background: gradient }}>
-                <div className="card-photo-letter">{persona.name?.[0]}</div>
-            </div>
+            {/* Photo placeholder — letter sits in center of entire card */}
+            <div className="card-photo-letter">{persona.name?.[0]}</div>
 
-            {/* Info section at bottom of card */}
+            {/* Gradient fade into info — seamless blend */}
+            <div className="card-gradient-fade" />
+
+            {/* Info (overlaid at bottom) */}
             <div className="card-info">
                 <div className="card-name-row">
-                    <span className="card-name">{persona.name}, </span>
+                    <span className="card-name">{persona.name},</span>
                     <span className="card-age">{persona.age}</span>
                     {persona.mbti && <span className="card-mbti">{persona.mbti}</span>}
                 </div>
@@ -71,7 +73,7 @@ function SwipeCard({ persona, index, onSwipe, isTop, total }) {
                 </div>
             </div>
 
-            {/* Swipe indicators */}
+            {/* Swipe stamps */}
             {isTop && (
                 <>
                     <motion.div className="swipe-stamp like" style={{ opacity: likeOpacity }}>
@@ -111,8 +113,6 @@ export default function Discover() {
 
     return (
         <div className="discover-page">
-
-            {/* Card stack */}
             <div className="card-area">
                 {loading ? (
                     <div className="state-msg">
@@ -141,7 +141,6 @@ export default function Discover() {
                 )}
             </div>
 
-            {/* Action buttons — below card */}
             {visibleCards.length > 0 && (
                 <div className="actions">
                     <motion.button
