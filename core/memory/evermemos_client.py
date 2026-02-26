@@ -158,6 +158,20 @@ class _CircuitBreaker:
             print(f"  [evermemos] ⚡ circuit OPEN after {self._failures} failures")
 
 
+class _NoOpBreaker:
+    """No-op breaker for when circuit_breaker_enabled=false."""
+    is_open = False
+    def record_success(self): pass
+    def record_failure(self): pass
+
+
+def _fmt_latency(elapsed_ms: float) -> str:
+    """Format latency string, respecting log_latency config flag."""
+    if _CFG.get("log_latency", True):
+        return f" ({elapsed_ms:.0f}ms)"
+    return ""
+
+
 # ─────────────────────────────────────────────────────────────
 # Main Client
 # ─────────────────────────────────────────────────────────────
@@ -175,12 +189,15 @@ class EverMemOSClient:
         self._client = None
         self._mem = None
         self._initialized = False
-        # P2a: honor circuit_breaker_enabled flag
+        # Circuit breaker: true no-op when disabled
         cb_enabled = _CFG.get("circuit_breaker_enabled", True)
-        self._cb = _CircuitBreaker(
-            threshold=_CFG["failure_threshold"] if cb_enabled else 10_000,
-            recovery_sec=_CFG["recovery_timeout_sec"],
-        ) if cb_enabled else _CircuitBreaker(threshold=10_000, recovery_sec=60)
+        if cb_enabled:
+            self._cb = _CircuitBreaker(
+                threshold=_CFG["failure_threshold"],
+                recovery_sec=_CFG["recovery_timeout_sec"],
+            )
+        else:
+            self._cb = _NoOpBreaker()
 
         if not _CFG.get("enabled", True):
             print("⚠ EverMemOS disabled via config")
@@ -347,10 +364,8 @@ class EverMemOSClient:
             )
 
             if ctx.has_history and _CFG["log_hit_rates"]:
-                # P2a: honor log_latency flag separately
-                latency_str = f" ({elapsed_ms:.0f}ms)" if _CFG.get("log_latency", True) else ""
                 print(
-                    f"  [evermemos] 📚 loaded{latency_str}: "
+                    f"  [evermemos] 📚 loaded{_fmt_latency(elapsed_ms)}: "
                     f"{interaction_count} interactions, depth={depth:.2f}, "
                     f"facts={len(fact_lines)}, profile={len(profile_lines)}, "
                     f"episodes={len(episode_lines)}, foresights={foresight_count}"
@@ -362,7 +377,7 @@ class EverMemOSClient:
         except Exception as e:
             self._cb.record_failure()
             elapsed_ms = (time.monotonic() - t0) * 1000
-            print(f"  [evermemos] load_session_context error ({elapsed_ms:.0f}ms): {e}")
+            print(f"  [evermemos] load_session_context error{_fmt_latency(elapsed_ms)}: {e}")
             return empty
 
     async def store_turn(
@@ -521,7 +536,7 @@ class EverMemOSClient:
             elapsed_ms = (time.monotonic() - t0) * 1000
 
             if not response or not response.result or not response.result.memories:
-                print(f"  [evermemos] 🔍 search: 0 results ({elapsed_ms:.0f}ms) [{retrieve_method}]")
+                print(f"  [evermemos] 🔍 search: 0 results{_fmt_latency(elapsed_ms)} [{retrieve_method}]")
                 self._cb.record_success()
                 return "", "", ""
 
@@ -566,9 +581,8 @@ class EverMemOSClient:
             self._cb.record_success()
 
             if _CFG["log_hit_rates"]:
-                latency_str = f" ({elapsed_ms:.0f}ms)" if _CFG.get("log_latency", True) else ""
                 print(
-                    f"  [evermemos] 🔍 search{latency_str} [{retrieve_method}]: "
+                    f"  [evermemos] 🔍 search{_fmt_latency(elapsed_ms)} [{retrieve_method}]: "
                     f"facts={len(facts)}, episodes={len(episodes)}, profile={len(profile_attrs)}"
                 )
 
@@ -577,5 +591,5 @@ class EverMemOSClient:
         except Exception as e:
             self._cb.record_failure()
             elapsed_ms = (time.monotonic() - t0) * 1000
-            print(f"  [evermemos] 🔍 search error ({elapsed_ms:.0f}ms): {e}")
+            print(f"  [evermemos] 🔍 search error{_fmt_latency(elapsed_ms)}: {e}")
             return "", "", ""
