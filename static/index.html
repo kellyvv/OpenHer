@@ -425,11 +425,11 @@
         const API_BASE = 'http://localhost:8800';
         const WS_URL = 'ws://localhost:8800/ws/chat';
         let ws = null;
-        let currentPersonaId = 'xiaoyun';
+        let currentPersonaId = 'vivian';
         let sessionId = null;
         let lastAssistantMessage = '';
 
-        const PERSONA_EMOJIS = { xiaoyun: '☁️', lingling: '💎', momo: '🌙' };
+        const PERSONA_EMOJIS = { vivian: '💎', luna: '☁️', iris: '🌙' };
 
         // ── DOM ──
         const $messages = document.getElementById('messages');
@@ -634,11 +634,19 @@
         loadPersonas();
         connectWS();
 
-        // Auto-select xiaoyun
-        setTimeout(() => {
-            $headerName.textContent = '小云';
-            $headerDetail.textContent = 'xiaoyun · AI Companion';
-            $headerAvatar.textContent = '☁️';
+        // Auto-select first persona from loaded list
+        setTimeout(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/personas`);
+                const data = await res.json();
+                if (data.personas && data.personas.length > 0) {
+                    const first = data.personas[0];
+                    currentPersonaId = first.persona_id;
+                    $headerName.textContent = first.name;
+                    $headerDetail.textContent = `${first.persona_id} · AI Companion`;
+                    $headerAvatar.textContent = PERSONA_EMOJIS[first.persona_id] || '✨';
+                }
+            } catch (e) { /* loadPersonas will handle */ }
         }, 500);
     </script>
 </body>

@@ -701,7 +701,7 @@ async def websocket_chat(ws: WebSocket):
 
                 persona_id = msg.get("persona_id", "")
                 if not persona_id:
-                    await websocket.send_json({"type": "error", "content": "persona_id is required"})
+                    await ws.send_json({"type": "error", "content": "persona_id is required"})
                     continue
                 user_name = msg.get("user_name")
 

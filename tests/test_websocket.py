@@ -97,6 +97,7 @@ async def test_websocket():
         await ws.send(json.dumps({
             "type": "chat",
             "content": "Hi there!",
+            "persona_id": _PERSONA_B,
         }))
 
         full_response = ""
