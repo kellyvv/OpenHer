@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentLife · 养成你的数字生命</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #08080f;
+            --bg2: #0f0f1a;
+            --card: #151525;
+            --card2: #1a1a30;
+            --text: #e8e8f0;
+            --dim: #8888a8;
+            --muted: #555570;
+            --pink: #ff6b9d;
+            --purple: #c084fc;
+            --blue: #60a5fa;
+            --green: #4ade80;
+            --amber: #fbbf24;
+            --border: rgba(255,255,255,0.06);
+            --glow: rgba(255,107,157,0.12);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
+
+        /* Background */
+        .bg-orb { position:fixed; border-radius:50%; pointer-events:none; filter:blur(80px); z-index:0; }
+        .bg-orb.a { top:-15%; left:10%; width:400px; height:400px; background:rgba(255,107,157,0.06); animation:drift 20s ease-in-out infinite; }
+        .bg-orb.b { bottom:-10%; right:5%; width:350px; height:350px; background:rgba(96,165,250,0.05); animation:drift 25s ease-in-out infinite reverse; }
+        @keyframes drift { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+
+        /* Layout: sidebar + main */
+        .app { display:flex; height:100vh; position:relative; z-index:1; }
+
+        /* ── LEFT PANEL: Stats ── */
+        .panel { width:320px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; }
+        .panel-header { padding:20px; border-bottom:1px solid var(--border); }
+        .panel-header h1 { font-size:18px; font-weight:700; background:linear-gradient(135deg,var(--pink),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .panel-header .sub { font-size:11px; color:var(--muted); margin-top:2px; }
+
+        /* Agent card */
+        .agent-card { padding:16px 20px; border-bottom:1px solid var(--border); }
+        .agent-card .name-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+        .agent-card .avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--pink),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:18px; }
+        .agent-card .name { font-size:16px; font-weight:600; }
+        .agent-card .meta { font-size:11px; color:var(--dim); }
+        .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+        .badge.newbie { background:rgba(74,222,128,0.15); color:var(--green); }
+        .badge.partner { background:rgba(96,165,250,0.15); color:var(--blue); }
+        .badge.soulmate { background:rgba(192,132,252,0.15); color:var(--purple); }
+        .badge.alter { background:rgba(251,191,36,0.15); color:var(--amber); }
+        .boost-tag { font-size:10px; padding:2px 8px; border-radius:10px; background:rgba(251,191,36,0.12); color:var(--amber); margin-left:auto; }
+
+        /* Attributes */
+        .section-title { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:12px 20px 6px; }
+        .attrs { padding:0 20px 12px; }
+        .attr-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px; }
+        .attr-icon { width:20px; text-align:center; }
+        .attr-name { width:32px; color:var(--dim); }
+        .attr-bar { flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
+        .attr-fill { height:100%; border-radius:3px; transition:width 0.5s ease; }
+        .attr-fill.cog { background:linear-gradient(90deg,#60a5fa,#818cf8); }
+        .attr-fill.exp { background:linear-gradient(90deg,#34d399,#4ade80); }
+        .attr-fill.emp { background:linear-gradient(90deg,#ff6b9d,#f472b6); }
+        .attr-fill.exe { background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+        .attr-fill.soc { background:linear-gradient(90deg,#c084fc,#a78bfa); }
+        .attr-val { width:24px; text-align:right; font-weight:500; font-size:11px; }
+
+        /* Resources */
+        .resources { padding:4px 20px 12px; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .res-item { background:var(--card); border-radius:8px; padding:8px 10px; font-size:11px; }
+        .res-item .res-label { color:var(--muted); font-size:10px; }
+        .res-item .res-val { font-size:16px; font-weight:600; margin-top:2px; }
+
+        /* Training buttons */
+        .train-grid { padding:4px 20px 12px; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .train-btn { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:12px; color:var(--text); font-family:inherit; }
+        .train-btn:hover { border-color:rgba(255,107,157,0.3); background:var(--card2); }
+        .train-btn:active { transform:scale(0.97); }
+        .train-btn .t-icon { font-size:18px; display:block; margin-bottom:4px; }
+        .train-btn .t-cost { font-size:10px; color:var(--muted); }
+        .train-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+        /* Action buttons */
+        .actions { padding:4px 20px 12px; display:flex; gap:8px; }
+        .action-btn { flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:12px; font-family:inherit; cursor:pointer; transition:all 0.2s; text-align:center; }
+        .action-btn:hover { border-color:rgba(255,107,157,0.3); }
+        .action-btn.primary { background:linear-gradient(135deg,rgba(255,107,157,0.15),rgba(192,132,252,0.15)); border-color:rgba(255,107,157,0.2); }
+
+        /* Events feed */
+        .events { padding:4px 20px 16px; flex:1; overflow-y:auto; }
+        .event-item { font-size:11px; padding:6px 0; border-bottom:1px solid var(--border); color:var(--dim); line-height:1.4; }
+        .event-item:last-child { border-bottom:none; }
+
+        /* ── MAIN: Chat ── */
+        .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .chat-head { padding:14px 24px; border-bottom:1px solid var(--border); background:rgba(15,15,26,0.9); backdrop-filter:blur(20px); display:flex; align-items:center; gap:10px; }
+        .chat-head .ch-dot { width:8px; height:8px; border-radius:50%; }
+        .ch-dot.on { background:var(--green); box-shadow:0 0 8px rgba(74,222,128,0.4); }
+        .ch-dot.off { background:#f87171; }
+        .chat-head .ch-name { font-size:14px; font-weight:600; }
+        .chat-head .ch-info { font-size:11px; color:var(--muted); margin-left:auto; }
+
+        .messages { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; }
+        .msg { display:flex; gap:8px; max-width:78%; animation:msgIn 0.3s ease; }
+        @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .msg.user { align-self:flex-end; flex-direction:row-reverse; }
+        .msg .bubble { padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.6; word-break:break-word; }
+        .msg.bot .bubble { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; }
+        .msg.user .bubble { background:linear-gradient(135deg,rgba(255,107,157,0.12),rgba(192,132,252,0.12)); border:1px solid rgba(255,107,157,0.12); border-bottom-right-radius:4px; }
+        .msg .m-av { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; }
+        .msg.bot .m-av { background:linear-gradient(135deg,var(--pink),var(--purple)); }
+        .msg.user .m-av { background:rgba(96,165,250,0.15); color:var(--blue); }
+
+        /* System message */
+        .sys-msg { text-align:center; font-size:11px; color:var(--muted); padding:4px 0; }
+        .sys-msg.event { color:var(--amber); }
+        .sys-msg.growth { color:var(--green); }
+
+        .typing { display:none; align-self:flex-start; padding:10px 16px; background:var(--card); border-radius:16px; border-bottom-left-radius:4px; border:1px solid var(--border); }
+        .typing.on { display:flex; gap:4px; }
+        .typing span { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:bounce 1.4s ease infinite; }
+        .typing span:nth-child(2) { animation-delay:0.2s; }
+        .typing span:nth-child(3) { animation-delay:0.4s; }
+        @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+
+        .input-bar { padding:14px 24px; border-top:1px solid var(--border); background:rgba(15,15,26,0.9); backdrop-filter:blur(20px); }
+        .input-row { display:flex; gap:8px; align-items:center; }
+        .input-row input { flex:1; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:11px 18px; font-size:13px; color:var(--text); font-family:inherit; outline:none; transition:border 0.2s; }
+        .input-row input:focus { border-color:rgba(255,107,157,0.3); }
+        .input-row input::placeholder { color:var(--muted); }
+        .send { width:40px; height:40px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--pink),var(--purple)); color:#fff; font-size:16px; cursor:pointer; flex-shrink:0; transition:transform 0.15s; }
+        .send:hover { transform:scale(1.05); }
+        .send:disabled { opacity:0.4; cursor:not-allowed; }
+
+        /* ── BIRTH OVERLAY ── */
+        .overlay { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; }
+        .overlay.hidden { display:none; }
+        .birth-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px; max-width:420px; width:90%; text-align:center; animation:popIn 0.4s ease; }
+        @keyframes popIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+        .birth-box .glow { font-size:64px; margin-bottom:16px; animation:pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .birth-box h2 { font-size:20px; font-weight:600; margin-bottom:8px; }
+        .birth-box p { font-size:13px; color:var(--dim); margin-bottom:20px; line-height:1.5; }
+        .birth-box input { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px 16px; font-size:14px; color:var(--text); font-family:inherit; outline:none; text-align:center; margin-bottom:16px; }
+        .birth-box input:focus { border-color:rgba(255,107,157,0.3); }
+        .seed-grid { display:flex; gap:10px; margin-bottom:20px; justify-content:center; }
+        .seed-btn { flex:1; padding:14px 8px; border-radius:12px; border:2px solid var(--border); background:var(--bg2); cursor:pointer; transition:all 0.2s; text-align:center; color:var(--text); font-family:inherit; }
+        .seed-btn:hover { border-color:rgba(255,107,157,0.3); }
+        .seed-btn.selected { border-color:var(--pink); background:var(--glow); }
+        .seed-btn .s-icon { font-size:24px; display:block; margin-bottom:6px; }
+        .seed-btn .s-name { font-size:12px; font-weight:600; }
+        .seed-btn .s-desc { font-size:10px; color:var(--muted); margin-top:4px; }
+        .birth-go { width:100%; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,var(--pink),var(--purple)); color:#fff; font-size:14px; font-weight:600; cursor:pointer; transition:transform 0.15s; font-family:inherit; }
+        .birth-go:hover { transform:scale(1.02); }
+        .birth-go:disabled { opacity:0.4; cursor:not-allowed; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:4px; }
+
+        @media(max-width:768px) { .panel { display:none; } }
+    </style>
+</head>
+<body>
+    <div class="bg-orb a"></div>
+    <div class="bg-orb b"></div>
+
+    <!-- BIRTH OVERLAY -->
+    <div class="overlay" id="birthOverlay">
+        <div class="birth-box">
+            <div class="glow">✨</div>
+            <h2>一个生命正在诞生...</h2>
+            <p>给你的 Agent 起个名字，选择它的性格种子</p>
+            <input type="text" id="birthName" placeholder="输入名字..." maxlength="20" />
+            <div class="seed-grid">
+                <button class="seed-btn selected" data-seed="curious" id="seedCurious">
+                    <span class="s-icon">🔥</span>
+                    <span class="s-name">好奇型</span>
+                    <span class="s-desc">什么都想知道</span>
+                </button>
+                <button class="seed-btn" data-seed="gentle" id="seedGentle">
+                    <span class="s-icon">💧</span>
+                    <span class="s-name">温柔型</span>
+                    <span class="s-desc">温暖且细腻</span>
+                </button>
+                <button class="seed-btn" data-seed="energetic" id="seedEnergetic">
+                    <span class="s-icon">⚡</span>
+                    <span class="s-name">活泼型</span>
+                    <span class="s-desc">元气满满</span>
+                </button>
+            </div>
+            <button class="birth-go" id="birthGoBtn" disabled>诞 生</button>
+        </div>
+    </div>
+
+    <div class="app">
+        <!-- LEFT PANEL -->
+        <div class="panel">
+            <div class="panel-header">
+                <h1>✦ AgentLife</h1>
+                <div class="sub">养成你的数字生命</div>
+            </div>
+
+            <!-- Agent Info -->
+            <div class="agent-card" id="agentCard">
+                <div class="name-row">
+                    <div class="avatar" id="agentAvatar">✨</div>
+                    <div>
+                        <div class="name" id="agentName">—</div>
+                        <div class="meta"><span id="agentMbti">—</span> · <span class="badge newbie" id="agentStage">萌新</span></div>
+                    </div>
+                    <span class="boost-tag" id="boostTag" style="display:none">🚀 加成中</span>
+                </div>
+            </div>
+
+            <!-- Attributes -->
+            <div class="section-title">五维属性</div>
+            <div class="attrs" id="attrPanel">
+                <div class="attr-row"><span class="attr-icon">💡</span><span class="attr-name">认知</span><div class="attr-bar"><div class="attr-fill cog" id="barCog" style="width:0%"></div></div><span class="attr-val" id="valCog">0</span></div>
+                <div class="attr-row"><span class="attr-icon">💬</span><span class="attr-name">表达</span><div class="attr-bar"><div class="attr-fill exp" id="barExp" style="width:0%"></div></div><span class="attr-val" id="valExp">0</span></div>
+                <div class="attr-row"><span class="attr-icon">❤️</span><span class="attr-name">共情</span><div class="attr-bar"><div class="attr-fill emp" id="barEmp" style="width:0%"></div></div><span class="attr-val" id="valEmp">0</span></div>
+                <div class="attr-row"><span class="attr-icon">🔧</span><span class="attr-name">执行</span><div class="attr-bar"><div class="attr-fill exe" id="barExe" style="width:0%"></div></div><span class="attr-val" id="valExe">0</span></div>
+                <div class="attr-row"><span class="attr-icon">🌐</span><span class="attr-name">社交</span><div class="attr-bar"><div class="attr-fill soc" id="barSoc" style="width:0%"></div></div><span class="attr-val" id="valSoc">0</span></div>
+            </div>
+
+            <!-- Resources -->
+            <div class="section-title">资源</div>
+            <div class="resources">
+                <div class="res-item"><div class="res-label">⚡ 能量 EP</div><div class="res-val" id="resEp">0</div></div>
+                <div class="res-item"><div class="res-label">🪙 经验 XP</div><div class="res-val" id="resXp">0</div></div>
+                <div class="res-item"><div class="res-label">💎 进化石</div><div class="res-val" id="resStone">0</div></div>
+                <div class="res-item"><div class="res-label">🔑 碎片</div><div class="res-val" id="resFrags">0</div></div>
+            </div>
+
+            <!-- Training -->
+            <div class="section-title">训练 (消耗 EP)</div>
+            <div class="train-grid">
+                <button class="train-btn" data-train="knowledge" id="trainKnow">
+                    <span class="t-icon">📖</span>知识投喂<br><span class="t-cost">5 EP → 认知↑</span>
+                </button>
+                <button class="train-btn" data-train="dialogue" id="trainDial">
+                    <span class="t-icon">💬</span>对话练习<br><span class="t-cost">3 EP → 表达↑</span>
+                </button>
+                <button class="train-btn" data-train="emotional" id="trainEmo">
+                    <span class="t-icon">💝</span>心灵交流<br><span class="t-cost">3 EP → 共情↑</span>
+                </button>
+                <button class="train-btn" data-train="task" id="trainTask">
+                    <span class="t-icon">🎯</span>任务训练<br><span class="t-cost">5 EP → 执行↑</span>
+                </button>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <button class="action-btn primary" id="checkinBtn">📅 签到</button>
+                <button class="action-btn" id="evolveBtn">⚡ 进化</button>
+            </div>
+
+            <!-- Events -->
+            <div class="section-title">动态</div>
+            <div class="events" id="eventsFeed">
+                <div class="event-item" style="color:var(--muted)">等待诞生...</div>
+            </div>
+        </div>
+
+        <!-- MAIN CHAT -->
+        <div class="main">
+            <div class="chat-head">
+                <div class="ch-dot off" id="wsDot"></div>
+                <div class="ch-name" id="chatName">AgentLife</div>
+                <div class="ch-info" id="chatInfo">连接中...</div>
+            </div>
+
+            <div class="messages" id="msgs">
+                <div class="sys-msg">👆 先给你的 Agent 起个名字吧</div>
+            </div>
+
+            <div class="typing" id="typing"><span></span><span></span><span></span></div>
+
+            <div class="input-bar">
+                <div class="input-row">
+                    <input type="text" id="chatInput" placeholder="说点什么..." autocomplete="off" disabled />
+                    <button class="send" id="sendBtn" disabled>↑</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  AgentLife Web Demo — WebSocket Client
+// ═══════════════════════════════════════════════════════════
+
+const WS_URL = `ws://${location.host}/ws/chat`;
+const PERSONA_ID = 'xiaoyun'; // default persona
+
+let ws = null;
+let sessionId = null;
+let agentBorn = false;
+let selectedSeed = 'curious';
+
+// DOM
+const $ = id => document.getElementById(id);
+const $overlay   = $('birthOverlay');
+const $birthName = $('birthName');
+const $birthGo   = $('birthGoBtn');
+const $msgs      = $('msgs');
+const $input     = $('chatInput');
+const $sendBtn   = $('sendBtn');
+const $typing    = $('typing');
+const $wsDot     = $('wsDot');
+const $chatName  = $('chatName');
+const $chatInfo  = $('chatInfo');
+const $events    = $('eventsFeed');
+
+// ── WebSocket ──
+function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+        $wsDot.className = 'ch-dot on';
+        $chatInfo.textContent = '已连接';
+        // Init session
+        ws.send(JSON.stringify({ type:'chat', content:'hi', persona_id:PERSONA_ID, user_name:'用户' }));
+    };
+    ws.onclose = () => {
+        $wsDot.className = 'ch-dot off';
+        $chatInfo.textContent = '断开，重连中...';
+        setTimeout(connect, 3000);
+    };
+    ws.onerror = () => { $wsDot.className = 'ch-dot off'; };
+
+    let streamEl = null, streamText = '';
+
+    ws.onmessage = e => {
+        const msg = JSON.parse(e.data);
+        switch(msg.type) {
+            case 'chat_start':
+                sessionId = msg.session_id;
+                $typing.classList.remove('on');
+                streamText = '';
+                streamEl = addMsg('bot', '');
+                break;
+
+            case 'chat_chunk':
+                streamText += msg.content;
+                if(streamEl) streamEl.querySelector('.bubble').textContent = streamText;
+                scrollBottom();
+                break;
+
+            case 'chat_end':
+                streamEl = null;
+                $sendBtn.disabled = false;
+                $input.disabled = false;
+                // Update status
+                if(msg.emotion) $chatInfo.textContent = `${msg.emotion} · ${msg.stage || ''}`;
+                // Show side effects
+                if(msg.side_effects) {
+                    msg.side_effects.forEach(fx => {
+                        addSys(fx.message, fx.type === 'event' ? 'event' : 'growth');
+                        pushEvent(fx.message);
+                    });
+                }
+                // Request full stats
+                wsSend({type:'status'});
+                break;
+
+            case 'status':
+                updatePanel(msg);
+                break;
+
+            case 'birth_result':
+                $overlay.classList.add('hidden');
+                agentBorn = true;
+                $input.disabled = false;
+                $sendBtn.disabled = false;
+                $chatName.textContent = msg.agent_name;
+                addSys(`🌟 ${msg.agent_name} 诞生了！`, 'growth');
+                addMsg('bot', msg.first_words);
+                pushEvent(`🌟 ${msg.agent_name} 诞生 · ${msg.personality_seed} · ${msg.mbti}`);
+                wsSend({type:'status'});
+                break;
+
+            case 'checkin_result':
+                addSys(msg.message, 'growth');
+                pushEvent(msg.message);
+                wsSend({type:'status'});
+                break;
+
+            case 'train_result':
+                addSys(msg.message, msg.success ? 'growth' : '');
+                pushEvent(msg.message);
+                wsSend({type:'status'});
+                break;
+
+            case 'evolve_result':
+                addSys(msg.message, msg.success ? 'growth' : '');
+                pushEvent(msg.message);
+                wsSend({type:'status'});
+                break;
+
+            case 'skill_result':
+                addSys(msg.message, msg.success ? 'growth' : '');
+                pushEvent(msg.message);
+                wsSend({type:'status'});
+                break;
+
+            case 'error':
+                addSys(`❌ ${msg.content}`, '');
+                $sendBtn.disabled = false;
+                $input.disabled = false;
+                break;
+        }
+    };
+}
+
+function wsSend(obj) {
+    if(ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+// ── Panel Update ──
+function updatePanel(s) {
+    // Name & stage
+    $('agentName').textContent = s.agent_name || s.persona || '—';
+    $('agentMbti').textContent = s.mbti || '—';
+
+    const stageMap = {'🟢 萌新':'newbie','🔵 伙伴':'partner','🟣 知己':'soulmate','🟡 分身':'alter'};
+    const stageEl = $('agentStage');
+    stageEl.textContent = s.stage || '萌新';
+    stageEl.className = 'badge ' + (stageMap[s.stage] || 'newbie');
+
+    // Boost
+    const bt = $('boostTag');
+    if(s.newbie_boost) { bt.style.display = 'inline-block'; bt.textContent = s.newbie_boost.message; }
+    else { bt.style.display = 'none'; }
+
+    // Attributes
+    const attrs = s.attributes || {};
+    const map = {
+        '💡 认知': ['barCog','valCog'],
+        '💬 表达': ['barExp','valExp'],
+        '❤️ 共情': ['barEmp','valEmp'],
+        '🔧 执行': ['barExe','valExe'],
+        '🌐 社交': ['barSoc','valSoc'],
+    };
+    for(const [key, [barId, valId]] of Object.entries(map)) {
+        const v = attrs[key] ?? 0;
+        $(barId).style.width = v + '%';
+        $(valId).textContent = v;
+    }
+
+    // Resources
+    const res = s.resources || {};
+    $('resEp').textContent = res['⚡ EP'] ?? 0;
+    $('resXp').textContent = res['🪙 XP'] ?? 0;
+    $('resStone').textContent = res['💎 进化石'] ?? 0;
+    const frags = res['🔑 碎片'] || {};
+    const fragTotal = Object.values(frags).reduce((a,b) => a+b, 0);
+    $('resFrags').textContent = fragTotal;
+}
+
+// ── Messages ──
+function addMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    const av = role === 'user' ? '👤' : '✨';
+    div.innerHTML = `<div class="m-av">${av}</div><div class="bubble">${text}</div>`;
+    $msgs.appendChild(div);
+    scrollBottom();
+    return div;
+}
+
+function addSys(text, cls='') {
+    const div = document.createElement('div');
+    div.className = `sys-msg ${cls}`;
+    div.textContent = text;
+    $msgs.appendChild(div);
+    scrollBottom();
+}
+
+function pushEvent(text) {
+    const first = $events.querySelector('.event-item');
+    if(first && first.textContent === '等待诞生...') $events.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'event-item';
+    div.textContent = text;
+    $events.prepend(div);
+    // Keep max 20
+    while($events.children.length > 20) $events.lastChild.remove();
+}
+
+function scrollBottom() { $msgs.scrollTop = $msgs.scrollHeight; }
+
+// ── Send Chat ──
+function sendChat() {
+    const text = $input.value.trim();
+    if(!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+    addMsg('user', text);
+    $input.value = '';
+    $sendBtn.disabled = true;
+    $typing.classList.add('on');
+    scrollBottom();
+    wsSend({ type:'chat', content:text, persona_id:PERSONA_ID, user_name:'用户' });
+}
+
+// ── Birth ──
+document.querySelectorAll('.seed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.seed-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSeed = btn.dataset.seed;
+    });
+});
+
+$birthName.addEventListener('input', () => {
+    $birthGo.disabled = !$birthName.value.trim();
+});
+
+$birthGo.addEventListener('click', () => {
+    const name = $birthName.value.trim();
+    if(!name) return;
+    $birthGo.disabled = true;
+    $birthGo.textContent = '正在诞生...';
+    wsSend({ type:'birth', agent_name:name, personality_seed:selectedSeed });
+});
+
+// ── Training ──
+document.querySelectorAll('.train-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        wsSend({ type:'train', training_type:btn.dataset.train });
+    });
+});
+
+// ── Actions ──
+$('checkinBtn').addEventListener('click', () => wsSend({type:'checkin'}));
+$('evolveBtn').addEventListener('click', () => wsSend({type:'evolve'}));
+
+// ── Input ──
+$sendBtn.addEventListener('click', sendChat);
+$input.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// ── Init ──
+connect();
+</script>
+</body>
+</html>

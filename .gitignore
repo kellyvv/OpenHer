@@ -12,3 +12,15 @@ node_modules/
 *.blg
 *.out
 .gemini/
+.vscode/
+.cache/
+.data/
+venv/
+*.egg-info/
+dist/
+build/
+*.whl
+server/venv/
+server/.cache/
+server/.data/
+server/__pycache__/
