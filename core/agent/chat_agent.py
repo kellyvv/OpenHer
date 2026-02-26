@@ -990,7 +990,6 @@ class ChatAgent:
 
         # Update last_active (proactive message counts as activity)
         self._last_active = time.time()
-        self._state_version += 1
 
         return {
             'reply': reply,

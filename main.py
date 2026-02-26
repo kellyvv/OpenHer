@@ -325,24 +325,30 @@ async def _deliver_proactive_msg(agent: ChatAgent, session_id: str, row: dict):
     if not msg:
         return  # Already taken by another instance
 
-    try:
-        # ── Bug 1 fix: Push to user via WebSocket ──
-        ws = _ws_connections.get(session_id)
-        if ws:
-            try:
-                await ws.send_json({
-                    "type": "proactive",
-                    "content": reply,
-                    "modality": modality,
-                    "drive": row.get('drive_id', ''),
-                    "persona": agent.persona.name,
-                })
-                print(f"  [proactive] 📨 WS pushed: {reply[:40]}")
-            except Exception as ws_err:
-                print(f"  [proactive] WS push failed: {ws_err}")
-                # WS failed but we still store in EverMemOS
+    # ── Push to user via WebSocket ──
+    ws = _ws_connections.get(session_id)
+    if not ws:
+        # User offline: keep pending for next sweep
+        state_store.outbox_mark_failed(uid, pid, tick_id)
+        return
 
-        # Store in EverMemOS (idempotent via message_id, R25)
+    try:
+        await ws.send_json({
+            "type": "proactive",
+            "content": reply,
+            "modality": modality,
+            "drive": row.get('drive_id', ''),
+            "persona": agent.persona.name,
+        })
+        print(f"  [proactive] 📨 WS pushed: {reply[:40]}")
+    except Exception as ws_err:
+        # WS send failed: mark failed, do NOT proceed to delivered
+        print(f"  [proactive] WS push failed: {ws_err}")
+        state_store.outbox_mark_failed(uid, pid, tick_id)
+        return
+
+    # WS push succeeded → store in EverMemOS (idempotent, R25)
+    try:
         if evermemos and evermemos.available:
             await evermemos.store_proactive_turn(
                 persona_id=pid,
@@ -351,14 +357,12 @@ async def _deliver_proactive_msg(agent: ChatAgent, session_id: str, row: dict):
                 reply=reply,
                 tick_id=tick_id,
             )
-
-        # Mark delivered (R31)
-        state_store.outbox_mark_delivered(uid, pid, tick_id)
-        print(f"  [proactive] ✅ delivered: {reply[:40]}")
-
     except Exception as e:
-        state_store.outbox_mark_failed(uid, pid, tick_id)
-        print(f"  [proactive] ❌ delivery failed, will retry: {e}")
+        print(f"  [proactive] EverMemOS store failed (non-fatal): {e}")
+
+    # Only mark delivered after successful WS push
+    state_store.outbox_mark_delivered(uid, pid, tick_id)
+    print(f"  [proactive] ✅ delivered: {reply[:40]}")
 
 
 @app.get("/app")
@@ -397,25 +401,46 @@ class PersonaInfo(BaseModel):
 # ──────────────────────────────────────────────────────────────
 
 def _persist_agent(agent: ChatAgent) -> None:
-    """Save agent state via CAS (Bug 4: uses save_state with version guard)."""
-    if state_store:
-        import json as _json
-        ok = state_store.save_state(
-            user_id=agent.user_id,
-            persona_id=agent.persona.persona_id,
-            agent_data=_json.dumps(agent.agent.to_dict(), ensure_ascii=False),
-            metabolism_data=_json.dumps(agent.metabolism.to_dict(), ensure_ascii=False),
-            last_active_at=agent._last_active,
-            interaction_cadence=agent._interaction_cadence,
-            expected_version=agent._state_version,
-        )
-        if ok:
-            agent._state_version += 1
+    """Save agent state via CAS with bootstrap fallback."""
+    if not state_store:
+        return
+    import json as _json
+    agent_data = _json.dumps(agent.agent.to_dict(), ensure_ascii=False)
+    metabolism_data = _json.dumps(agent.metabolism.to_dict(), ensure_ascii=False)
+
+    ok = state_store.save_state(
+        user_id=agent.user_id,
+        persona_id=agent.persona.persona_id,
+        agent_data=agent_data,
+        metabolism_data=metabolism_data,
+        last_active_at=agent._last_active,
+        interaction_cadence=agent._interaction_cadence,
+        expected_version=agent._state_version,
+    )
+    if ok:
+        agent._state_version += 1
+    else:
+        # CAS miss: either stale version or row doesn't exist yet.
+        # Check if row exists to distinguish bootstrap vs conflict.
+        _, _, db_ver = state_store.load_proactive_meta(agent.user_id, agent.persona.persona_id)
+        if db_ver == 0 and agent._state_version == 0:
+            # Bootstrap: first write, no row exists. Use UPSERT (no CAS).
+            state_store.save_state(
+                user_id=agent.user_id,
+                persona_id=agent.persona.persona_id,
+                agent_data=agent_data,
+                metabolism_data=metabolism_data,
+                last_active_at=agent._last_active,
+                interaction_cadence=agent._interaction_cadence,
+                expected_version=None,  # UPSERT, no version check
+            )
+            # Read actual DB version after write (INSERT = 0, ON CONFLICT = n+1)
+            _, _, actual_v = state_store.load_proactive_meta(agent.user_id, agent.persona.persona_id)
+            agent._state_version = actual_v
         else:
-            # CAS failed — another writer updated. Reload version.
-            _, _, v = state_store.load_proactive_meta(agent.user_id, agent.persona.persona_id)
-            agent._state_version = v
-            print(f"  [persist] CAS miss for {agent.user_id}/{agent.persona.persona_id}, reloaded v={v}")
+            # True conflict: another writer updated. Sync version.
+            agent._state_version = db_ver
+            print(f"  [persist] CAS conflict {agent.user_id}/{agent.persona.persona_id}, synced v={db_ver}")
 
 
 def _cleanup_expired_sessions() -> int:
