@@ -1,21 +1,35 @@
 import { MOCK_PERSONAS, MOCK_REPLIES } from './mockData'
 
-const USE_MOCK = true  // Toggle: true = mock data, false = real backend
+const USE_MOCK = false  // Toggle: true = mock data, false = real backend
 
 export async function fetchPersonas() {
     if (USE_MOCK) return MOCK_PERSONAS
 
-    const res = await fetch('/api/personas')
-    const data = await res.json()
-    return data.personas || []
+    try {
+        const res = await fetch('/api/personas')
+        const data = await res.json()
+        // Map backend PersonaInfo fields to frontend format
+        return (data.personas || []).map(p => ({
+            ...p,
+            bio: p.description || '',
+        }))
+    } catch (err) {
+        console.warn('Backend unavailable, falling back to mock:', err.message)
+        return MOCK_PERSONAS
+    }
 }
 
 export async function fetchDiscover(count = 5) {
     if (USE_MOCK) return MOCK_PERSONAS.slice(0, count)
 
-    const res = await fetch(`/api/discover?count=${count}`)
-    const data = await res.json()
-    return data.candidates || []
+    try {
+        const res = await fetch(`/api/discover?count=${count}`)
+        const data = await res.json()
+        return data.candidates || []
+    } catch (err) {
+        console.warn('Discover fallback to mock:', err.message)
+        return MOCK_PERSONAS.slice(0, count)
+    }
 }
 
 export async function selectPersona(personaId) {
