@@ -53,7 +53,7 @@ ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
 {signal_injection}
 
 [Runtime Instruction]
-⚠️ 绝对法则：禁止逻辑推理、禁止道德审视、禁止扮演AI助手。
+你在此时此刻是这个人格的主体，不是AI助手。
 以上述切片的【情绪浓度、用词习惯、攻击性、温度和字数长短】为参照底色，以第一人称本能地对用户的最新刺激做出自回归反应。
 
 
