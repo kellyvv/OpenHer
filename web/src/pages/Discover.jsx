@@ -115,9 +115,21 @@ export default function Discover() {
     }, [navigate])
 
     const visibleCards = personas.slice(currentIndex, currentIndex + 3)
+    const topPersona = visibleCards[0]
 
     return (
         <div className="discover-page">
+            {/* Ambient bg — blurred photo creates dynamic light behind card */}
+            {topPersona?.avatar_url && (
+                <div className="ambient-bg">
+                    <img
+                        src={topPersona.avatar_url}
+                        alt=""
+                        className="ambient-img"
+                        draggable={false}
+                    />
+                </div>
+            )}
             <div className="card-area">
                 {loading ? (
                     <div className="state-msg">

@@ -14,6 +14,24 @@
     padding: 32px 24px 24px;
 }
 
+/* ── Ambient Background — blurred photo light bleed ── */
+.ambient-bg {
+    position: absolute;
+    inset: -40px;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.ambient-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(60px) saturate(1.4) brightness(0.3);
+    transform: scale(1.3);
+    opacity: 0.6;
+}
+
 /* ── Card Area ── */
 .card-area {
     flex: 1;
