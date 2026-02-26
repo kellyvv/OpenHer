@@ -558,9 +558,56 @@ class ChatAgent:
             messages.append(ChatMessage(role="user", content=user_message))
 
             full_response = []
+            # ── Streaming filter: only yield 【最终回复】content ──
+            # State machine: buffering→in_reply→done
+            filter_buf = ""
+            in_reply = False
+            done_reply = False
+            REPLY_START = "【最终回复】"
+            REPLY_END = "【表达方式】"
+
             async for chunk in self.llm.chat_stream(messages):
                 full_response.append(chunk)
-                yield chunk
+                if done_reply:
+                    continue
+
+                filter_buf += chunk
+
+                if not in_reply:
+                    # Look for the reply start marker in the buffer
+                    idx = filter_buf.find(REPLY_START)
+                    if idx != -1:
+                        in_reply = True
+                        # Content after the marker is the reply
+                        filter_buf = filter_buf[idx + len(REPLY_START):]
+                    else:
+                        # Keep only a small tail to handle split markers
+                        if len(filter_buf) > len(REPLY_START) * 2:
+                            filter_buf = filter_buf[-(len(REPLY_START)):]
+                        continue
+
+                if in_reply:
+                    # Check if the end marker has arrived
+                    end_idx = filter_buf.find(REPLY_END)
+                    if end_idx != -1:
+                        # Yield everything before the end marker, then stop
+                        to_yield = filter_buf[:end_idx].lstrip("\n")
+                        if to_yield:
+                            yield to_yield
+                        done_reply = True
+                        filter_buf = ""
+                    else:
+                        # Safe to yield content, but hold back enough chars to
+                        # detect a split end marker
+                        safe_len = max(0, len(filter_buf) - len(REPLY_END))
+                        to_yield = filter_buf[:safe_len]
+                        if to_yield:
+                            yield to_yield
+                        filter_buf = filter_buf[safe_len:]
+
+            # If stream ended without the end marker, yield whatever remains
+            if in_reply and filter_buf and not done_reply:
+                yield filter_buf.strip()
 
             # ── Post-stream processing ──
             raw_text = "".join(full_response)
