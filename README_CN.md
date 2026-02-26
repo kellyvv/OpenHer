@@ -14,7 +14,7 @@
 
 [![EverMemOS](https://img.shields.io/badge/Powered%20by-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
-[![License](https://img.shields.io/badge/License-BSL%201.1-green?style=flat-square)](#许可证)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 
 [架构](#架构) · [快速开始](#快速开始) · [工作原理](#工作原理) · [EverMemOS 集成](#evermemos-集成) · [Demo](#demo)
 
@@ -169,7 +169,7 @@ EverMemOS（记忆）→ Critic（推理）→ Actor（行动）
 
 ## 许可证
 
-本项目采用 [Business Source License 1.1](LICENSE) — 可自由用于非商业用途。商业使用需单独授权。
+本项目采用 [Apache License 2.0](LICENSE) — 可自由用于任何用途，包括商业使用。
 
 ## 致谢
 

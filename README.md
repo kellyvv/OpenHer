@@ -14,7 +14,7 @@
 
 [![EverMemOS](https://img.shields.io/badge/Powered%20by-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
-[![License](https://img.shields.io/badge/License-BSL%201.1-green?style=flat-square)](#license)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 
 [Architecture](#architecture) · [Quick Start](#quick-start) · [How It Works](#how-it-works) · [EverMemOS Integration](#evermemos-integration) · [Demo](#demo)
 
@@ -177,7 +177,7 @@ Create your own by adding a folder in `personas/` with a `persona.yaml` and `PER
 
 ## License
 
-This project is licensed under the [Business Source License 1.1](LICENSE) — you are free to use, study, and modify the code for non-commercial purposes. Commercial use requires a separate license.
+This project is licensed under the [Apache License 2.0](LICENSE) — you are free to use, study, and modify the code for any purpose, including commercial use, for free.
 
 ## Acknowledgments
 
