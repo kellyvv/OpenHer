@@ -56,19 +56,6 @@ OpenHer 是一款基于**热力学人格引擎 (Thermodynamic Persona Engine, TP
 
 </div>
 
-### 核心模块
-
-| 模块 | 文件 | 职责 |
-|:-----|:-----|:-----|
-| **ChatAgent** | [`chat_agent.py`](core/agent/chat_agent.py) | 12-step 生命周期编排 |
-| **Critic** | [`critic.py`](core/genome/critic.py) | LLM 感知：8D 上下文 + 3D 关系 delta |
-| **GenomeEngine** | [`genome_engine.py`](core/genome/genome_engine.py) | 神经网络：12D 上下文 → 20+ 行为信号 |
-| **DriveMetabolism** | [`metabolism.py`](core/genome/metabolism.py) | 5 驱力情感动力学（时间衰减） |
-| **StyleMemory** | [`style_memory.py`](core/memory/style_memory.py) | KNN 风格检索 + 结晶存储 |
-| **EverMemOSClient** | [`evermemos_client.py`](core/memory/evermemos_client.py) | 长期记忆：画像、叙事、检索 |
-| **PersonaLoader** | [`persona/`](core/persona/) | YAML + Markdown 人设配置 |
-| **LLMClient** | [`llm/`](core/llm/) | 多 Provider：Qwen、GPT-4o、Claude、DeepSeek、Ollama |
-
 ## 快速开始
 
 ### 前置要求
@@ -135,36 +122,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-## 工作原理
-
-### 1. 热力学人格引擎 (TPE)
-
-TPE 将人格视为一个**热力学系统**，内建五个驱力：
-
-```
-连接 · 新奇 · 表达 · 安全 · 玩闹
-```
-
-每个驱力都有一个**沮丧度**，随时间自然上升（像饥饿感），被满足时下降。总沮丧度决定系统**温度**，向行为信号注入校准过的噪声——产生自然的人格变化。
-
-### 2. Critic → Engine → Actor 双 LLM 流水线
-
-| 阶段 | 发生了什么 |
-|:-----|:-----------|
-| **Critic** (LLM) | 感知对话：输出 8D 上下文 + 5D 驱力 delta + 3D 关系 delta |
-| **EMA 融合** | 用指数移动平均将 delta 合并进关系状态 |
-| **GenomeEngine** | 神经网络将 12D 上下文映射为 20+ 行为信号（温暖、反叛、好奇…） |
-| **Actor** (LLM) | 由信号 + 风格记忆 + 人设档案驱动生成回复 |
-| **Hebbian 学习** | 根据 reward 更新神经权重——人格持续进化 |
-
-### 3. 三阶段涌现优化
-
-| 阶段 | 机制 | 目的 |
-|:-----|:-----|:-----|
-| **Phase 1** | 关系 EMA：`α·posterior + (1-α)·prev` | 平滑关系跟踪，避免突变 |
-| **Phase 2** | 结晶门控：`0.4R + 0.3(N×E) + 0.3(1-C) > 0.35` | 只有值得记住的时刻才成为永久风格记忆 |
-| **Phase 3** | 异步 RRF 检索 + 80/20 混合注入 | 用相关记忆增强，保留长期画像稳定性 |
 
 ## EverMemOS 集成
 

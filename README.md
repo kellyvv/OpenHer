@@ -55,18 +55,6 @@ Unlike typical AI chatbots that reset every session, OpenHer:
 
 </div>
 
-### Core Modules
-
-| Module | File | Role |
-|:-------|:-----|:-----|
-| **ChatAgent** | [`chat_agent.py`](core/agent/chat_agent.py) | 12-step lifecycle orchestrator |
-| **Critic** | [`critic.py`](core/genome/critic.py) | LLM-powered context perception (8D + 3D relationship) |
-| **GenomeEngine** | [`genome_engine.py`](core/genome/genome_engine.py) | Neural network: 12D context → 20+ behavior signals |
-| **DriveMetabolism** | [`metabolism.py`](core/genome/metabolism.py) | 5-drive emotional dynamics with time decay |
-| **StyleMemory** | [`style_memory.py`](core/memory/style_memory.py) | KNN few-shot retrieval + crystallization |
-| **EverMemOSClient** | [`evermemos_client.py`](core/memory/evermemos_client.py) | Long-term memory: profile, episodes, search |
-| **PersonaLoader** | [`persona/`](core/persona/) | YAML + Markdown persona configuration |
-| **LLMClient** | [`llm/`](core/llm/) | Multi-provider: Qwen, GPT-4o, Claude, DeepSeek, Ollama |
 
 ## Quick Start
 
@@ -134,38 +122,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-## How It Works
-
-### 1. Thermodynamic Persona Engine
-
-The TPE treats personality as a **thermodynamic system** with five internal drives:
-
-```
-Connection · Novelty · Expression · Safety · Play
-```
-
-Each drive has a **frustration** level that rises over time (like hunger) and drops when satisfied. The total frustration becomes the system **temperature**, injecting calibrated noise into behavior signals — creating natural personality variation.
-
-### 2. Critic → Engine → Actor Pipeline
-
-Every turn runs a **dual-LLM pipeline**:
-
-| Stage | What Happens |
-|:------|:-------------|
-| **Critic** (LLM) | Perceives the conversation: outputs 8D context + 5D drive deltas + 3D relationship deltas |
-| **EMA Fusion** | Merges Critic deltas with prior relationship state using exponential moving average |
-| **GenomeEngine** | Neural network maps 12D context → 20+ behavior signals (warmth, defiance, curiosity, etc.) |
-| **Actor** (LLM) | Generates response driven by signals, few-shot style memories, and persona profile |
-| **Hebbian Learning** | Updates neural weights based on reward — personality evolves |
-
-### 3. Emergence Optimization (Three Phases)
-
-| Phase | Mechanism | Purpose |
-|:------|:----------|:--------|
-| **Phase 1** | Relationship EMA: `α·posterior + (1-α)·prev` | Smooth relationship tracking without abrupt jumps |
-| **Phase 2** | Crystallization gate: `0.4R + 0.3(N×E) + 0.3(1-C) > 0.35` | Only memorable moments become permanent style memories |
-| **Phase 3** | Async RRF retrieval + 80/20 blend injection | Query-relevant memories without losing long-term profile |
 
 ## EverMemOS Integration
 
