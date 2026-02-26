@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ChevronLeft, SendHorizontal } from 'lucide-react'
 import { fetchPersonas } from '../services/api'
 import { useWebSocket } from '../hooks/useWebSocket'
 import './Chat.css'
@@ -48,23 +49,34 @@ export default function Chat() {
 
     return (
         <div className="chat-page">
+            {/* Ambient background from persona photo */}
+            {persona?.avatar_url && (
+                <div className="chat-ambient">
+                    <img src={persona.avatar_url} alt="" className="chat-ambient-img" draggable={false} />
+                </div>
+            )}
 
             {/* Header */}
             <header className="chat-header">
                 <button className="back-btn" onClick={() => navigate('/discover')}>
-                    ←
+                    <ChevronLeft size={24} />
                 </button>
                 <div className="header-avatar">
-                    {persona?.name?.[0] || '?'}
+                    {persona?.avatar_url ? (
+                        <img src={persona.avatar_url} alt="" className="header-avatar-img" />
+                    ) : (
+                        persona?.name?.[0] || '?'
+                    )}
                 </div>
                 <div className="header-info">
                     <div className="header-name">{persona?.name || 'Loading...'}</div>
                     <div className="header-detail">
                         {persona?.mbti && <span className="header-mbti">{persona.mbti}</span>}
-                        {status.dominantDrive && <span className="header-drive">{status.dominantDrive}</span>}
+                        <span className={`connection-status ${connected ? 'online' : 'offline'}`}>
+                            {connected ? 'Online' : 'Offline'}
+                        </span>
                     </div>
                 </div>
-                <div className={`connection-dot ${connected ? 'connected' : 'disconnected'}`} />
             </header>
 
             {/* Messages */}
@@ -72,7 +84,11 @@ export default function Chat() {
                 {messages.length === 0 && (
                     <div className="welcome">
                         <div className="welcome-avatar">
-                            {persona?.name?.[0] || '✦'}
+                            {persona?.avatar_url ? (
+                                <img src={persona.avatar_url} alt="" className="welcome-avatar-img" />
+                            ) : (
+                                persona?.name?.[0] || '✦'
+                            )}
                         </div>
                         <h2>{persona?.name || 'AI Companion'}</h2>
                         <p className="welcome-bio">{bio}</p>
@@ -83,7 +99,7 @@ export default function Chat() {
                                 ))}
                             </div>
                         )}
-                        <p className="welcome-hint">Say something to start the conversation</p>
+                        <p className="welcome-hint">Say something to start a conversation</p>
                     </div>
                 )}
 
@@ -118,7 +134,7 @@ export default function Chat() {
                         onClick={handleSend}
                         disabled={streaming || !input.trim()}
                     >
-                        ↑
+                        <SendHorizontal size={20} />
                     </button>
                 </div>
             </div>
