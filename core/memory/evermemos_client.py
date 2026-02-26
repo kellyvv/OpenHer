@@ -255,30 +255,37 @@ class EverMemOSClient:
 
         t0 = time.monotonic()
         try:
-            # Try list format first (v1.2+), fallback to comma-string
-            try:
-                response = await self._mem.get(
-                    extra_query={
-                        "user_id": user_id,
-                        "memory_type": ["profile", "event_log", "episodic_memory", "foresight"],
-                    },
-                    timeout=_CFG["load_timeout_sec"],
-                )
-            except Exception:
-                response = await self._mem.get(
-                    extra_query={
-                        "user_id": user_id,
-                        "memory_types": ["profile", "event_log", "episodic_memory", "foresight"],
-                    },
-                    timeout=_CFG["load_timeout_sec"],
-                )
+            # EverMemOS v0 API only supports single memory_type per call.
+            # Fire 4 parallel queries for max throughput.
+            timeout = _CFG["load_timeout_sec"]
 
-            if not response or not response.result or not response.result.memories:
+            async def _get_type(mtype: str):
+                try:
+                    return await self._mem.get(
+                        extra_query={"user_id": user_id, "memory_type": mtype},
+                        timeout=timeout,
+                    )
+                except Exception:
+                    return None
+
+            results = await asyncio.gather(
+                _get_type("profile"),
+                _get_type("event_log"),
+                _get_type("episodic_memory"),
+                _get_type("foresight"),
+            )
+
+            # Merge all memories from parallel responses
+            memories = []
+            for resp in results:
+                if resp and resp.result and resp.result.memories:
+                    memories.extend(resp.result.memories)
+
+            if not memories:
                 # P1b: healthy request (0 results) — reset failure count
                 self._cb.record_success()
                 return empty
 
-            memories = response.result.memories
             profile_lines = []
             fact_lines = []
             episode_lines = []
@@ -515,15 +522,14 @@ class EverMemOSClient:
             if random.randint(1, 100) <= agentic_pct:
                 retrieve_method = "agentic"
 
-        # P1: Include profile in search types
-        memory_types = ["event_log", "episodic_memory", "profile"]
+        # Search doesn't need memory_type filter — EverMemOS returns
+        # relevant results across all types by default.
 
         try:
             query_params = {
                 "query": query,
                 "user_id": user_id,
                 "retrieve_method": retrieve_method,
-                "memory_types": memory_types,
             }
             try:
                 response = await self._mem.search(
@@ -531,15 +537,10 @@ class EverMemOSClient:
                     timeout=_CFG["search_timeout_sec"],
                 )
             except Exception:
-                # SDK compat fallback: try singular key
-                query_params_alt = {
-                    "query": query,
-                    "user_id": user_id,
-                    "search_method": retrieve_method,
-                    "memory_type": memory_types,
-                }
+                # SDK compat fallback: try search_method key
+                query_params["search_method"] = query_params.pop("retrieve_method")
                 response = await self._mem.search(
-                    extra_query=query_params_alt,
+                    extra_query=query_params,
                     timeout=_CFG["search_timeout_sec"],
                 )
 
