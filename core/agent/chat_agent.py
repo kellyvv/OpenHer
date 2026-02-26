@@ -150,6 +150,8 @@ class ChatAgent:
         # ── Phase 3: Query-based relevance retrieval ──
         self._relevant_facts: str = ""      # Populated by async search from previous turn
         self._relevant_episodes: str = ""   # Populated by async search from previous turn
+        self._relevant_profile: str = ""    # P1: Profile attrs from search
+        self._foresight_text: str = ""      # P1: Foresight content from session context
         self._search_task: Optional[asyncio.Task] = None  # Tracks background search
         self._search_turn_id: int = 0       # Turn that fired the search (concurrency guard)
         self._search_hit: int = 0           # Observability: successful search collections
@@ -328,7 +330,7 @@ class ChatAgent:
         # ── Step 8: Build Actor prompt ──
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
 
-        # ── Step 8.5: Memory injection (profile + episode) ──
+        # ── Step 8.5: Memory injection (profile + episode + foresight) ──
         if self._session_ctx and self._session_ctx.has_history:
             # Collect search results right before injection (not at turn start)
             await self._collect_search_results()
@@ -345,8 +347,14 @@ class ChatAgent:
                 system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
                 system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+            # P1: Inject foresight prediction text
+            if self._foresight_text:
+                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+            # P1: Inject profile from search
+            if self._relevant_profile:
+                system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             # Track if this turn used relevant content
-            if self._relevant_facts or self._relevant_episodes:
+            if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                 self._search_relevant_used += 1
 
         # ── Step 9: LLM Actor ──
@@ -460,7 +468,7 @@ class ChatAgent:
         few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
         system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
 
-        # ── Step 8.5: Memory injection (profile + episode) ──
+        # ── Step 8.5: Memory injection (profile + episode + foresight) ──
         if self._session_ctx and self._session_ctx.has_history:
             # Collect search results right before injection (not at turn start)
             await self._collect_search_results()
@@ -477,8 +485,14 @@ class ChatAgent:
                 system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
                 system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+            # P1: Inject foresight prediction text
+            if self._foresight_text:
+                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+            # P1: Inject profile from search
+            if self._relevant_profile:
+                system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             # Track if this turn used relevant content
-            if self._relevant_facts or self._relevant_episodes:
+            if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                 self._search_relevant_used += 1
 
         # ── Step 9: Stream Actor ──
@@ -549,6 +563,9 @@ class ChatAgent:
                 self._user_profile = self._session_ctx.user_profile
             if self._session_ctx.episode_summary:
                 self._episode_summary = self._session_ctx.episode_summary
+            # P1: Cache foresight text for Actor injection
+            if self._session_ctx.foresight_text:
+                self._foresight_text = self._session_ctx.foresight_text
 
         if not self._session_ctx:
             return empty_4d
@@ -677,11 +694,12 @@ class ChatAgent:
             return
 
         try:
-            facts, episodes = await asyncio.wait_for(
+            facts, episodes, profile = await asyncio.wait_for(
                 self._search_task, timeout=0.5
             )
             self._relevant_facts = facts
             self._relevant_episodes = episodes
+            self._relevant_profile = profile   # P1
             self._search_hit += 1
         except asyncio.TimeoutError:
             self._search_timeout += 1
@@ -691,10 +709,12 @@ class ChatAgent:
                   f"static fallback ({self._search_timeout}/{total} = {pct:.0f}%)")
             self._relevant_facts = ""
             self._relevant_episodes = ""
+            self._relevant_profile = ""
         except Exception as e:
             print(f"  [evermemos] 🔍 search collect error: {e}")
             self._relevant_facts = ""
             self._relevant_episodes = ""
+            self._relevant_profile = ""
         finally:
             self._search_task = None
 

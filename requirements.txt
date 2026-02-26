@@ -14,6 +14,7 @@ dashscope>=1.17.0
 edge-tts>=6.1.0
 
 # Memory & Embeddings
+evermemos>=0.1.0
 chromadb>=0.4.22
 
 # Database

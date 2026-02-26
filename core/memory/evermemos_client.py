@@ -1,31 +1,80 @@
 """
-EverMemOS Client — 长期记忆适配器 (Async v2)
+EverMemOS Client — 长期记忆适配器 (Async v3)
 
-使用 AsyncEverMemOS，所有 API 调用均为 async/await，不阻塞 uvicorn 事件循环。
+v3 改进：
+  P0 — 控制面：config 集中管理、超时可配、失败熔断、命中率指标
+  P1 — Foresight 内容注入：从"有 foresight"升级为"注入预测文本"
+  P1 — Profile 加入 RRF 检索：按预算混合 facts + episodes + profile
 
 记忆涌现架构：
   1. 每轮对话结束后 → asyncio.create_task(store_turn(...)) 后台存储
   2. EverMemOS 自动提取 Episode / EventLog(atomic_fact) / Profile / Foresight
-  3. Session 开始时一次性拉取 Profile → 注入 Critic → LLM 自然表达记忆
-  4. Session 结束时 flush → 触发边界提取
-
-不再使用关键词匹配。情感/意图/偏好的检测全部交给 EverMemOS 和 Critic+LLM。
+  3. Session 开始时拉取 Profile + Foresight 文本 → 注入 Critic + Actor
+  4. 每轮 RRF 检索：event_log + episodic_memory + profile → 注入 Actor
+  5. Session 结束时 flush → 触发边界提取
 """
 
 from __future__ import annotations
 
 import asyncio
+import math
 import os
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
+
+try:
+    import yaml
+    _YAML = True
+except ImportError:
+    _YAML = False
 
 try:
     from evermemos import AsyncEverMemOS
 except ImportError:
     AsyncEverMemOS = None
 
+
+# ─────────────────────────────────────────────────────────────
+# Config Loader
+# ─────────────────────────────────────────────────────────────
+
+def _load_memory_config() -> dict:
+    """Load config/memory_config.yaml; fall back to safe defaults."""
+    defaults = {
+        "enabled": True,
+        "retrieve_method": "rrf",
+        "agentic_rollout_pct": 0,
+        "search_timeout_sec": 3.0,
+        "load_timeout_sec": 5.0,
+        "foresight_max_items": 3,
+        "profile_max_items": 5,
+        "facts_max_items": 5,
+        "episodes_max_items": 3,
+        "circuit_breaker_enabled": True,
+        "failure_threshold": 5,
+        "recovery_timeout_sec": 60,
+        "log_hit_rates": True,
+        "log_latency": True,
+    }
+    config_path = Path(__file__).parent.parent.parent / "config" / "memory_config.yaml"
+    if _YAML and config_path.exists():
+        try:
+            data = yaml.safe_load(config_path.read_text()) or {}
+            cfg = data.get("evermemos", data)
+            return {**defaults, **cfg}
+        except Exception as e:
+            print(f"  [evermemos] config load error: {e} — using defaults")
+    return defaults
+
+_CFG = _load_memory_config()
+
+
+# ─────────────────────────────────────────────────────────────
+# Data Classes
+# ─────────────────────────────────────────────────────────────
 
 @dataclass
 class SessionContext:
@@ -35,11 +84,55 @@ class SessionContext:
     """
     user_profile: str          # Human-readable profile text for Critic/Actor injection
     episode_summary: str       # Narrative episodes for "history recall" injection
+    foresight_text: str        # P1: Foresight prediction text for Actor injection
     interaction_count: int     # Total past interactions with this user
     has_history: bool          # True if user has any stored memories
     relationship_depth: float  # 0~1, semantic richness-based (not pure count)
     pending_foresight: float   # 0~1, whether there are active foresight memories
+    # Metrics
+    _fact_count: int = field(default=0, repr=False)
+    _profile_count: int = field(default=0, repr=False)
+    _episode_count: int = field(default=0, repr=False)
+    _foresight_count: int = field(default=0, repr=False)
 
+
+# ─────────────────────────────────────────────────────────────
+# Circuit Breaker
+# ─────────────────────────────────────────────────────────────
+
+class _CircuitBreaker:
+    """Simple consecutive-failure circuit breaker."""
+
+    def __init__(self, threshold: int = 5, recovery_sec: float = 60.0):
+        self._threshold = threshold
+        self._recovery_sec = recovery_sec
+        self._failures = 0
+        self._open_at: Optional[float] = None
+
+    @property
+    def is_open(self) -> bool:
+        if self._open_at is None:
+            return False
+        if time.monotonic() - self._open_at > self._recovery_sec:
+            self._open_at = None
+            self._failures = 0
+            print("  [evermemos] 🔄 circuit breaker reset (recovery timeout)")
+            return False
+        return True
+
+    def record_success(self):
+        self._failures = 0
+
+    def record_failure(self):
+        self._failures += 1
+        if self._failures >= self._threshold and self._open_at is None:
+            self._open_at = time.monotonic()
+            print(f"  [evermemos] ⚡ circuit OPEN after {self._failures} failures")
+
+
+# ─────────────────────────────────────────────────────────────
+# Main Client
+# ─────────────────────────────────────────────────────────────
 
 class EverMemOSClient:
     """
@@ -54,16 +147,24 @@ class EverMemOSClient:
         self._client = None
         self._mem = None
         self._initialized = False
+        self._cb = _CircuitBreaker(
+            threshold=_CFG["failure_threshold"],
+            recovery_sec=_CFG["recovery_timeout_sec"],
+        )
+
+        if not _CFG.get("enabled", True):
+            print("⚠ EverMemOS disabled via config")
+            return
 
         if AsyncEverMemOS and self._api_key:
             try:
                 self._client = AsyncEverMemOS(
                     api_key=self._api_key,
-                    timeout=10.0,  # 10s global timeout prevents hangs
+                    timeout=10.0,
                 )
                 self._mem = self._client.v0.memories
                 self._initialized = True
-                print("✓ EverMemOS client initialized")
+                print(f"✓ EverMemOS client initialized (retrieve_method={_CFG['retrieve_method']})")
             except Exception as e:
                 print(f"⚠ EverMemOS init failed: {e}")
         else:
@@ -74,7 +175,7 @@ class EverMemOSClient:
 
     @property
     def available(self) -> bool:
-        return self._initialized and self._mem is not None
+        return self._initialized and self._mem is not None and not self._cb.is_open
 
     # ─────────────────────────────────────────────────────────────
     # Session Lifecycle
@@ -86,14 +187,16 @@ class EverMemOSClient:
         persona_id: str,
     ) -> SessionContext:
         """
-        Called once at session start. Pulls user profile + event logs from
-        EverMemOS and builds a SessionContext for use throughout the session.
+        Called once at session start. Pulls user profile + episodes + foresight
+        content from EverMemOS and builds a SessionContext for use throughout
+        the session.
 
         Returns a zero-context SessionContext if unavailable or error.
         """
         empty = SessionContext(
             user_profile="",
             episode_summary="",
+            foresight_text="",
             interaction_count=0,
             has_history=False,
             relationship_depth=0.0,
@@ -103,14 +206,14 @@ class EverMemOSClient:
         if not self.available:
             return empty
 
+        t0 = time.monotonic()
         try:
-            # Pull profile + event_log + episodic_memory + foresight for full context
             response = await self._mem.get(
                 extra_query={
                     "user_id": user_id,
                     "memory_type": "profile,event_log,episodic_memory,foresight",
                 },
-                timeout=8.0,
+                timeout=_CFG["load_timeout_sec"],
             )
 
             if not response or not response.result or not response.result.memories:
@@ -120,7 +223,7 @@ class EverMemOSClient:
             profile_lines = []
             fact_lines = []
             episode_lines = []
-            foresight_count = 0
+            foresight_lines = []
             interaction_count = 0
 
             for mem in memories:
@@ -141,7 +244,6 @@ class EverMemOSClient:
                         fact_lines.append(fact.strip())
 
                 elif "Episode" in type_name or "Episodic" in type_name:
-                    # Episodic memory: narrative summary of past conversations
                     summary = (
                         getattr(mem, 'summary', None)
                         or getattr(mem, 'narrative', None)
@@ -151,62 +253,81 @@ class EverMemOSClient:
                         episode_lines.append(summary.strip())
 
                 elif "Foresight" in type_name:
-                    # Foresight: predictive/pending memories with validity windows
-                    foresight_count += 1
+                    # P1: Extract foresight CONTENT (not just count)
+                    content = (
+                        getattr(mem, 'content', None)
+                        or getattr(mem, 'prediction', None)
+                        or getattr(mem, 'summary', None)
+                    )
+                    if content and content.strip():
+                        foresight_lines.append(content.strip())
 
-            # Build readable profile text (expanded limits for richer injection)
+            # Build readable profile text
+            max_facts = _CFG["facts_max_items"]
+            max_profile = _CFG["profile_max_items"]
             parts = []
             if profile_lines:
-                parts.append("【用户画像】" + "；".join(profile_lines[:8]))
+                parts.append("【用户画像】" + "；".join(profile_lines[:max_profile]))
             if fact_lines:
-                parts.append("【已知偏好/事实】" + "；".join(fact_lines[:12]))
-
+                parts.append("【已知偏好/事实】" + "；".join(fact_lines[:max_facts]))
             user_profile = "\n".join(parts) if parts else ""
 
-            # Episode summary: recent narrative memories (latest 3 episodes)
-            episode_summary = ""
-            if episode_lines:
-                episode_summary = "；".join(episode_lines[-3:])
+            # Episode summary (latest 3)
+            max_eps = _CFG["episodes_max_items"]
+            episode_summary = "；".join(episode_lines[-max_eps:]) if episode_lines else ""
 
-            # ── Semantic relationship depth ──
-            # Based on DATA RICHNESS, not raw interaction count.
-            # A user with 3 deep emotional episodes > 100 shallow chats.
+            # P1: Foresight text injection (max N items)
+            max_fs = _CFG["foresight_max_items"]
+            foresight_text = ""
+            if foresight_lines:
+                fs_items = foresight_lines[:max_fs]
+                foresight_text = "；".join(fs_items)
+
+            # Semantic relationship depth (data richness based)
             data_richness = (
-                len(fact_lines) * 2       # Each fact = knew something specific
-                + len(profile_lines) * 3  # Profile attrs = LLM understood the person
-                + len(episode_lines) * 5  # Episodes = real narrative history
+                len(fact_lines) * 2
+                + len(profile_lines) * 3
+                + len(episode_lines) * 5
             )
-            import math
-            # Saturates at richness ~30 (depth ≈ 1.0)
             depth = 1.0 - math.exp(-data_richness / 30.0) if data_richness > 0 else 0.0
-            # Fallback: if no episodes/facts yet, use light interaction count signal
             if data_richness == 0 and interaction_count > 0:
                 depth = 1.0 - math.exp(-interaction_count / 40.0)
 
-            # Foresight signal: saturates at 3 foresights → 1.0
+            foresight_count = len(foresight_lines)
             pending_fs = 1.0 - math.exp(-foresight_count / 1.5) if foresight_count > 0 else 0.0
+
+            self._cb.record_success()
+            elapsed_ms = (time.monotonic() - t0) * 1000
 
             ctx = SessionContext(
                 user_profile=user_profile,
                 episode_summary=episode_summary,
+                foresight_text=foresight_text,
                 interaction_count=interaction_count,
                 has_history=bool(memories),
                 relationship_depth=round(depth, 3),
                 pending_foresight=round(pending_fs, 3),
+                _fact_count=len(fact_lines),
+                _profile_count=len(profile_lines),
+                _episode_count=len(episode_lines),
+                _foresight_count=foresight_count,
             )
 
-            if ctx.has_history:
+            if ctx.has_history and _CFG["log_hit_rates"]:
                 print(
-                    f"  [evermemos] 📚 loaded: {interaction_count} interactions, "
-                    f"depth={depth:.2f}, {len(fact_lines)} facts, "
-                    f"{len(profile_lines)} profile attrs, {len(episode_lines)} episodes, "
-                    f"{foresight_count} foresights"
+                    f"  [evermemos] 📚 loaded ({elapsed_ms:.0f}ms): "
+                    f"{interaction_count} interactions, depth={depth:.2f}, "
+                    f"facts={len(fact_lines)}, profile={len(profile_lines)}, "
+                    f"episodes={len(episode_lines)}, foresights={foresight_count}"
+                    + (f" [foresight_text: {foresight_text[:40]}...]" if foresight_text else "")
                 )
 
             return ctx
 
         except Exception as e:
-            print(f"  [evermemos] load_session_context error: {e}")
+            self._cb.record_failure()
+            elapsed_ms = (time.monotonic() - t0) * 1000
+            print(f"  [evermemos] load_session_context error ({elapsed_ms:.0f}ms): {e}")
             return empty
 
     async def store_turn(
@@ -232,7 +353,6 @@ class EverMemOSClient:
         now_iso = time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime())
 
         try:
-            # Store user message
             await self._mem.add(
                 content=user_message,
                 create_time=now_iso,
@@ -242,8 +362,6 @@ class EverMemOSClient:
                 role="user",
                 group_id=group_id,
             )
-
-            # Store agent reply
             await self._mem.add(
                 content=agent_reply,
                 create_time=now_iso,
@@ -253,8 +371,10 @@ class EverMemOSClient:
                 role="assistant",
                 group_id=group_id,
             )
+            self._cb.record_success()
 
         except Exception as e:
+            self._cb.record_failure()
             print(f"  [evermemos] store_turn error: {e}")
 
     async def close_session(
@@ -293,96 +413,102 @@ class EverMemOSClient:
         """
         Build the 4D relationship PRIOR vector from SessionContext.
         These are deterministic priors; Critic provides deltas each turn.
-
-        Returns dict with keys matching CONTEXT_FEATURES:
-          - relationship_depth:  gradual growth curve (new user = 0)
-          - emotional_valence:   0.0 (Critic provides delta each turn)
-          - trust_level:         proxy from interaction depth
-          - pending_foresight:   from foresight query
         """
-        import math
         depth = ctx.relationship_depth
-        # Trust grows slower than depth (needs more interactions to trust)
         trust = 1.0 - math.exp(-ctx.interaction_count / 40.0) if ctx.interaction_count > 0 else 0.0
 
         return {
             'relationship_depth': round(depth, 3),
-            'emotional_valence': 0.0,   # Prior=0; Critic delta activates each turn
+            'emotional_valence': 0.0,
             'trust_level': round(trust, 3),
             'pending_foresight': round(ctx.pending_foresight, 3),
         }
 
     # ─────────────────────────────────────────────────────────────
-    # Query-Based Relevance Retrieval (Phase 3)
+    # Query-Based Relevance Retrieval (Phase 3) — P1 enhanced
     # ─────────────────────────────────────────────────────────────
 
     async def search_relevant_memories(
         self,
         query: str,
         user_id: str,
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, str]:
         """
         Search for memories most relevant to the current user message.
 
-        Uses EverMemOS RRF (hybrid keyword+vector) retrieval to find
-        event_log facts and episodic_memory summaries relevant to the
-        query. ~300ms typical latency with 3s hard timeout.
+        P1 improvement: Also searches profile type and returns profile context.
+        Uses retrieve_method from config (rrf / hybrid / agentic).
 
-        Returns: (relevant_facts, relevant_episodes) as formatted strings.
+        Returns: (relevant_facts, relevant_episodes, relevant_profile)
                  Empty strings on error or no results.
         """
         if not self.available or not query.strip():
-            return "", ""
+            return "", "", ""
 
-        import time as _time
-        t0 = _time.monotonic()
+        t0 = time.monotonic()
+        retrieve_method = _CFG.get("retrieve_method", "rrf")
+
+        # P2: Agentic rollout percentage
+        agentic_pct = _CFG.get("agentic_rollout_pct", 0)
+        if agentic_pct > 0:
+            import random
+            if random.randint(1, 100) <= agentic_pct:
+                retrieve_method = "agentic"
+
+        # P1: Include profile in search types
+        memory_types = "event_log,episodic_memory,profile"
 
         try:
-            # Primary query params (matches KI docs)
             query_params = {
                 "query": query,
                 "user_id": user_id,
-                "retrieve_method": "rrf",
-                "memory_types": "event_log,episodic_memory",
+                "retrieve_method": retrieve_method,
+                "memory_types": memory_types,
             }
             try:
                 response = await self._mem.search(
                     extra_query=query_params,
-                    timeout=3.0,
+                    timeout=_CFG["search_timeout_sec"],
                 )
             except Exception:
-                # SDK compat: some versions use singular param names
+                # SDK compat fallback
                 query_params_alt = {
                     "query": query,
                     "user_id": user_id,
-                    "search_method": "rrf",
-                    "memory_type": "event_log,episodic_memory",
+                    "search_method": retrieve_method,
+                    "memory_type": memory_types,
                 }
                 response = await self._mem.search(
                     extra_query=query_params_alt,
-                    timeout=3.0,
+                    timeout=_CFG["search_timeout_sec"],
                 )
 
-            elapsed_ms = (_time.monotonic() - t0) * 1000
+            elapsed_ms = (time.monotonic() - t0) * 1000
 
             if not response or not response.result or not response.result.memories:
-                print(f"  [evermemos] 🔍 search: 0 results ({elapsed_ms:.0f}ms)")
-                return "", ""
+                print(f"  [evermemos] 🔍 search: 0 results ({elapsed_ms:.0f}ms) [{retrieve_method}]")
+                self._cb.record_success()
+                return "", "", ""
 
             memories = response.result.memories
             facts = []
             episodes = []
+            profile_attrs = []
+
+            max_facts = _CFG["facts_max_items"]
+            max_eps = _CFG["episodes_max_items"]
+            max_profile = _CFG["profile_max_items"]
 
             for mem in memories:
                 mem_type = getattr(mem, '__class__', None)
                 type_name = mem_type.__name__ if mem_type else ""
 
-                if "EventLog" in type_name:
+                if "EventLog" in type_name and len(facts) < max_facts:
                     fact = getattr(mem, 'atomic_fact', None)
                     if fact and fact.strip():
                         facts.append(fact.strip())
 
-                elif "Episode" in type_name or "Episodic" in type_name:
+                elif ("Episode" in type_name or "Episodic" in type_name) and len(episodes) < max_eps:
                     summary = (
                         getattr(mem, 'summary', None)
                         or getattr(mem, 'narrative', None)
@@ -391,16 +517,29 @@ class EverMemOSClient:
                     if summary and summary.strip():
                         episodes.append(summary.strip())
 
+                elif "Profile" in type_name and len(profile_attrs) < max_profile:
+                    profile_data = getattr(mem, 'profile_data', None)
+                    if profile_data:
+                        for k, v in profile_data.items():
+                            if v and len(profile_attrs) < max_profile:
+                                profile_attrs.append(f"{k}: {v}")
+
             relevant_facts = "；".join(facts) if facts else ""
             relevant_episodes = "；".join(episodes) if episodes else ""
+            relevant_profile = "；".join(profile_attrs) if profile_attrs else ""
 
-            print(
-                f"  [evermemos] 🔍 search: {len(facts)} facts, "
-                f"{len(episodes)} episodes ({elapsed_ms:.0f}ms)"
-            )
-            return relevant_facts, relevant_episodes
+            self._cb.record_success()
+
+            if _CFG["log_hit_rates"]:
+                print(
+                    f"  [evermemos] 🔍 search ({elapsed_ms:.0f}ms) [{retrieve_method}]: "
+                    f"facts={len(facts)}, episodes={len(episodes)}, profile={len(profile_attrs)}"
+                )
+
+            return relevant_facts, relevant_episodes, relevant_profile
 
         except Exception as e:
-            elapsed_ms = (_time.monotonic() - t0) * 1000
+            self._cb.record_failure()
+            elapsed_ms = (time.monotonic() - t0) * 1000
             print(f"  [evermemos] 🔍 search error ({elapsed_ms:.0f}ms): {e}")
-            return "", ""
+            return "", "", ""
