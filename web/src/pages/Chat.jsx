@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, SendHorizontal } from 'lucide-react'
+import { ChevronLeft, SendHorizontal, User } from 'lucide-react'
 import { fetchPersonas } from '../services/api'
 import { useWebSocket } from '../hooks/useWebSocket'
 import './Chat.css'
@@ -61,22 +61,9 @@ export default function Chat() {
                 <button className="back-btn" onClick={() => navigate('/discover')}>
                     <ChevronLeft size={24} />
                 </button>
-                <div className="header-avatar">
-                    {persona?.avatar_url ? (
-                        <img src={persona.avatar_url} alt="" className="header-avatar-img" />
-                    ) : (
-                        persona?.name?.[0] || '?'
-                    )}
-                </div>
-                <div className="header-info">
-                    <div className="header-name">{persona?.name || 'Loading...'}</div>
-                    <div className="header-detail">
-                        {persona?.mbti && <span className="header-mbti">{persona.mbti}</span>}
-                        <span className={`connection-status ${connected ? 'online' : 'offline'}`}>
-                            {connected ? 'Online' : 'Offline'}
-                        </span>
-                    </div>
-                </div>
+                <div className="header-title">{persona?.name || 'Loading...'}</div>
+                {/* Spacer to balance the back button for centering */}
+                <div style={{ width: 32 }} />
             </header>
 
             {/* Messages */}
@@ -106,7 +93,13 @@ export default function Chat() {
                 {messages.map((msg, i) => (
                     <div key={i} className={`message ${msg.role}`}>
                         <div className="msg-avatar">
-                            {msg.role === 'user' ? '👤' : (persona?.name?.[0] || '✦')}
+                            {msg.role === 'user' ? (
+                                <User size={18} />
+                            ) : persona?.avatar_url ? (
+                                <img src={persona.avatar_url} alt="" className="msg-avatar-img" />
+                            ) : (
+                                <span>{persona?.name?.[0] || '✦'}</span>
+                            )}
                         </div>
                         <div className="bubble">
                             {msg.content}
