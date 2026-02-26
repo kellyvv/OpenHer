@@ -34,8 +34,7 @@ export function useWebSocket() {
                     setSessionId(msg.session_id)
                     setStreaming(true)
                     streamContentRef.current = ''
-                    // Show typing indicator — fires after Critic/genome (~2-3s natural delay)
-                    setMessages(prev => [...prev, { role: 'assistant', content: '', typing: true }])
+                    // Header will show "对方正在输入" via streaming state
                     break
                 case 'chat_chunk':
                     // Buffer silently
@@ -43,19 +42,13 @@ export function useWebSocket() {
                     break
                 case 'chat_end':
                     setStreaming(false)
-                    // Replace typing bubble with full buffered message
-                    setMessages(prev => {
-                        const updated = [...prev]
-                        const last = updated[updated.length - 1]
-                        if (last?.typing) {
-                            updated[updated.length - 1] = {
-                                role: 'assistant',
-                                content: streamContentRef.current,
-                                typing: false,
-                            }
-                        }
-                        return updated
-                    })
+                    // Use backend-cleaned reply (parentheticals stripped on full text)
+                    if (msg.reply) {
+                        setMessages(prev => [...prev, {
+                            role: 'assistant',
+                            content: msg.reply,
+                        }])
+                    }
                     setStatus({ dominantDrive: msg.dominant_drive, turnCount: msg.turn_count })
                     break
                 case 'persona_switched':

@@ -84,13 +84,16 @@ async def stream_to_ws(
     """
     Stream raw LLM output through the output router to a WebSocket.
 
-    Filters to 【最终回复】section, strips action descriptions,
-    and sends clean chat_chunk events. After streaming, routes by modality.
+    Streaming only extracts the 【最终回复】section (no per-chunk cleaning —
+    unreliable when parentheticals span chunk boundaries).
+
+    Full cleaning (strip action descriptions) is applied once on the complete
+    text via on_reply_complete → parse_raw_output → _clean_reply.
 
     Args:
         raw_stream:        AsyncIterator of raw LLM chunks from chat_agent
         ws_send:           Coroutine to send a dict to the WebSocket
-        on_reply_complete: Optional callback(reply_text, modality) after full reply parsed
+        on_reply_complete: Callback(clean_reply, modality) after full stream
     """
     buf = ""
     in_reply = False
@@ -110,46 +113,28 @@ async def stream_to_ws(
                 in_reply = True
                 buf = buf[idx + len(_REPLY_START):]
             else:
-                # Keep tail to handle markers split across chunks
                 if len(buf) > len(_REPLY_START) * 2:
                     buf = buf[-len(_REPLY_START):]
                 continue
 
-        if in_reply:
-            end_idx = buf.find(_REPLY_END)
-            if end_idx != -1:
-                to_send = _clean_reply(buf[:end_idx].lstrip("\n"))
-                if to_send:
-                    await ws_send({"type": "chat_chunk", "content": to_send})
-                done_reply = True
-                buf = ""
-            else:
-                safe_len = max(0, len(buf) - len(_REPLY_END))
-                to_send = _clean_reply(buf[:safe_len])
-                if to_send:
-                    await ws_send({"type": "chat_chunk", "content": to_send})
-                buf = buf[safe_len:]
+        # in_reply: don't yield to frontend during streaming
+        # Just extract to know when 【表达方式】arrives
+        end_idx = buf.find(_REPLY_END)
+        if end_idx != -1:
+            done_reply = True
+            buf = ""
 
-    # Flush remaining if no end marker
-    if in_reply and buf and not done_reply:
-        to_send = _clean_reply(buf)
-        if to_send:
-            await ws_send({"type": "chat_chunk", "content": to_send})
-
-    # ── Modality routing (post-stream) ──
+    # ── Post-stream: parse full output, clean once, fire callback ──
     if on_reply_complete:
         raw_text = "".join(full_raw)
-        parsed = parse_raw_output(raw_text)
+        parsed = parse_raw_output(raw_text)   # _clean_reply applied here on full text
         modality = _extract_primary_modality(parsed["modality"])
 
-        # Future modality routing hooks go here:
-        # if modality == "语音":
-        #     await _route_voice(parsed["reply"], ws_send, tts_engine)
-        # elif modality == "表情":
-        #     await _route_sticker(parsed["reply"], ws_send)
-        # elif modality == "照片":
-        #     await _route_photo(ws_send)
-        # elif modality == "静默":
-        #     pass  # No reply
+        # Future modality routing hooks:
+        # if modality == "语音": await _route_voice(...)
+        # elif modality == "表情": await _route_sticker(...)
+        # elif modality == "照片": await _route_photo(...)
+        # elif modality == "静默": return  # no reply
 
         await on_reply_complete(parsed["reply"], modality)
+

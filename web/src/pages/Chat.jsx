@@ -61,8 +61,12 @@ export default function Chat() {
                 <button className="back-btn" onClick={() => navigate('/discover')}>
                     <ChevronLeft size={24} />
                 </button>
-                <div className="header-title">{persona?.name || 'Loading...'}</div>
-                {/* Spacer to balance the back button for centering */}
+                <div className="header-title">
+                    {streaming
+                        ? <span className="header-typing">对方正在输入<span className="header-typing-dots"><span /><span /><span /></span></span>
+                        : (persona?.name || 'Loading...')
+                    }
+                </div>
                 <div style={{ width: 32 }} />
             </header>
 
@@ -102,11 +106,7 @@ export default function Chat() {
                             )}
                         </div>
                         <div className="bubble">
-                            {msg.typing ? (
-                                <span className="typing-dots">
-                                    <span /><span /><span />
-                                </span>
-                            ) : msg.content}
+                            {msg.content}
                         </div>
                     </div>
                 ))}

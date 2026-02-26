@@ -737,13 +737,14 @@ async def websocket_chat(ws: WebSocket):
                 })
 
                 stream_error = False
+                _clean_reply_text = ""
                 try:
                     async def _ws_send(msg: dict):
                         await ws.send_json(msg)
 
                     async def _on_complete(reply: str, modality: str):
-                        """Called after full reply is parsed — store modality for chat_end."""
-                        pass  # modality already set on agent via post-stream processing
+                        nonlocal _clean_reply_text
+                        _clean_reply_text = reply
 
                     await _stream_to_ws(
                         agent.chat_stream(text),
@@ -765,6 +766,7 @@ async def websocket_chat(ws: WebSocket):
                     status = agent.get_status()
                     await ws.send_json({
                         "type": "chat_end",
+                        "reply": _clean_reply_text,   # clean full reply for frontend
                         "modality": status.get("modality", ""),
                         **status,
                     })
