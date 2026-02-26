@@ -94,6 +94,19 @@ _ws_connections: dict[str, 'WebSocket'] = {}
 # Proactive config (loaded from memory_config.yaml in startup)
 _proactive_cfg: dict = {}
 
+# Proactive metrics (online observability)
+_proactive_metrics = {
+    'ticks_total': 0,       # total proactive_tick() calls
+    'impulse_triggered': 0, # _has_impulse() returned non-None
+    'silence_chosen': 0,    # Actor chose 静默
+    'outbox_enqueued': 0,   # messages entered outbox
+    'outbox_blocked': 0,    # blocked by 3-layer guard
+    'ws_push_ok': 0,        # WebSocket push succeeded
+    'ws_push_fail': 0,      # WebSocket push failed (offline or error)
+    'outbox_delivered': 0,  # final delivered count
+    'outbox_retries': 0,    # retry attempts (re-delivery of failed messages)
+}
+
 
 @app.on_event("startup")
 async def startup():
@@ -280,8 +293,10 @@ async def _proactive_sweep():
 
         try:
             # ── Phase 1: Generate new proactive message ──
+            _proactive_metrics['ticks_total'] += 1
             result = await agent.proactive_tick()
             if result is not None:
+                _proactive_metrics['impulse_triggered'] += 1
                 drive_id = result.get('drive_id', 'unknown')
                 depth = agent._relationship_ema.get('relationship_depth', 0.0)
                 band = 'deep' if depth > 0.6 else 'mid' if depth > 0.3 else 'shallow'
@@ -297,12 +312,20 @@ async def _proactive_sweep():
                         result['reply'], result.get('modality', '文字'),
                         result.get('monologue', ''), drive_id, dedup_key,
                     )
+                    _proactive_metrics['outbox_enqueued'] += 1
                 else:
+                    _proactive_metrics['outbox_blocked'] += 1
                     print(f"  [proactive] 🛑 outbox guard blocked: {dedup_key}")
+            elif result is None and agent._has_impulse():
+                # Had impulse but Actor chose silence
+                _proactive_metrics['silence_chosen'] += 1
 
             # ── Phase 2: Deliver all pending messages (incl. retries) ──
             pending = state_store.outbox_get_pending(uid, pid)
             for row in pending:
+                is_retry = row.get('status') == 'pending' and row['tick_id'] != (result or {}).get('tick_id')
+                if is_retry:
+                    _proactive_metrics['outbox_retries'] += 1
                 await _deliver_proactive_msg(agent, sid, row)
 
             # ── Persist proactive state via CAS (Bug 4) ──
@@ -341,9 +364,11 @@ async def _deliver_proactive_msg(agent: ChatAgent, session_id: str, row: dict):
             "persona": agent.persona.name,
         })
         print(f"  [proactive] 📨 WS pushed: {reply[:40]}")
+        _proactive_metrics['ws_push_ok'] += 1
     except Exception as ws_err:
         # WS send failed: mark failed, do NOT proceed to delivered
         print(f"  [proactive] WS push failed: {ws_err}")
+        _proactive_metrics['ws_push_fail'] += 1
         state_store.outbox_mark_failed(uid, pid, tick_id)
         return
 
@@ -362,7 +387,20 @@ async def _deliver_proactive_msg(agent: ChatAgent, session_id: str, row: dict):
 
     # Only mark delivered after successful WS push
     state_store.outbox_mark_delivered(uid, pid, tick_id)
+    _proactive_metrics['outbox_delivered'] += 1
     print(f"  [proactive] ✅ delivered: {reply[:40]}")
+
+
+@app.get("/api/proactive/metrics")
+async def proactive_metrics():
+    """Proactive messaging observability: rates and counters."""
+    m = dict(_proactive_metrics)
+    total = m['ticks_total'] or 1  # avoid div-by-zero
+    m['impulse_rate'] = round(m['impulse_triggered'] / total, 4)
+    m['silence_rate'] = round(m['silence_chosen'] / max(m['impulse_triggered'], 1), 4)
+    ws_total = m['ws_push_ok'] + m['ws_push_fail'] or 1
+    m['ws_success_rate'] = round(m['ws_push_ok'] / ws_total, 4)
+    return m
 
 
 @app.get("/app")

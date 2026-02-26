@@ -1,5 +1,7 @@
 """
 WebSocket integration test — Tests end-to-end chat via WebSocket protocol.
+Requires a running server at localhost:8800 and pytest-asyncio.
+Skipped gracefully if dependencies are missing.
 """
 import asyncio
 import json
@@ -8,7 +10,24 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import pytest
 
+try:
+    import websockets  # noqa: F401
+    _HAS_WS = True
+except ImportError:
+    _HAS_WS = False
+
+try:
+    import pytest_asyncio  # noqa: F401
+    _HAS_ASYNC = True
+except ImportError:
+    _HAS_ASYNC = False
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(not _HAS_WS, reason="websockets not installed")
+@pytest.mark.skipif(not _HAS_ASYNC, reason="pytest-asyncio not installed")
 async def test_websocket():
     import websockets
 
@@ -18,7 +37,14 @@ async def test_websocket():
 
     uri = "ws://localhost:8800/ws/chat"
 
-    async with websockets.connect(uri) as ws:
+    try:
+        ws_conn = websockets.connect(uri)
+        ws = await ws_conn.__aenter__()
+    except (OSError, ConnectionRefusedError):
+        pytest.skip("Server not running at localhost:8800")
+        return
+
+    try:
         # ── Test 1: Chat with xiaoyun ──
         print("\n📤 发送聊天消息 → 小云")
         await ws.send(json.dumps({
@@ -92,6 +118,8 @@ async def test_websocket():
         raw = await asyncio.wait_for(ws.recv(), timeout=5)
         msg = json.loads(raw)
         print(f"  ✅ 状态: {msg}")
+    finally:
+        await ws_conn.__aexit__(None, None, None)
 
     print(f"\n{'=' * 60}")
     print("🎉 WebSocket 测试全部通过!")

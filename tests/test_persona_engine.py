@@ -63,13 +63,12 @@ def test_genome_engine():
     assert metabolism.frustration['connection'] > 0, "Connection hunger should grow over time"
     print(f"✅ Time metabolism works")
 
-    # Test stimulus processing
-    fake_critic = {'affiliation': 0.8, 'dominance': 0.1, 'entropy': 0.6}
-    reward = metabolism.process_stimulus(fake_critic)
-    print(f"\n  Critic: {fake_critic}")
+    fake_delta = {'connection': -0.5, 'novelty': 0.2, 'expression': -0.3}
+    reward = metabolism.apply_llm_delta(fake_delta)
+    print(f"\n  Drive delta: {fake_delta}")
     print(f"  Reward: {reward:.3f}")
-    print(f"  After stimulus: total={metabolism.total():.2f}")
-    print(f"✅ Stimulus processing works")
+    print(f"  After delta: total={metabolism.total():.2f}")
+    print(f"✅ apply_llm_delta works")
 
     # Test thermodynamic noise
     noisy = apply_thermodynamic_noise(signals, metabolism.total())
