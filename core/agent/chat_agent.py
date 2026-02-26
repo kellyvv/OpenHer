@@ -825,7 +825,14 @@ class ChatAgent:
     # ────────────────────────────────────────────
 
     # Config defaults (can be overridden by memory_config.yaml)
-    _IMPULSE_THRESHOLD = 0.8
+    try:
+        import yaml as _yaml
+        from pathlib import Path as _Path
+        _cfg_path = _Path(__file__).parent.parent.parent / "config" / "memory_config.yaml"
+        _cfg_data = _yaml.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
+    except Exception:
+        _cfg_data = {}
+    _IMPULSE_THRESHOLD = _cfg_data.get("impulse_threshold", 0.8)
 
     def _has_impulse(self) -> Optional[tuple]:
         """
@@ -931,7 +938,7 @@ class ChatAgent:
             'relationship_depth': self._relationship_ema.get('relationship_depth', 0.0),
             'trust_level': self._relationship_ema.get('trust_level', 0.0),
             'emotional_valence': self._relationship_ema.get('emotional_valence', 0.0),
-            'foresight': self._relationship_ema.get('foresight', 0.0),
+            'pending_foresight': self._relationship_ema.get('pending_foresight', 0.0),
         }
         context.update(relationship_4d)
 

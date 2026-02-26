@@ -88,6 +88,12 @@ _proactive_task: Optional[asyncio.Task] = None
 _INSTANCE_ID = str(_uuid.uuid4())[:8]  # unique per server instance
 _PROACTIVE_INTERVAL = 300  # seconds between heartbeat sweeps
 
+# WebSocket connections: session_id → WebSocket (for proactive push)
+_ws_connections: dict[str, 'WebSocket'] = {}
+
+# Proactive config (loaded from memory_config.yaml in startup)
+_proactive_cfg: dict = {}
+
 
 @app.on_event("startup")
 async def startup():
@@ -152,10 +158,22 @@ async def startup():
     if os.path.isdir(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-    # 10. Start proactive heartbeat loop
-    global _proactive_task
+    # 10. Load proactive config + start heartbeat loop
+    global _proactive_task, _proactive_cfg
+    try:
+        import yaml as _yaml_cfg
+        from pathlib import Path as _PathCfg
+        _cfg_path = _PathCfg(base_dir) / "config" / "memory_config.yaml"
+        _cfg_raw = _yaml_cfg.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
+    except Exception:
+        _cfg_raw = {}
+    _proactive_cfg = {
+        'cooldown_hours': _cfg_raw.get('proactive_cooldown_hours', 4),
+        'max_pending': _cfg_raw.get('proactive_max_pending', 3),
+        'lock_ttl': _cfg_raw.get('proactive_lock_ttl_sec', 600),
+    }
     _proactive_task = asyncio.create_task(_proactive_heartbeat_loop())
-    print("✓ 主动消息心跳已启动")
+    print(f"✓ 主动消息心跳已启动 (cooldown={_proactive_cfg['cooldown_hours']}h, ttl={_proactive_cfg['lock_ttl']}s)")
 
     print("✓ OpenHer 服务启动完成 (v0.5.0 — Genome v10 Hybrid Engine)")
     print("  → 演示页面: http://localhost:8800/app")
@@ -244,54 +262,63 @@ async def _proactive_heartbeat_loop():
 
 
 async def _proactive_sweep():
-    """One sweep: iterate active sessions and run proactive_tick."""
+    """One sweep: generate new proactive messages + retry pending outbox."""
     if not state_store or not active_sessions:
         return
+
+    cooldown_h = _proactive_cfg.get('cooldown_hours', 4)
+    max_pending = _proactive_cfg.get('max_pending', 3)
+    lock_ttl = _proactive_cfg.get('lock_ttl', 600)
 
     for sid, (agent, _last) in list(active_sessions.items()):
         uid = agent.user_id
         pid = agent.persona.persona_id
 
         # Cross-instance lock (R7/R23/R28)
-        if not state_store.try_acquire_lock(uid, pid, _INSTANCE_ID):
-            continue  # Another instance is handling this user
+        if not state_store.try_acquire_lock(uid, pid, _INSTANCE_ID, ttl=lock_ttl):
+            continue
 
         try:
+            # ── Phase 1: Generate new proactive message ──
             result = await agent.proactive_tick()
-            if result is None:
-                continue  # No impulse or Actor chose silence
+            if result is not None:
+                drive_id = result.get('drive_id', 'unknown')
+                depth = agent._relationship_ema.get('relationship_depth', 0.0)
+                band = 'deep' if depth > 0.6 else 'mid' if depth > 0.3 else 'shallow'
+                bucket = int(time.time() // (cooldown_h * 3600))
+                dedup_key = f"{drive_id}:{band}:{bucket}"
 
-            # Build structured dedup key (R26)
-            drive_id = result.get('drive_id', 'unknown')
-            depth = agent._relationship_ema.get('relationship_depth', 0.0)
-            band = 'deep' if depth > 0.6 else 'mid' if depth > 0.3 else 'shallow'
-            bucket = int(time.time() // (4 * 3600))
-            dedup_key = f"{drive_id}:{band}:{bucket}"
+                if state_store.outbox_can_enqueue(
+                    uid, pid, dedup_key,
+                    cooldown_hours=cooldown_h, max_pending=max_pending,
+                ):
+                    state_store.outbox_insert(
+                        uid, pid, result['tick_id'],
+                        result['reply'], result.get('modality', '文字'),
+                        result.get('monologue', ''), drive_id, dedup_key,
+                    )
+                else:
+                    print(f"  [proactive] 🛑 outbox guard blocked: {dedup_key}")
 
-            # 3-layer outbox guard (R15)
-            if not state_store.outbox_can_enqueue(uid, pid, dedup_key):
-                print(f"  [proactive] 🛑 outbox guard blocked: {dedup_key}")
-                continue
+            # ── Phase 2: Deliver all pending messages (incl. retries) ──
+            pending = state_store.outbox_get_pending(uid, pid)
+            for row in pending:
+                await _deliver_proactive_msg(agent, sid, row)
 
-            # Enqueue (R10/R31)
-            state_store.outbox_insert(
-                uid, pid, result['tick_id'],
-                result['reply'], result.get('modality', '文字'),
-                result.get('monologue', ''), drive_id, dedup_key,
-            )
-
-            # Immediate delivery attempt for online users
-            await _deliver_proactive(agent, result)
+            # ── Persist proactive state via CAS (Bug 4) ──
+            _persist_agent(agent)
 
         finally:
             state_store.release_lock(uid, pid, _INSTANCE_ID)
 
 
-async def _deliver_proactive(agent: ChatAgent, result: dict):
-    """Deliver one proactive message: outbox state machine + EverMemOS storage."""
-    uid = agent.user_id
-    pid = agent.persona.persona_id
-    tick_id = result['tick_id']
+async def _deliver_proactive_msg(agent: ChatAgent, session_id: str, row: dict):
+    """Deliver one proactive message: outbox SM + WebSocket push + EverMemOS."""
+    uid = row['user_id']
+    pid = row['persona_id']
+    tick_id = row['tick_id']
+    reply = row['reply']
+    modality = row.get('modality', '文字')
 
     # Outbox: pending → sending (R31)
     msg = state_store.outbox_try_send(uid, pid, tick_id)
@@ -299,22 +326,37 @@ async def _deliver_proactive(agent: ChatAgent, result: dict):
         return  # Already taken by another instance
 
     try:
+        # ── Bug 1 fix: Push to user via WebSocket ──
+        ws = _ws_connections.get(session_id)
+        if ws:
+            try:
+                await ws.send_json({
+                    "type": "proactive",
+                    "content": reply,
+                    "modality": modality,
+                    "drive": row.get('drive_id', ''),
+                    "persona": agent.persona.name,
+                })
+                print(f"  [proactive] 📨 WS pushed: {reply[:40]}")
+            except Exception as ws_err:
+                print(f"  [proactive] WS push failed: {ws_err}")
+                # WS failed but we still store in EverMemOS
+
         # Store in EverMemOS (idempotent via message_id, R25)
         if evermemos and evermemos.available:
             await evermemos.store_proactive_turn(
                 persona_id=pid,
                 persona_name=agent.persona.name,
                 group_id=agent._group_id,
-                reply=result['reply'],
+                reply=reply,
                 tick_id=tick_id,
             )
 
         # Mark delivered (R31)
         state_store.outbox_mark_delivered(uid, pid, tick_id)
-        print(f"  [proactive] ✅ delivered: {result['reply'][:40]}")
+        print(f"  [proactive] ✅ delivered: {reply[:40]}")
 
     except Exception as e:
-        # Mark failed → back to pending for retry (R31)
         state_store.outbox_mark_failed(uid, pid, tick_id)
         print(f"  [proactive] ❌ delivery failed, will retry: {e}")
 
@@ -355,14 +397,25 @@ class PersonaInfo(BaseModel):
 # ──────────────────────────────────────────────────────────────
 
 def _persist_agent(agent: ChatAgent) -> None:
-    """Save agent's Genome v8 state (neural weights + metabolism)."""
+    """Save agent state via CAS (Bug 4: uses save_state with version guard)."""
     if state_store:
-        state_store.save_session(
+        import json as _json
+        ok = state_store.save_state(
             user_id=agent.user_id,
             persona_id=agent.persona.persona_id,
-            agent=agent.agent,
-            metabolism=agent.metabolism,
+            agent_data=_json.dumps(agent.agent.to_dict(), ensure_ascii=False),
+            metabolism_data=_json.dumps(agent.metabolism.to_dict(), ensure_ascii=False),
+            last_active_at=agent._last_active,
+            interaction_cadence=agent._interaction_cadence,
+            expected_version=agent._state_version,
         )
+        if ok:
+            agent._state_version += 1
+        else:
+            # CAS failed — another writer updated. Reload version.
+            _, _, v = state_store.load_proactive_meta(agent.user_id, agent.persona.persona_id)
+            agent._state_version = v
+            print(f"  [persist] CAS miss for {agent.user_id}/{agent.persona.persona_id}, reloaded v={v}")
 
 
 def _cleanup_expired_sessions() -> int:
@@ -438,6 +491,13 @@ def get_or_create_session(
         if saved_metabolism:
             agent.metabolism = saved_metabolism
             print(f"  ↳ 恢复代谢: total_frustration={saved_metabolism.total():.2f}")
+        # Bug 4: Load proactive meta (last_active, cadence, state_version)
+        la, cad, sv = state_store.load_proactive_meta(stable_user_id, persona_id)
+        if la > 0:
+            agent._last_active = la
+            agent._interaction_cadence = cad
+            agent._state_version = sv
+            print(f"  ↳ 恢复 proactive: last_active={la:.0f}, cadence={cad:.0f}s, v={sv}")
 
     active_sessions[sid] = (agent, now)
     return sid, agent
@@ -589,6 +649,9 @@ async def websocket_chat(ws: WebSocket):
                     await ws.send_json({"type": "error", "content": str(e)})
                     continue
 
+                # Register WS connection for proactive push (Bug 1)
+                _ws_connections[session_id] = ws
+
                 await ws.send_json({
                     "type": "chat_start",
                     "session_id": session_id,
@@ -688,6 +751,9 @@ async def websocket_chat(ws: WebSocket):
         except Exception:
             pass
     finally:
+        # Deregister WS connection
+        if session_id and session_id in _ws_connections:
+            del _ws_connections[session_id]
         if session_id:
             remove_session(session_id)
         print(f"[ws] 连接关闭: session={session_id}")
