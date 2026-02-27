@@ -114,6 +114,33 @@ SCENARIOS = {
 }
 
 
+def simulate_conversation(agent: 'Agent', scenario_sequence: list,
+                          reward_fn=None, steps_per_scenario: int = 20) -> None:
+    """
+    Pre-warm Agent neural network through simulated scenario steps.
+
+    This is the key bootstrap that creates cross-seed personality diversity —
+    without it, all agents start from the same neutral state and the LLM's
+    default prior dominates. With 60 steps (3 scenarios × 20), the random
+    neural network has already been shaped by experience before turn 1.
+
+    Args:
+        agent:              The Agent to pre-warm
+        scenario_sequence:  List of scenario names from SCENARIOS dict
+        reward_fn:          Optional custom reward function (agent, signals, ctx) → float
+        steps_per_scenario: Steps per scenario (default 20, total 60 for 3 scenarios)
+    """
+    for scenario_name in scenario_sequence:
+        ctx = SCENARIOS[scenario_name].copy()
+        for step in range(steps_per_scenario):
+            ctx['conversation_depth'] = min(1.0, ctx['conversation_depth'] + 0.02)
+            if reward_fn:
+                signals = agent.compute_signals(ctx)
+                reward = reward_fn(agent, signals, ctx)
+            else:
+                reward = random.gauss(0.2, 0.3)  # Slightly positive default
+            agent.step(ctx, reward)
+
 # ══════════════════════════════════════════════
 # The Agent: Living Personality
 # ══════════════════════════════════════════════
