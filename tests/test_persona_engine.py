@@ -23,7 +23,9 @@ def test_persona_loader():
     personas = loader.load_all()
 
     print(f"\n✅ Loaded {len(personas)} personas: {list(personas.keys())}")
-    assert len(personas) >= 4, f"Expected at least 4 personas (iris/luna/vivian/kai), got {len(personas)}"
+    required = {'iris', 'luna', 'vivian', 'kai'}
+    missing = required - set(personas.keys())
+    assert not missing, f"Missing required personas: {missing}"
 
     for pid, p in personas.items():
         print(f"\n--- {p.name} (ID: {pid}) ---")

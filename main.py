@@ -581,14 +581,8 @@ def get_or_create_session(
     # Must run AFTER state restore so we don't waste 60 steps on agents
     # that will immediately have their weights overwritten.
     if is_new_agent:
-        from core.genome.genome_engine import simulate_conversation
-        simulate_conversation(
-            agent.agent,
-            ['分享喜悦', '吵架冲突', '深夜心事'],
-            steps_per_scenario=20,
-        )
+        agent.pre_warm()
         print(f"  ↳ 新 Agent 预热: 60步完成 (seed={genome_seed})")
-
 
 
     active_sessions[sid] = (agent, now)

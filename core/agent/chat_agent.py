@@ -204,6 +204,26 @@ class ChatAgent:
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
 
+    def pre_warm(self, scenarios: list | None = None, steps_per_scenario: int = 20) -> None:
+        """
+        Pre-warm the Agent's neural network via simulated scenario steps.
+
+        Call this ONCE on brand-new agents (before any real conversation).
+        Restored agents already have shaped weights — calling this again
+        would corrupt their evolved personality; always guard with age check:
+
+            if agent.agent.age == 0:
+                agent.pre_warm()
+
+        Args:
+            scenarios:           Scenario sequence; defaults to V10 standard 3-phase.
+            steps_per_scenario:  Steps per scenario (default 20 → 60 total).
+        """
+        from core.genome.genome_engine import simulate_conversation
+        if scenarios is None:
+            scenarios = ['分享喜悦', '吵架冲突', '深夜心事']
+        simulate_conversation(self.agent, scenarios, steps_per_scenario=steps_per_scenario)
+
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
         """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
         Signal injection drives behavior; persona is minimal (name only).
