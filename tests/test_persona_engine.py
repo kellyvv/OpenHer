@@ -23,7 +23,7 @@ def test_persona_loader():
     personas = loader.load_all()
 
     print(f"\n✅ Loaded {len(personas)} personas: {list(personas.keys())}")
-    assert len(personas) == 3, f"Expected 3 personas, got {len(personas)}"
+    assert len(personas) >= 4, f"Expected at least 4 personas (iris/luna/vivian/kai), got {len(personas)}"
 
     for pid, p in personas.items():
         print(f"\n--- {p.name} (ID: {pid}) ---")

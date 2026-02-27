@@ -493,6 +493,7 @@ class Agent:
         """
         agent = cls(seed=data['seed'])
         agent.drive_state = data.get('drive_state', agent.drive_state)
+        agent.drive_baseline = data.get('drive_baseline', agent.drive_baseline)  # P1: restore evolved baseline
 
         saved_W1 = data.get('W1', agent.W1)
         # Backward compat: expand 21D → 25D if loading old weights

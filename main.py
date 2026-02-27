@@ -559,10 +559,12 @@ def get_or_create_session(
     )
 
     # Hydrate from persisted state (if available)
+    is_new_agent = True
     if state_store:
         saved_agent, saved_metabolism = state_store.load_session(stable_user_id, persona_id)
         if saved_agent:
             agent.agent = saved_agent
+            is_new_agent = False
             print(f"  ↳ 恢复 Agent: age={saved_agent.age}, interactions={saved_agent.interaction_count}")
         if saved_metabolism:
             agent.metabolism = saved_metabolism
@@ -574,6 +576,20 @@ def get_or_create_session(
             agent._interaction_cadence = cad
             agent._state_version = sv
             print(f"  ↳ 恢复 proactive: last_active={la:.0f}, cadence={cad:.0f}s, v={sv}")
+
+    # V10 Pre-warm: only for genuinely new agents (no saved state).
+    # Must run AFTER state restore so we don't waste 60 steps on agents
+    # that will immediately have their weights overwritten.
+    if is_new_agent:
+        from core.genome.genome_engine import simulate_conversation
+        simulate_conversation(
+            agent.agent,
+            ['分享喜悦', '吵架冲突', '深夜心事'],
+            steps_per_scenario=20,
+        )
+        print(f"  ↳ 新 Agent 预热: 60步完成 (seed={genome_seed})")
+
+
 
     active_sessions[sid] = (agent, now)
     return sid, agent

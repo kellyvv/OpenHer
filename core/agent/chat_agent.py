@@ -159,18 +159,6 @@ class ChatAgent:
             db_dir=genome_data_dir,
         )
 
-        # ── V10 Pre-warm: shape neural network before first conversation ──
-        # Only for brand-new agents (age==0). Restored agents already have
-        # trained weights from previous sessions — skip to preserve continuity.
-        if self.agent.age == 0:
-            from core.genome.genome_engine import simulate_conversation
-            simulate_conversation(
-                self.agent,
-                ['分享喜悦', '吵架冲突', '深夜心事'],
-                steps_per_scenario=20,
-            )
-
-
         # ── Conversation state ──
         self.history: list[ChatMessage] = []
         self._turn_count: int = 0
