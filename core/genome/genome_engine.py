@@ -481,6 +481,7 @@ class Agent:
             'total_reward': self.total_reward,
             'age': self.age,
             '_frustration': self._frustration,
+            'signal_history': self.signal_history[-100:],  # Persist last 100 for personality_fingerprint
         }
 
     @classmethod
@@ -508,6 +509,7 @@ class Agent:
         agent.recurrent_state = data.get('recurrent_state', agent.recurrent_state)
         agent.interaction_count = data.get('interaction_count', 0)
         agent.total_reward = data.get('total_reward', 0.0)
+        agent.signal_history = data.get('signal_history', [])
         agent.age = data.get('age', 0)
         agent._frustration = data.get('_frustration', 0.0)
         return agent
