@@ -68,9 +68,6 @@ class ContinuousStyleMemory:
 
         self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
         self.personal_file = os.path.join(self.db_dir, f"{agent_id}_memory.json")
-        # Per-persona genesis: genesis_kai.json overrides for that persona only
-        persona_prefix = agent_id.split('_')[0]
-        self.persona_genesis_file = os.path.join(self.db_dir, f"genesis_{persona_prefix}.json")
         self._now = now or time.time()
 
         # Unified memory pool
@@ -95,18 +92,7 @@ class ContinuousStyleMemory:
                 mem.setdefault('created_at', 0.0)
                 mem.setdefault('last_used_at', 0.0)
                 self._pool.append(mem)
-            self._genesis_count += len(genesis)
-
-        # Load per-persona genesis (e.g. genesis_kai.json) — persona-specific seeds
-        if os.path.exists(self.persona_genesis_file):
-            with open(self.persona_genesis_file, 'r', encoding='utf-8') as f:
-                persona_genesis = json.load(f)
-            for mem in persona_genesis:
-                mem.setdefault('mass', 1.0)
-                mem.setdefault('created_at', 0.0)
-                mem.setdefault('last_used_at', 0.0)
-                self._pool.append(mem)
-            self._genesis_count += len(persona_genesis)
+            self._genesis_count = len(genesis)
 
         if os.path.exists(self.personal_file):
             with open(self.personal_file, 'r', encoding='utf-8') as f:

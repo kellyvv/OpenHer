@@ -22,8 +22,7 @@ _REPLY_END   = "【表达方式】"
 _MODALITY_START = "【表达方式】"
 
 # Strip parenthetical action descriptions: （偷偷松了口气） or (sighs quietly)
-# No length cap — long inner monologue parens (e.g. 45+ chars) must also be stripped.
-_PAREN_RE = re.compile(r'[（(][^（(）)]+[）)]')
+_PAREN_RE = re.compile(r'[（(][^（(）)]{1,40}[）)]')
 
 
 def parse_raw_output(raw: str) -> dict:
