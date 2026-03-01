@@ -73,7 +73,7 @@ cp .env.example .env
 python main.py
 ```
 
-The server starts on `http://localhost:18789` with WebSocket support.
+The server starts on `http://localhost:8800` with WebSocket support.
 
 ### Try a Conversation
 

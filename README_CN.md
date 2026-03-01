@@ -72,7 +72,7 @@ cp .env.example .env
 python main.py
 ```
 
-服务启动在 `http://localhost:18789`，支持 WebSocket。
+服务启动在 `http://localhost:8800`，支持 WebSocket。
 
 ### 快速体验
 

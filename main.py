@@ -601,12 +601,12 @@ def remove_session(session_id: str) -> None:
 # REST API Endpoints
 # ──────────────────────────────────────────────────────────────
 
-@app.get("/")
-async def root():
+@app.get("/api/status")
+async def api_status():
     return {
         "name": "OpenHer",
-        "version": "0.4.0",
-        "engine": "Genome v8",
+        "version": "0.5.0",
+        "engine": "Genome v10",
         "status": "running",
         "personas": persona_loader.list_ids() if persona_loader else [],
         "active_sessions": len(active_sessions),
@@ -687,13 +687,13 @@ async def tts_api(
 
 
 # ──────────────────────────────────────────────────────────────
-# WebSocket Endpoint — Real-time chat with Genome v8
+# WebSocket Endpoint — Real-time chat with Genome v10
 # ──────────────────────────────────────────────────────────────
 
 @app.websocket("/ws/chat")
 async def websocket_chat(ws: WebSocket):
     """
-    WebSocket endpoint for real-time persona chat with Genome v8.
+    WebSocket endpoint for real-time persona chat with Genome v10.
 
     Protocol:
       Client → Server: {"type": "chat", "content": "hello", "persona_id": "vivian"}
@@ -824,14 +824,19 @@ async def websocket_chat(ws: WebSocket):
             elif msg_type == "switch_persona":
                 new_persona_id = msg.get("persona_id", "")
                 if new_persona_id:
-                    if agent and session_id:
-                        _persist_agent(agent)
+                    # Clean up old session to prevent leak
+                    old_session_id = session_id
+                    if old_session_id:
+                        if old_session_id in _ws_connections:
+                            del _ws_connections[old_session_id]
+                        remove_session(old_session_id)
                     try:
                         session_id, agent = get_or_create_session(
                             None,
                             new_persona_id,
                             msg.get("user_name"),
                         )
+                        _ws_connections[session_id] = ws
                         await ws.send_json({
                             "type": "persona_switched",
                             "session_id": session_id,
