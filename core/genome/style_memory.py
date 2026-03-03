@@ -58,7 +58,7 @@ class ContinuousStyleMemory:
     Retrieval uses time-decayed effective mass (mass_eff).
     """
 
-    def __init__(self, agent_id, db_dir=None, now=None):
+    def __init__(self, agent_id, db_dir=None, now=None, persona_id=None):
         self.agent_id = agent_id
         self.db_dir = db_dir or os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -66,7 +66,15 @@ class ContinuousStyleMemory:
         )
         os.makedirs(self.db_dir, exist_ok=True)
 
-        self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
+        # Per-persona genesis file (genesis_kai.json) → fallback to shared bank
+        if persona_id:
+            persona_genesis = os.path.join(self.db_dir, f"genesis_{persona_id}.json")
+            if os.path.exists(persona_genesis):
+                self.genesis_file = persona_genesis
+            else:
+                self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
+        else:
+            self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
         self.personal_file = os.path.join(self.db_dir, f"{agent_id}_memory.json")
         self._now = now or time.time()
 

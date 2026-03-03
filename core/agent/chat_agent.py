@@ -157,6 +157,7 @@ class ChatAgent:
         self.style_memory = ContinuousStyleMemory(
             agent_id=f"{persona.persona_id}_{user_id}",
             db_dir=genome_data_dir,
+            persona_id=persona.persona_id,
         )
 
         # ── Conversation state ──
@@ -219,10 +220,18 @@ class ChatAgent:
             scenarios:           Scenario sequence; defaults to V10 standard 3-phase.
             steps_per_scenario:  Steps per scenario (default 20 → 60 total).
         """
-        from core.genome.genome_engine import simulate_conversation
+        from core.genome.genome_engine import simulate_conversation, DRIVES
         if scenarios is None:
             scenarios = ['分享喜悦', '吵架冲突', '深夜心事']
         simulate_conversation(self.agent, scenarios, steps_per_scenario=steps_per_scenario)
+
+        # Reset drive_state to baseline after pre_warm.
+        # Pre_warm shaped the NN weights (W1/W2) — that's its real job.
+        # The saturated drive_state (all → ~1.0) is a side effect of 60 steps
+        # of positive-biased rewards and must not leak into real conversation.
+        for d in DRIVES:
+            self.agent.drive_state[d] = self.agent.drive_baseline[d]
+        self.agent._frustration = 0.0
 
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
         """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
