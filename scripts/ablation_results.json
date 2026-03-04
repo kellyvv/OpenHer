@@ -1,0 +1,258 @@
+[
+  {
+    "config": "NEW",
+    "persona": "Iris",
+    "w2_drift": 0.027723942594331974,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 10,
+    "self_ref_count": 0
+  },
+  {
+    "config": "NEW",
+    "persona": "Luna",
+    "w2_drift": 0.025208721218757935,
+    "bl_drift": 0.0050000000000000044,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "NEW",
+    "persona": "Vivian",
+    "w2_drift": 0.02954899862742675,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 7,
+    "self_ref_count": 0
+  },
+  {
+    "config": "NEW",
+    "persona": "Kai",
+    "w2_drift": 0.041901867420421374,
+    "bl_drift": 0.004200000000000004,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_LR",
+    "persona": "Iris",
+    "w2_drift": 0.004307978456577172,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 3,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_LR",
+    "persona": "Luna",
+    "w2_drift": 0.012129077023704627,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 7,
+    "self_ref_count": 1
+  },
+  {
+    "config": "abl_LR",
+    "persona": "Vivian",
+    "w2_drift": 0.007111359837419141,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 8,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_LR",
+    "persona": "Kai",
+    "w2_drift": 0.010858510848938678,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 8,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_HGate",
+    "persona": "Iris",
+    "w2_drift": 0.017974456055025307,
+    "bl_drift": 0.005400000000000005,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_HGate",
+    "persona": "Luna",
+    "w2_drift": 0.019293365669971637,
+    "bl_drift": 0.004600000000000004,
+    "empathy_count": 7,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_HGate",
+    "persona": "Vivian",
+    "w2_drift": 0.04625101776894021,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 11,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_HGate",
+    "persona": "Kai",
+    "w2_drift": 0.04169029608528677,
+    "bl_drift": 0.004400000000000004,
+    "empathy_count": 11,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_W1Gate",
+    "persona": "Iris",
+    "w2_drift": 0.03493742269350786,
+    "bl_drift": 0.005400000000000005,
+    "empathy_count": 5,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_W1Gate",
+    "persona": "Luna",
+    "w2_drift": 0.042431168404200637,
+    "bl_drift": 0.0040000000000000036,
+    "empathy_count": 5,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_W1Gate",
+    "persona": "Vivian",
+    "w2_drift": 0.03085087084418484,
+    "bl_drift": 0.005600000000000005,
+    "empathy_count": 12,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_W1Gate",
+    "persona": "Kai",
+    "w2_drift": 0.051483026312808475,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 11,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Phase",
+    "persona": "Iris",
+    "w2_drift": 0.01890250483141902,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 9,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Phase",
+    "persona": "Luna",
+    "w2_drift": 0.015910097147381962,
+    "bl_drift": 0.005400000000000005,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Phase",
+    "persona": "Vivian",
+    "w2_drift": 0.05142255165668555,
+    "bl_drift": 0.0050000000000000044,
+    "empathy_count": 9,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Phase",
+    "persona": "Kai",
+    "w2_drift": 0.03174637340746576,
+    "bl_drift": 0.004400000000000004,
+    "empathy_count": 8,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Noise",
+    "persona": "Iris",
+    "w2_drift": 0.0315423489602581,
+    "bl_drift": 0.005200000000000005,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Noise",
+    "persona": "Luna",
+    "w2_drift": 0.070480212448132,
+    "bl_drift": 0.006200000000000006,
+    "empathy_count": 5,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Noise",
+    "persona": "Vivian",
+    "w2_drift": 0.03220131628168042,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 8,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_Noise",
+    "persona": "Kai",
+    "w2_drift": 0.012730375256467776,
+    "bl_drift": 0.004800000000000004,
+    "empathy_count": 9,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_NoClip",
+    "persona": "Iris",
+    "w2_drift": 0.015304437867809714,
+    "bl_drift": 0.005400000000000005,
+    "empathy_count": 6,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_NoClip",
+    "persona": "Luna",
+    "w2_drift": 0.05340488751584363,
+    "bl_drift": 0.006200000000000006,
+    "empathy_count": 2,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_NoClip",
+    "persona": "Vivian",
+    "w2_drift": 0.053698728756380744,
+    "bl_drift": 0.005400000000000005,
+    "empathy_count": 10,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_NoClip",
+    "persona": "Kai",
+    "w2_drift": 0.029223819374653095,
+    "bl_drift": 0.004600000000000004,
+    "empathy_count": 9,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_BaseLR",
+    "persona": "Iris",
+    "w2_drift": 0.015725839249857543,
+    "bl_drift": 0.0016200000000000214,
+    "empathy_count": 5,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_BaseLR",
+    "persona": "Luna",
+    "w2_drift": 0.024662747020804617,
+    "bl_drift": 0.0016199999999999659,
+    "empathy_count": 7,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_BaseLR",
+    "persona": "Vivian",
+    "w2_drift": 0.03241219106730119,
+    "bl_drift": 0.001560000000000028,
+    "empathy_count": 14,
+    "self_ref_count": 0
+  },
+  {
+    "config": "abl_BaseLR",
+    "persona": "Kai",
+    "w2_drift": 0.05293624092380451,
+    "bl_drift": 0.0013200000000000212,
+    "empathy_count": 13,
+    "self_ref_count": 0
+  }
+]

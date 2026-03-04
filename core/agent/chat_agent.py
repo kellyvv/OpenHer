@@ -154,6 +154,9 @@ class ChatAgent:
                     self.agent.drive_baseline[d] = float(v)
                     self.agent.drive_state[d] = float(v)
 
+        # Snapshot initial baseline for elastic pullback (persona gravity)
+        self._initial_baseline = dict(self.agent.drive_baseline)
+
         self.style_memory = ContinuousStyleMemory(
             agent_id=f"{persona.persona_id}_{user_id}",
             db_dir=genome_data_dir,
@@ -560,11 +563,16 @@ class ChatAgent:
             self._last_reward = reward
 
             # ── Step 3.5: Critic-driven Drive baseline evolution ──
+            # Elastic baseline: spring force pulls baseline back toward persona origin.
+            # Prevents unbounded drift while preserving local emergence.
             BASELINE_LR = 0.01
+            ELASTICITY = 0.05       # Universal constant — higher = stronger pull to origin
             for d in DRIVES:
                 shift = frustration_delta.get(d, 0.0) * BASELINE_LR
+                drift = self.agent.drive_baseline[d] - self._initial_baseline.get(d, 0.5)
+                pull_back = -drift * ELASTICITY
                 self.agent.drive_baseline[d] = max(0.1, min(0.95,
-                    self.agent.drive_baseline[d] + shift
+                    self.agent.drive_baseline[d] + shift + pull_back
                 ))
 
             # ── Step 4: Crystallization ──
