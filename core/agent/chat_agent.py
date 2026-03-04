@@ -238,11 +238,28 @@ class ChatAgent:
         self.agent._frustration = 0.0
 
     def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
-        """Build the Actor system prompt — matches prototype tpe_v10_hybrid.py.
-        Signal injection drives behavior; persona is minimal (name only).
+        """Build the Actor system prompt with identity anchor + dynamic signals.
+        Identity anchor provides "who am I"; signal injection provides "how I feel now".
         """
         import time as _time
         import datetime as _dt
+
+        # ── Identity anchor (persona bio — "who am I") ──
+        persona = self.persona
+        bio_text = persona.bio.get('zh', '') or persona.bio.get('en', '')
+        identity = (
+            f"【人格锚点】\n"
+            f"你是{persona.name}"
+        )
+        if persona.age:
+            identity += f"，{persona.age}岁"
+        if persona.gender:
+            identity += f"，{persona.gender}"
+        if persona.tags:
+            identity += f"，{'、'.join(persona.tags)}"
+        identity += "。\n"
+        if bio_text:
+            identity += bio_text.strip()[:200]
 
         # Use pre-computed signals (same as KNN retrieval) — no re-computation
         signal_injection = self.agent.to_prompt_injection_from_signals(signals)
@@ -268,9 +285,13 @@ class ChatAgent:
         date_str = now.strftime("%Y年%m月%d日")
         signal_injection += f"\n\n【当前时间】{date_str} {time_str}"
 
+        # Prepend identity anchor before signal injection
+        # Order: few_shot → identity ("who am I") → signals ("how I feel now")
+        combined_injection = identity + "\n\n" + signal_injection
+
         return ACTOR_PROMPT.format(
             few_shot=few_shot,
-            signal_injection=signal_injection,
+            signal_injection=combined_injection,
         )
 
 
