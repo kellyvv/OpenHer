@@ -102,10 +102,11 @@ class DriveMetabolism:
 
     def status_summary(self) -> dict:
         """Return a summary of the current drive metabolism state."""
+        total = self.total()
         return {
             'frustration': dict(self.frustration),
-            'total': round(self.total(), 2),
-            'temperature': round(self.total() * 0.05, 3),
+            'total': round(total, 2),
+            'temperature': round(total * 0.12 + 0.03, 3),
         }
 
     # ── Serialization ──

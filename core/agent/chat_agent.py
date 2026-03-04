@@ -512,7 +512,7 @@ class ChatAgent:
                 importance=context.get('entropy', 0.5),
             )
 
-        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
+        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.12+0.03:.3f} modality={modality[:30]}")
 
         # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
         self._evermemos_store_bg(user_message, reply)
@@ -657,7 +657,7 @@ class ChatAgent:
             }
             self._last_modality = modality
 
-            print(f"  [genome] reward={reward:.2f} temp={total_frust*0.05:.3f} modality={modality[:30]}")
+            print(f"  [genome] reward={reward:.2f} temp={total_frust*0.12+0.03:.3f} modality={modality[:30]}")
 
             # ── Step 11: EverMemOS store_turn ──
             self._evermemos_store_bg(user_message, reply)
@@ -889,6 +889,12 @@ class ChatAgent:
             "age": self.agent.age,
             "last_reward": round(self._last_reward, 2),
             "modality": self._last_modality,
+            # Relationship EMAs (Phase 1 Emergence)
+            "relationship": {
+                "depth": round(self._relationship_ema.get('relationship_depth', 0.0), 3),
+                "trust": round(self._relationship_ema.get('relationship_trust', 0.0), 3),
+                "valence": round(self._relationship_ema.get('emotional_valence', 0.0), 3),
+            },
             "evermemos": "ON" if (self.evermemos and self.evermemos.available) else "OFF",
             "search_hit": self._search_hit,
             "search_timeout": self._search_timeout,
