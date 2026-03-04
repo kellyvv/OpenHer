@@ -425,7 +425,7 @@ class ChatAgent:
 
         # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta, rel_delta = await critic_sense(
+        context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
@@ -519,7 +519,7 @@ class ChatAgent:
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
-        self.agent.step(context, reward=clamped_reward)
+        self.agent.step(context, reward=clamped_reward, drive_satisfaction=drive_satisfaction)
 
         # ── Update state ──
         self.history.append(ChatMessage(role="user", content=user_message))
@@ -584,7 +584,7 @@ class ChatAgent:
             delta_h = self.metabolism.time_metabolism(now)
             # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
             frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-            context, frustration_delta, rel_delta = await critic_sense(
+            context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
                 user_message, self.llm, frust_dict,
                 user_profile=self._user_profile,
                 episode_summary=self._episode_summary,
@@ -672,7 +672,7 @@ class ChatAgent:
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
-            self.agent.step(context, reward=clamped_reward)
+            self.agent.step(context, reward=clamped_reward, drive_satisfaction=drive_satisfaction)
 
             # Update history
             self.history.append(ChatMessage(role="user", content=user_message))
@@ -1044,7 +1044,7 @@ class ChatAgent:
 
         # ── Step 6: Critic perception (same pipeline, stimulus instead of user_message) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
-        context, frustration_delta, rel_delta = await critic_sense(
+        context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             stimulus, self.llm, frust_dict,
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
