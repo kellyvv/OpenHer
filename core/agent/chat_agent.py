@@ -892,7 +892,7 @@ class ChatAgent:
             # Relationship EMAs (Phase 1 Emergence)
             "relationship": {
                 "depth": round(self._relationship_ema.get('relationship_depth', 0.0), 3),
-                "trust": round(self._relationship_ema.get('relationship_trust', 0.0), 3),
+                "trust": round(self._relationship_ema.get('trust_level', 0.0), 3),
                 "valence": round(self._relationship_ema.get('emotional_valence', 0.0), 3),
             },
             "evermemos": "ON" if (self.evermemos and self.evermemos.available) else "OFF",
