@@ -169,6 +169,7 @@ class ChatAgent:
             agent_id=f"{persona.persona_id}_{user_id}",
             db_dir=genome_data_dir,
             persona_id=persona.persona_id,
+            hawking_gamma=engine_params.get('hawking_gamma'),
         )
 
         # ── Conversation state ──

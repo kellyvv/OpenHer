@@ -37,7 +37,7 @@ def _signals_to_vec(signals):
     return [signals.get(k, 0.5) for k in SIGNAL_KEYS]
 
 
-def _hawking_mass(mass_raw, last_used_at, now):
+def _hawking_mass(mass_raw, last_used_at, now, gamma=HAWKING_GAMMA):
     """
     Hawking radiation: memory mass decays exponentially.
     mass_eff = 1.0 + (mass_raw - 1.0) * e^(-γ * Δt_hours)
@@ -45,7 +45,7 @@ def _hawking_mass(mass_raw, last_used_at, now):
     """
     delta_hours = max(0.0, (now - last_used_at) / 3600.0)
     excess = max(0.0, mass_raw - 1.0)
-    decayed_excess = excess * math.exp(-HAWKING_GAMMA * delta_hours)
+    decayed_excess = excess * math.exp(-gamma * delta_hours)
     return 1.0 + decayed_excess
 
 
@@ -58,8 +58,9 @@ class ContinuousStyleMemory:
     Retrieval uses time-decayed effective mass (mass_eff).
     """
 
-    def __init__(self, agent_id, db_dir=None, now=None, persona_id=None):
+    def __init__(self, agent_id, db_dir=None, now=None, persona_id=None, hawking_gamma=None):
         self.agent_id = agent_id
+        self.hawking_gamma = hawking_gamma if hawking_gamma is not None else HAWKING_GAMMA
         self.db_dir = db_dir or os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
             ".data", "genome"
@@ -134,7 +135,7 @@ class ContinuousStyleMemory:
             mass_raw = mem.get('mass', 1.0)
             last_used = mem.get('last_used_at', 0.0)
 
-            mass_eff = _hawking_mass(mass_raw, last_used, now)
+            mass_eff = _hawking_mass(mass_raw, last_used, now, gamma=self.hawking_gamma)
             effective_dist = physical_dist / math.sqrt(max(mass_eff, 0.01))
 
             scored.append((effective_dist, physical_dist, mass_eff, mass_raw, mem))
@@ -236,7 +237,7 @@ class ContinuousStyleMemory:
         now = self._now
         masses_raw = [m.get('mass', 1.0) for m in self._pool]
         masses_eff = [
-            _hawking_mass(m.get('mass', 1.0), m.get('last_used_at', 0.0), now)
+            _hawking_mass(m.get('mass', 1.0), m.get('last_used_at', 0.0), now, gamma=self.hawking_gamma)
             for m in self._pool
         ]
         return {
