@@ -24,7 +24,7 @@ SIGNAL_KEYS = [
 ]
 
 # Physics constant
-HAWKING_GAMMA = 0.005  # Decay rate (per hour): ~3 day half-life
+HAWKING_GAMMA = 0.001  # Decay rate (per hour): ~29 day half-life
 
 
 def _l2_distance(vec_a, vec_b):
@@ -176,13 +176,16 @@ class ContinuousStyleMemory:
                 best_dist = d
                 best_idx = i
 
-        if best_dist < 0.15 and best_idx >= 0:
-            # Gravitational thickening + refresh timestamp
+        if best_dist < 0.25 and best_idx >= 0:
+            # Gravitational thickening: increase mass + refresh timestamp
+            # but KEEP original content (don't overwrite distinctive memories)
             self._pool[best_idx]['mass'] = self._pool[best_idx].get('mass', 1.0) + 1.0
             self._pool[best_idx]['last_used_at'] = now
-            self._pool[best_idx]['monologue'] = monologue
-            self._pool[best_idx]['reply'] = reply
-            self._pool[best_idx]['user_input'] = user_input
+            # Only overwrite if new content is longer (richer)
+            if len(reply) > len(self._pool[best_idx].get('reply', '')):
+                self._pool[best_idx]['monologue'] = monologue
+                self._pool[best_idx]['reply'] = reply
+                self._pool[best_idx]['user_input'] = user_input
         else:
             # New memory
             new_mem = {

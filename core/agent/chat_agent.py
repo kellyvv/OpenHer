@@ -10,7 +10,7 @@ Per-turn lifecycle (with EverMemOS async memory):
        alpha = clip(0.15 + 0.5*depth, 0.15, 0.65)
        ema_state = alpha*posterior + (1-alpha)*prev
   3.  LLM metabolism (apply frustration delta → reward)
-  3.5 Critic-driven Drive baseline evolution (BASELINE_LR=0.003, every turn)
+  3.5 Critic-driven Drive baseline evolution (BASELINE_LR=0.01, every turn)
        frustration_delta > 0 → drive not satisfied → baseline rises
        frustration_delta < 0 → drive satisfied → baseline eases
        No math formula. Purely LLM-judged, same structure as Hebbian learning.
@@ -166,6 +166,7 @@ class ChatAgent:
         self._last_action: Optional[dict] = None
         self._last_critic: Optional[dict] = None
         self._last_signals: Optional[dict] = None
+        self._prev_signals: Optional[dict] = None  # Previous turn signals for trend injection
         self._last_reward: float = 0.0
         self._last_modality: str = ""
 
@@ -243,6 +244,21 @@ class ChatAgent:
         # Use pre-computed signals (same as KNN retrieval) — no re-computation
         signal_injection = self.agent.to_prompt_injection_from_signals(signals)
 
+        # ── Signal change trend injection (compare to previous turn) ──
+        if self._prev_signals:
+            trend_lines = []
+            for sig in SIGNALS:
+                delta = signals[sig] - self._prev_signals.get(sig, 0.5)
+                if abs(delta) > 0.15:
+                    direction = "上升" if delta > 0 else "下降"
+                    from core.genome.genome_engine import SIGNAL_LABELS
+                    trend_lines.append(
+                        f"- {SIGNAL_LABELS[sig]}明显{direction} "
+                        f"({self._prev_signals[sig]:.2f} → {signals[sig]:.2f})"
+                    )
+            if trend_lines:
+                signal_injection += "\n【变化趋势】\n" + "\n".join(trend_lines[:3])
+
         # Inject real wall-clock time so the LLM doesn't fabricate it
         now = _dt.datetime.now()
         time_str = now.strftime("%H:%M")
@@ -282,7 +298,7 @@ class ChatAgent:
             + 0.3 * (1.0 - conflict)
         )
 
-        should = crystal_score > 0.35
+        should = crystal_score > 0.50
         if should:
             print(f"  [crystal] score={crystal_score:.3f} "
                   f"(reward={reward:.2f}, novelty={novelty:.2f}×eng={engagement:.2f}, "
@@ -391,7 +407,7 @@ class ChatAgent:
         # frustration_delta > 0 = drive not satisfied this turn → baseline rises (hungers more)
         # frustration_delta < 0 = drive satisfied this turn → baseline eases
         # BASELINE_LR is a numerical stability param (like Hebbian lr), not a semantic rule.
-        BASELINE_LR = 0.003
+        BASELINE_LR = 0.01
         for d in DRIVES:
             shift = frustration_delta.get(d, 0.0) * BASELINE_LR
             self.agent.drive_baseline[d] = max(0.1, min(0.95,
@@ -414,6 +430,7 @@ class ChatAgent:
         # ── Step 6: Thermodynamic noise ──
         total_frust = self.metabolism.total()
         noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+        self._prev_signals = self._last_signals  # Track for trend injection
         self._last_signals = noisy_signals
 
         # ── Step 7: KNN retrieval ──
@@ -543,7 +560,7 @@ class ChatAgent:
             self._last_reward = reward
 
             # ── Step 3.5: Critic-driven Drive baseline evolution ──
-            BASELINE_LR = 0.003
+            BASELINE_LR = 0.01
             for d in DRIVES:
                 shift = frustration_delta.get(d, 0.0) * BASELINE_LR
                 self.agent.drive_baseline[d] = max(0.1, min(0.95,
@@ -564,6 +581,7 @@ class ChatAgent:
             base_signals = self.agent.compute_signals(context)
             total_frust = self.metabolism.total()
             noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+            self._prev_signals = self._last_signals  # Track for trend injection
             self._last_signals = noisy_signals
 
             # ── Step 7-8: KNN + Actor prompt ──

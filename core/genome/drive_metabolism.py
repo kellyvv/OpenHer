@@ -130,7 +130,7 @@ def apply_thermodynamic_noise(base_signals: dict, total_frustration: float) -> d
     Apply thermodynamic noise to signals based on total frustration.
     Higher frustration = more noise = more unpredictable behavior.
     """
-    temperature = total_frustration * 0.05
+    temperature = total_frustration * 0.12 + 0.03
     noisy = {}
     for key, val in base_signals.items():
         noise = random.gauss(0.0, temperature)

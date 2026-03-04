@@ -244,7 +244,7 @@ class Agent:
         Hebbian learning: reinforce connections that produced good results.
         Includes frustration accumulation and phase transitions.
         """
-        lr = 0.005 * (1 + abs(reward))
+        lr = 0.02 * (1 + abs(reward))
 
         hidden = getattr(self, '_last_hidden',
                          self.recurrent_state + [0.0] * (HIDDEN_SIZE - RECURRENT_SIZE))
@@ -254,11 +254,11 @@ class Agent:
         for i, sig_name in enumerate(SIGNALS):
             sig_val = signals[sig_name]
             for j in range(HIDDEN_SIZE):
-                if abs(hidden[j]) > 0.1:
+                if abs(hidden[j]) > 0.05:
                     self.W2[i][j] += lr * reward * hidden[j] * (sig_val - 0.5)
 
         # Update hidden layer weights W1
-        if abs(reward) > 0.15:
+        if abs(reward) > 0.05:
             for i in range(HIDDEN_SIZE):
                 if abs(hidden[i]) > 0.15:
                     for j in range(INPUT_SIZE):
@@ -272,7 +272,7 @@ class Agent:
             self._frustration = max(0, self._frustration - reward * 0.5)
 
         # Phase transition when frustration exceeds threshold
-        if self._frustration > 3.0:
+        if self._frustration > 2.0:
             for i in range(N_SIGNALS):
                 sig_val = signals[SIGNALS[i]]
                 kick = -0.3 * (sig_val - 0.5) + random.gauss(0, 0.15)
@@ -292,6 +292,14 @@ class Agent:
 
         self.total_reward += reward
         self.interaction_count += 1
+
+        # Prevent weight explosion from increased learning rate
+        for i in range(N_SIGNALS):
+            for j in range(HIDDEN_SIZE):
+                self.W2[i][j] = max(-3.0, min(3.0, self.W2[i][j]))
+        for i in range(HIDDEN_SIZE):
+            for j in range(INPUT_SIZE):
+                self.W1[i][j] = max(-2.0, min(2.0, self.W1[i][j]))
 
     def step(self, context: dict, reward: float = 0.0) -> dict:
         """One full cycle: sense → compute signals → learn → tick drives."""
@@ -379,81 +387,82 @@ class Agent:
     def to_prompt_injection_from_signals(self, signals: dict) -> str:
         """
         Convert pre-computed behavioral signals into text for LLM system prompt.
-        v10: Injects ALL 8 signals (5^8 = 390,625 combinations) instead of top-3.
+        v11: 3-bucket descriptions + numeric value tags + multi-drive tension + signal trends.
         """
-        dominant_drive = self.get_dominant_drive()
+        # ── Signal label mapping for trend injection ──
+        SIG_CN = {
+            'directness': '直接感', 'vulnerability': '脆弱感',
+            'playfulness': '玩闹感', 'initiative': '主动性',
+            'depth': '深度', 'warmth': '温暖度',
+            'defiance': '倔强度', 'curiosity': '好奇心',
+        }
 
+
+        # ── 3-bucket descriptions (low/mid/high) + numeric value tag ──
         descriptions = {
             'directness': [
-                (0.0, 0.2, '说话绕弯子，用暗示和隐喻，从不直说想法'),
-                (0.2, 0.4, '说话比较委婉，倾向于用"可能""也许"这种词'),
-                (0.4, 0.6, '说话正常，不特别直也不特别绕'),
-                (0.6, 0.8, '说话直接，想到什么说什么，不太修饰'),
-                (0.8, 1.0, '说话非常直接甚至冲，不在乎对方能不能接受'),
+                (0.0, 0.33, '说话委婉含蓄，倾向于暗示和隐喻'),
+                (0.33, 0.66, '说话正常，不特别直也不特别绕'),
+                (0.66, 1.0, '说话非常直接，想到什么说什么，不在乎修饰'),
             ],
             'vulnerability': [
-                (0.0, 0.2, '完全封闭自己，绝不暴露任何真实感受'),
-                (0.2, 0.4, '很少表达真实感受，被追问也只是轻描淡写'),
-                (0.4, 0.6, '偶尔会流露一点真心话，但不会太深入'),
-                (0.6, 0.8, '愿意说出自己的感受和脆弱的一面'),
-                (0.8, 1.0, '非常坦诚地暴露内心，包括恐惧、不安、依赖感'),
+                (0.0, 0.33, '封闭自己，很少暴露真实感受'),
+                (0.33, 0.66, '偶尔流露真心话，但不会太深入'),
+                (0.66, 1.0, '坦诚暴露内心，包括恐惧、不安、依赖感'),
             ],
             'playfulness': [
-                (0.0, 0.2, '非常严肃，不开玩笑，语气平淡甚至有点冷'),
-                (0.2, 0.4, '偶尔带一点幽默但整体偏正经'),
-                (0.4, 0.6, '正常聊天，有时轻松有时认真'),
-                (0.6, 0.8, '喜欢开玩笑、逗人，语气轻快活泼'),
-                (0.8, 1.0, '各种撒娇卖萌、搞怪、调皮，对话充满笑点'),
+                (0.0, 0.33, '严肃正经，不怎么开玩笑，语气平淡'),
+                (0.33, 0.66, '有时轻松有时认真，正常聊天状态'),
+                (0.66, 1.0, '各种撒娇卖萌、搞怪调皮，对话充满笑点'),
             ],
             'initiative': [
-                (0.0, 0.2, '完全被动，只回答问题，从不主动说话或换话题'),
-                (0.2, 0.4, '基本跟着对方走，偶尔追问一句'),
-                (0.4, 0.6, '有来有回，不特别主动也不特别被动'),
-                (0.6, 0.8, '经常主动提问、换话题、推动对话往前走'),
-                (0.8, 1.0, '强势主导对话，自己抛话题、追问、引导方向'),
+                (0.0, 0.33, '被动回应，基本跟着对方走'),
+                (0.33, 0.66, '有来有回，不特别主动也不特别被动'),
+                (0.66, 1.0, '强势主导对话，主动抛话题、追问、引导方向'),
             ],
             'depth': [
-                (0.0, 0.2, '只聊表面的事，天气、吃饭、日常琐事'),
-                (0.2, 0.4, '聊天偏浅，不怎么深入感受层面'),
-                (0.4, 0.6, '有时浅聊有时深聊，看情况'),
-                (0.6, 0.8, '倾向于深入话题，探讨感受、价值观、关系'),
-                (0.8, 1.0, '每句话都想往深了聊，挖掘本质'),
+                (0.0, 0.33, '聊天偏浅，多是表面话题和日常琐事'),
+                (0.33, 0.66, '有时浅聊有时深聊，看情况'),
+                (0.66, 1.0, '倾向于深入话题，探讨感受、价值观、关系的本质'),
             ],
             'warmth': [
-                (0.0, 0.2, '冷淡疏离，语气冷冰冰的，不关心对方感受'),
-                (0.2, 0.4, '比较冷淡，不太主动表达关心，回应简短'),
-                (0.4, 0.6, '不冷不热，正常回应但不特别热情'),
-                (0.6, 0.8, '温暖关心，语气柔和，会主动关心对方状态'),
-                (0.8, 1.0, '非常热情体贴，嘘寒问暖，充满关怀和包容'),
+                (0.0, 0.33, '冷淡疏离，不太主动表达关心'),
+                (0.33, 0.66, '不冷不热，正常回应但不特别热情'),
+                (0.66, 1.0, '非常温暖体贴，嘘寒问暖，充满关怀'),
             ],
             'defiance': [
-                (0.0, 0.2, '非常顺从，对方说什么都同意，从不反驳'),
-                (0.2, 0.4, '比较随和，即使不同意也不太会说出来'),
-                (0.4, 0.6, '有自己的想法但不会太坚持'),
-                (0.6, 0.8, '嘴硬，喜欢反驳，不轻易认错或服软'),
-                (0.8, 1.0, '非常倔强，死不认错，越被质疑越硬杠'),
+                (0.0, 0.33, '比较随和顺从，不怎么反驳'),
+                (0.33, 0.66, '有自己的想法但不会太坚持'),
+                (0.66, 1.0, '嘴硬倔强，喜欢反驳，越被质疑越硬杠'),
             ],
             'curiosity': [
-                (0.0, 0.2, '对对方的事完全不感兴趣，不追问任何细节'),
-                (0.2, 0.4, '偶尔问一句但不怎么深入'),
-                (0.4, 0.6, '正常程度的好奇，会追问一两句'),
-                (0.6, 0.8, '对对方很好奇，喜欢追问细节和原因'),
-                (0.8, 1.0, '刨根问底，什么都想知道，追着问不放'),
+                (0.0, 0.33, '对对方的事不太感兴趣，不怎么追问'),
+                (0.33, 0.66, '正常程度的好奇，会追问一两句'),
+                (0.66, 1.0, '刨根问底，什么都想知道，追着问不放'),
             ],
         }
 
-        # v10: Inject ALL 8 signals (not just top-3)
+        # ── Build signal state lines with numeric tags ──
         lines = ["【你当前的状态】"]
         for sig_name in SIGNALS:
             val = signals[sig_name]
             for low, high, desc in descriptions[sig_name]:
                 if val < high or high == 1.0:
-                    lines.append(f"- {desc}")
+                    lines.append(f"- {desc} [{SIG_CN[sig_name]}: {val:.2f}]")
                     break
 
-        lines.append(f"\n【内在需求】你现在最需要的是{DRIVE_LABELS[dominant_drive]}")
+        # ── Multi-drive tension injection (top-2 drives) ──
+        sorted_drives = sorted(self.drive_state.items(), key=lambda x: x[1], reverse=True)
+        d1_name, d1_val = sorted_drives[0]
+        d2_name, d2_val = sorted_drives[1]
 
-        # Internal contradiction hint
+        lines.append(f"\n【内在需求】")
+        lines.append(f"主驱力：{DRIVE_LABELS[d1_name]} ({d1_val:.2f})")
+        if d2_val > d1_val * 0.7:  # Only inject tension when secondary drive is strong enough
+            lines.append(f"次驱力：{DRIVE_LABELS[d2_name]} ({d2_val:.2f})")
+            lines.append(f"内心张力：{d1_name} 和 {d2_name} 之间的拉扯影响着你的表达方式")
+
+        # ── Internal contradiction hint ──
         fp = self.personality_fingerprint(30)
         if fp.get('contradictions'):
             top_c = fp['contradictions'][0]
