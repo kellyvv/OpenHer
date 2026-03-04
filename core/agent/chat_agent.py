@@ -407,14 +407,18 @@ class ChatAgent:
         self._last_reward = reward
 
         # ── Step 3.5: Critic-driven Drive baseline evolution ──
+        # Elastic baseline: spring force pulls baseline back toward persona origin.
+        # Prevents unbounded drift while preserving local emergence.
         # frustration_delta > 0 = drive not satisfied this turn → baseline rises (hungers more)
         # frustration_delta < 0 = drive satisfied this turn → baseline eases
-        # BASELINE_LR is a numerical stability param (like Hebbian lr), not a semantic rule.
         BASELINE_LR = 0.01
+        ELASTICITY = 0.05       # Universal constant — higher = stronger pull to origin
         for d in DRIVES:
             shift = frustration_delta.get(d, 0.0) * BASELINE_LR
+            drift = self.agent.drive_baseline[d] - self._initial_baseline.get(d, 0.5)
+            pull_back = -drift * ELASTICITY
             self.agent.drive_baseline[d] = max(0.1, min(0.95,
-                self.agent.drive_baseline[d] + shift
+                self.agent.drive_baseline[d] + shift + pull_back
             ))
 
         # ── Step 4: Crystallization gate (last action) ──
