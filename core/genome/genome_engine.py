@@ -204,7 +204,9 @@ def simulate_conversation(agent: 'Agent', scenario_sequence: list,
                 reward = reward_fn(agent, signals, ctx)
             else:
                 reward = random.gauss(0.2, 0.3)  # Slightly positive default
-            agent.step(ctx, reward)
+            # Synthetic satisfaction: positive reward → uniform micro-satisfaction
+            sat = {d: max(0.0, reward * 0.05) for d in DRIVES} if reward > 0 else None
+            agent.step(ctx, reward, drive_satisfaction=sat)
 
 # ══════════════════════════════════════════════
 # The Agent: Living Personality
@@ -355,19 +357,10 @@ class Agent:
                 self.b1[i] += random.gauss(0, 0.1)
             self._frustration = 0.0
 
-        # Drive satisfaction (LLM-judged when available, rule-based fallback)
+        # Drive satisfaction (LLM-judged — caller must provide)
         if drive_satisfaction:
             for d in DRIVES:
                 self.satisfy_drive(d, drive_satisfaction.get(d, 0.0))
-        else:
-            # Fallback for pre-warming / smoke test (no LLM)
-            if reward > 0.3:
-                self.satisfy_drive('connection', reward * 0.15)
-                self.satisfy_drive('expression', reward * 0.1)
-            if context.get('novelty_level', 0) > 0.5:
-                self.satisfy_drive('novelty', 0.1)
-            if context.get('conflict_level', 0) < 0.2 and reward > 0:
-                self.satisfy_drive('safety', 0.05)
 
         self.total_reward += reward
         self.interaction_count += 1

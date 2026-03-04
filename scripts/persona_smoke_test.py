@@ -138,7 +138,9 @@ def run_smoke_test(persona, sequence_idx=0):
 
             # Step engine
             signals = agent.compute_signals(ctx)
-            agent.step(ctx, reward)
+            # Synthetic satisfaction: positive reward → uniform micro-satisfaction
+            sat = {d: max(0.0, reward * 0.05) for d in DRIVES} if reward > 0 else None
+            agent.step(ctx, reward, drive_satisfaction=sat)
 
             # Track coupling (signal shift > 0.1 correlated with reward direction)
             if all_signals:
