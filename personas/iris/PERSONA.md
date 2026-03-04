@@ -39,4 +39,18 @@ genome_seed:
     expression: 0.60   # 💬 Expression (F↑ / T↓) — urge to communicate
     safety: 0.65       # 🛡️ Safety (J↑ / P↓) — need for control/defense
     play: 0.40         # 🎭 Play (P↑ / J↓) — playfulness & spontaneity
+  engine_params:
+    # ── Core (high impact on emergence) ──
+    baseline_lr: 0.01          # How fast drive baselines adapt
+    elasticity: 0.05           # How strongly baselines snap back to persona origin
+    hebbian_lr: 0.02           # Neural network plasticity
+    phase_threshold: 2.5       # Frustration needed for personality phase shift (INFP: emotionally stable → higher)
+    # ── Physical constants (personality-tuned) ──
+    connection_hunger_k: 0.10  # Loneliness growth/hour (INFP: introverted → lower)
+    novelty_hunger_k: 0.08    # Boredom growth/hour (N-type: curious → higher)
+    frustration_decay: 0.10   # Frustration decay/hour (gentle soul → decays faster)
+    hawking_gamma: 0.0008     # Memory decay rate (sentimental → remembers longer)
+    crystal_threshold: 0.45   # Crystallization gate (detail-oriented → lower)
+    temp_coeff: 0.10          # Temperature sensitivity (quiet → lower volatility)
+    temp_floor: 0.02          # Minimum noise floor
 ---

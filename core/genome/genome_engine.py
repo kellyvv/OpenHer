@@ -219,9 +219,14 @@ class Agent:
     the random network's computation.
     """
 
-    def __init__(self, seed: int):
+    def __init__(self, seed: int, engine_params: dict = None):
         self.seed = seed
         rng = random.Random(seed)
+
+        # Per-persona engine parameters
+        params = engine_params or {}
+        self.hebbian_lr = params.get('hebbian_lr', 0.02)
+        self.phase_threshold = params.get('phase_threshold', 2.0)
 
         # ── Genome: drive parameters ──
         self.drive_baseline = {d: rng.uniform(0.2, 0.8) for d in DRIVES}
@@ -309,7 +314,7 @@ class Agent:
         Hebbian learning: reinforce connections that produced good results.
         Includes frustration accumulation and phase transitions.
         """
-        lr = 0.02 * (1 + abs(reward))
+        lr = self.hebbian_lr * (1 + abs(reward))
 
         hidden = getattr(self, '_last_hidden',
                          self.recurrent_state + [0.0] * (HIDDEN_SIZE - RECURRENT_SIZE))
@@ -337,7 +342,7 @@ class Agent:
             self._frustration = max(0, self._frustration - reward * 0.5)
 
         # Phase transition when frustration exceeds threshold
-        if self._frustration > 2.0:
+        if self._frustration > self.phase_threshold:
             for i in range(N_SIGNALS):
                 sig_val = signals[SIGNALS[i]]
                 kick = -0.3 * (sig_val - 0.5) + random.gauss(0, 0.15)
@@ -449,7 +454,7 @@ class Agent:
         signals = self.compute_signals(context)
         return self.to_prompt_injection_from_signals(signals)
 
-    def to_prompt_injection_from_signals(self, signals: dict) -> str:
+    def to_prompt_injection_from_signals(self, signals: dict, signal_overrides: dict = None) -> str:
         """
         Convert pre-computed behavioral signals into text for LLM system prompt.
         v11: 3-bucket descriptions + numeric value tags + multi-drive tension + signal trends.
@@ -466,6 +471,21 @@ class Agent:
         )
         sig_config = config.get('signals', _FB_SIGNAL_CONFIG)
         drv_config = config.get('drives', _FB_DRIVE_CONFIG)
+
+        # Per-persona signal description overrides (deep copy to avoid polluting cache)
+        if signal_overrides:
+            import copy
+            sig_config = copy.deepcopy(sig_config)
+            for sig_name, override in signal_overrides.items():
+                if sig_name in sig_config:
+                    if 'buckets' in override:
+                        sig_config[sig_name]['buckets'] = [
+                            (b['low'], b['high'], b['desc']) for b in override['buckets']
+                        ]
+                    if 'label' in override:
+                        sig_config[sig_name]['label'] = override['label']
+                    if 'emoji_label' in override:
+                        sig_config[sig_name]['emoji_label'] = override['emoji_label']
 
         # ── Build signal state lines with numeric tags ──
         lines = ["【你当前的状态】"]

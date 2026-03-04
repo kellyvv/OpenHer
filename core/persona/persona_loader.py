@@ -62,7 +62,9 @@ class Persona:
     raw_content: str = ""                 # Full markdown body (fallback)
 
     # Engine seed
-    drive_baseline: dict = field(default_factory=dict)  # genome_seed.drive_baseline
+    drive_baseline: dict = field(default_factory=dict)   # genome_seed.drive_baseline
+    engine_params: dict = field(default_factory=dict)    # genome_seed.engine_params (per-persona tuning)
+    signal_overrides: dict = field(default_factory=dict) # genome_seed.signal_buckets (per-persona desc overrides)
 
     # Source
     base_dir: str = ""                    # Absolute path to persona directory
@@ -231,6 +233,8 @@ class PersonaLoader:
             raw_content=post.content,
             base_dir=str(persona_dir),
             drive_baseline=drive_baseline,
+            engine_params=genome_seed.get("engine_params", {}) if isinstance(genome_seed, dict) else {},
+            signal_overrides=genome_seed.get("signal_buckets", {}) if isinstance(genome_seed, dict) else {},
         )
         return persona
 

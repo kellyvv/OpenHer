@@ -144,9 +144,16 @@ class ChatAgent:
         self.memory_store = memory_store
         self.max_history = max_history
 
-        # ── Genome v8 Engine ──
-        self.agent = Agent(seed=genome_seed)
-        self.metabolism = DriveMetabolism()
+        # ── Genome v8 Engine (with per-persona params) ──
+        engine_params = persona.engine_params
+        self.agent = Agent(seed=genome_seed, engine_params=engine_params)
+        self.metabolism = DriveMetabolism(engine_params=engine_params)
+
+        # Per-persona tunable parameters (with defaults)
+        self.baseline_lr = engine_params.get('baseline_lr', 0.01)
+        self.elasticity = engine_params.get('elasticity', 0.05)
+        self.crystal_threshold = engine_params.get('crystal_threshold', 0.50)
+        self.trend_delta = engine_params.get('trend_delta', 0.15)
 
         # Apply persona-specific genome seed (initial conditions only)
         if persona.drive_baseline:
@@ -263,14 +270,16 @@ class ChatAgent:
             identity += bio_text.strip()[:200]
 
         # Use pre-computed signals (same as KNN retrieval) — no re-computation
-        signal_injection = self.agent.to_prompt_injection_from_signals(signals)
+        signal_injection = self.agent.to_prompt_injection_from_signals(
+            signals, signal_overrides=self.persona.signal_overrides
+        )
 
         # ── Signal change trend injection (compare to previous turn) ──
         if self._prev_signals:
             trend_lines = []
             for sig in SIGNALS:
                 delta = signals[sig] - self._prev_signals.get(sig, 0.5)
-                if abs(delta) > 0.15:
+                if abs(delta) > self.trend_delta:
                     direction = "上升" if delta > 0 else "下降"
                     from core.genome.genome_engine import SIGNAL_LABELS as _FB_LABELS
                     sig_config = load_signal_config()
@@ -328,7 +337,7 @@ class ChatAgent:
             + 0.3 * (1.0 - conflict)
         )
 
-        should = crystal_score > 0.50
+        should = crystal_score > self.crystal_threshold
         if should:
             print(f"  [crystal] score={crystal_score:.3f} "
                   f"(reward={reward:.2f}, novelty={novelty:.2f}×eng={engagement:.2f}, "
@@ -438,12 +447,10 @@ class ChatAgent:
         # Prevents unbounded drift while preserving local emergence.
         # frustration_delta > 0 = drive not satisfied this turn → baseline rises (hungers more)
         # frustration_delta < 0 = drive satisfied this turn → baseline eases
-        BASELINE_LR = 0.01
-        ELASTICITY = 0.05       # Universal constant — higher = stronger pull to origin
         for d in DRIVES:
-            shift = frustration_delta.get(d, 0.0) * BASELINE_LR
+            shift = frustration_delta.get(d, 0.0) * self.baseline_lr
             drift = self.agent.drive_baseline[d] - self._initial_baseline.get(d, 0.5)
-            pull_back = -drift * ELASTICITY
+            pull_back = -drift * self.elasticity
             self.agent.drive_baseline[d] = max(0.1, min(0.95,
                 self.agent.drive_baseline[d] + shift + pull_back
             ))
@@ -463,7 +470,7 @@ class ChatAgent:
 
         # ── Step 6: Thermodynamic noise ──
         total_frust = self.metabolism.total()
-        noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+        noisy_signals = self.metabolism.apply_thermodynamic_noise(base_signals)
         self._prev_signals = self._last_signals  # Track for trend injection
         self._last_signals = noisy_signals
 
@@ -596,12 +603,10 @@ class ChatAgent:
             # ── Step 3.5: Critic-driven Drive baseline evolution ──
             # Elastic baseline: spring force pulls baseline back toward persona origin.
             # Prevents unbounded drift while preserving local emergence.
-            BASELINE_LR = 0.01
-            ELASTICITY = 0.05       # Universal constant — higher = stronger pull to origin
             for d in DRIVES:
-                shift = frustration_delta.get(d, 0.0) * BASELINE_LR
+                shift = frustration_delta.get(d, 0.0) * self.baseline_lr
                 drift = self.agent.drive_baseline[d] - self._initial_baseline.get(d, 0.5)
-                pull_back = -drift * ELASTICITY
+                pull_back = -drift * self.elasticity
                 self.agent.drive_baseline[d] = max(0.1, min(0.95,
                     self.agent.drive_baseline[d] + shift + pull_back
                 ))
@@ -619,7 +624,7 @@ class ChatAgent:
             # ── Steps 5-6: Signals + noise ──
             base_signals = self.agent.compute_signals(context)
             total_frust = self.metabolism.total()
-            noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+            noisy_signals = self.metabolism.apply_thermodynamic_noise(base_signals)
             self._prev_signals = self._last_signals  # Track for trend injection
             self._last_signals = noisy_signals
 
@@ -1064,7 +1069,7 @@ class ChatAgent:
         # ── Step 8: Compute signals + noise ──
         base_signals = self.agent.compute_signals(context)
         total_frust = self.metabolism.total()
-        noisy_signals = apply_thermodynamic_noise(base_signals, total_frust)
+        noisy_signals = self.metabolism.apply_thermodynamic_noise(base_signals)
 
         # ── Step 9: Build Actor prompt ──
         self.style_memory.set_clock(start)
