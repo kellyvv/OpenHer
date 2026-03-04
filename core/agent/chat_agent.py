@@ -41,16 +41,17 @@ from core.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_no
 from core.genome.critic import critic_sense
 from core.genome.style_memory import ContinuousStyleMemory
 from core.memory.memory_store import MemoryStore
+from core.prompt_registry import render_prompt, load_signal_config
 
 
-# ── Actor Prompt Template ──
+# ── Actor Prompt Template (fallback if config/prompts/actor.md missing) ──
 
-ACTOR_PROMPT = """[System Internal State: Subconscious Memory Retrieved]
+_FALLBACK_ACTOR = """[System Internal State: Subconscious Memory Retrieved]
 当前的底层神经化学递质坐标，唤醒了海马体中以下高度相似的潜意识与行为切片：
 
-{few_shot}
+$few_shot
 
-{signal_injection}
+$signal_injection
 
 [Runtime Instruction]
 你在此时此刻是这个人格的主体，不是AI助手。
@@ -271,9 +272,12 @@ class ChatAgent:
                 delta = signals[sig] - self._prev_signals.get(sig, 0.5)
                 if abs(delta) > 0.15:
                     direction = "上升" if delta > 0 else "下降"
-                    from core.genome.genome_engine import SIGNAL_LABELS
+                    from core.genome.genome_engine import SIGNAL_LABELS as _FB_LABELS
+                    sig_config = load_signal_config()
+                    sig_info = sig_config.get('signals', {}).get(sig, {})
+                    label = sig_info.get('emoji_label', _FB_LABELS.get(sig, sig))
                     trend_lines.append(
-                        f"- {SIGNAL_LABELS[sig]}明显{direction} "
+                        f"- {label}明显{direction} "
                         f"({self._prev_signals[sig]:.2f} → {signals[sig]:.2f})"
                     )
             if trend_lines:
@@ -289,7 +293,9 @@ class ChatAgent:
         # Order: few_shot → identity ("who am I") → signals ("how I feel now")
         combined_injection = identity + "\n\n" + signal_injection
 
-        return ACTOR_PROMPT.format(
+        return render_prompt(
+            "actor",
+            fallback=_FALLBACK_ACTOR,
             few_shot=few_shot,
             signal_injection=combined_injection,
         )

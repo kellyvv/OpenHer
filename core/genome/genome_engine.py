@@ -388,18 +388,20 @@ class Agent:
         """
         Convert pre-computed behavioral signals into text for LLM system prompt.
         v11: 3-bucket descriptions + numeric value tags + multi-drive tension + signal trends.
+
+        Signal descriptions, labels, and drive labels are loaded from
+        config/prompts/signal_buckets.yaml (falls back to hardcoded defaults).
         """
-        # ── Signal label mapping for trend injection ──
-        SIG_CN = {
+        from core.prompt_registry import load_signal_config
+
+        # ── Hardcoded fallbacks (used if YAML doesn't exist) ──
+        _FB_SIG_CN = {
             'directness': '直接感', 'vulnerability': '脆弱感',
             'playfulness': '玩闹感', 'initiative': '主动性',
             'depth': '深度', 'warmth': '温暖度',
             'defiance': '倔强度', 'curiosity': '好奇心',
         }
-
-
-        # ── 3-bucket descriptions (low/mid/high) + numeric value tag ──
-        descriptions = {
+        _FB_DESCRIPTIONS = {
             'directness': [
                 (0.0, 0.33, '说话委婉含蓄，倾向于暗示和隐喻'),
                 (0.33, 0.66, '说话正常，不特别直也不特别绕'),
@@ -441,14 +443,33 @@ class Agent:
                 (0.66, 1.0, '刨根问底，什么都想知道，追着问不放'),
             ],
         }
+        _FB_DRIVES = {
+            d: {'label': DRIVE_LABELS[d].split(' ')[1], 'emoji_label': DRIVE_LABELS[d]}
+            for d in DRIVES
+        }
+
+        # ── Load from YAML (or use fallbacks) ──
+        _fb_signals = {
+            sig: {'label': _FB_SIG_CN[sig], 'emoji_label': SIGNAL_LABELS[sig], 'buckets': _FB_DESCRIPTIONS[sig]}
+            for sig in SIGNALS
+        }
+        config = load_signal_config(
+            fallback_signals=_fb_signals,
+            fallback_drives=_FB_DRIVES,
+        )
+        sig_config = config.get('signals', _fb_signals)
+        drv_config = config.get('drives', _FB_DRIVES)
 
         # ── Build signal state lines with numeric tags ──
         lines = ["【你当前的状态】"]
         for sig_name in SIGNALS:
             val = signals[sig_name]
-            for low, high, desc in descriptions[sig_name]:
+            info = sig_config.get(sig_name, {})
+            sig_label = info.get('label', _FB_SIG_CN.get(sig_name, sig_name))
+            buckets = info.get('buckets', _FB_DESCRIPTIONS.get(sig_name, []))
+            for low, high, desc in buckets:
                 if val < high or high == 1.0:
-                    lines.append(f"- {desc} [{SIG_CN[sig_name]}: {val:.2f}]")
+                    lines.append(f"- {desc} [{sig_label}: {val:.2f}]")
                     break
 
         # ── Multi-drive tension injection (top-2 drives) ──
@@ -456,19 +477,25 @@ class Agent:
         d1_name, d1_val = sorted_drives[0]
         d2_name, d2_val = sorted_drives[1]
 
+        d1_label = drv_config.get(d1_name, {}).get('emoji_label', DRIVE_LABELS.get(d1_name, d1_name))
+        d2_label = drv_config.get(d2_name, {}).get('emoji_label', DRIVE_LABELS.get(d2_name, d2_name))
+
         lines.append(f"\n【内在需求】")
-        lines.append(f"主驱力：{DRIVE_LABELS[d1_name]} ({d1_val:.2f})")
+        lines.append(f"主驱力：{d1_label} ({d1_val:.2f})")
         if d2_val > d1_val * 0.7:  # Only inject tension when secondary drive is strong enough
-            lines.append(f"次驱力：{DRIVE_LABELS[d2_name]} ({d2_val:.2f})")
+            lines.append(f"次驱力：{d2_label} ({d2_val:.2f})")
             lines.append(f"内心张力：{d1_name} 和 {d2_name} 之间的拉扯影响着你的表达方式")
 
         # ── Internal contradiction hint ──
         fp = self.personality_fingerprint(30)
         if fp.get('contradictions'):
             top_c = fp['contradictions'][0]
+            # Use emoji_label from config, split to get action word
+            c0_label = sig_config.get(top_c[0], {}).get('emoji_label', SIGNAL_LABELS.get(top_c[0], top_c[0]))
+            c1_label = sig_config.get(top_c[1], {}).get('emoji_label', SIGNAL_LABELS.get(top_c[1], top_c[1]))
             lines.append(
-                f"【矛盾】你一方面想{SIGNAL_LABELS[top_c[0]].split(' ')[1]}，"
-                f"一方面又想{SIGNAL_LABELS[top_c[1]].split(' ')[1]}，这让你纠结"
+                f"【矛盾】你一方面想{c0_label.split(' ')[1]}，"
+                f"一方面又想{c1_label.split(' ')[1]}，这让你纠结"
             )
 
         return '\n'.join(lines)

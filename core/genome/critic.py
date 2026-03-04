@@ -16,9 +16,10 @@ from typing import Optional, Tuple
 
 from core.llm.client import LLMClient, ChatMessage
 from core.genome.genome_engine import DRIVES
+from core.prompt_registry import render_prompt
 
 
-CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出三组数据：
+_FALLBACK_CRITIC = """你是一个角色扮演 Agent 的情感感知器。分析用户输入，输出三组数据：
 
 1. 对话上下文感知（8 维，0.0~1.0）：
   - user_emotion: 用户情绪（-1=负面, 0=中性, 1=正面）
@@ -38,9 +39,9 @@ CRITIC_PROMPT = """你是一个角色扮演 Agent 的情感感知器。分析用
   - emotional_valence: 这轮对话的整体情感基调（-1=非常负面, 0=中性, 1=非常正面）
 
 Agent 当前挫败值（0=满足, 5=极度渴望）：
-{frustration_json}
+$frustration_json
 
-{user_profile_section}{episode_section}当前刺激："{stimulus}"
+$user_profile_section$episode_section当前刺激："$stimulus"
 
 严格输出纯 JSON：
 {
@@ -91,14 +92,13 @@ async def critic_sense(
     if episode_summary:
         episode_section = f"与此用户的历史对话叙事（据此判断 conversation_depth 和 topic_intimacy）：\n{episode_summary}\n\n"
 
-    prompt = CRITIC_PROMPT.replace(
-        "{frustration_json}", frust_json
-    ).replace(
-        "{stimulus}", stimulus
-    ).replace(
-        "{user_profile_section}", profile_section
-    ).replace(
-        "{episode_section}", episode_section
+    prompt = render_prompt(
+        "critic",
+        fallback=_FALLBACK_CRITIC,
+        frustration_json=frust_json,
+        stimulus=stimulus,
+        user_profile_section=profile_section,
+        episode_section=episode_section,
     )
 
     messages = [
