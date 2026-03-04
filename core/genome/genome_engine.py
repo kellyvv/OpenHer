@@ -87,6 +87,71 @@ HIDDEN_SIZE = 24
 
 
 # ══════════════════════════════════════════════
+# Fallback Signal & Drive Config (used if config/prompts/signal_buckets.yaml doesn't exist)
+# ══════════════════════════════════════════════
+
+_FB_SIG_CN = {
+    'directness': '直接感', 'vulnerability': '脆弱感',
+    'playfulness': '玩闹感', 'initiative': '主动性',
+    'depth': '深度', 'warmth': '温暖度',
+    'defiance': '倔强度', 'curiosity': '好奇心',
+}
+
+_FB_DESCRIPTIONS = {
+    'directness': [
+        (0.0, 0.33, '说话委婉含蓄，倾向于暗示和隐喻'),
+        (0.33, 0.66, '说话正常，不特别直也不特别绕'),
+        (0.66, 1.0, '说话非常直接，想到什么说什么，不在乎修饰'),
+    ],
+    'vulnerability': [
+        (0.0, 0.33, '封闭自己，很少暴露真实感受'),
+        (0.33, 0.66, '偶尔流露真心话，但不会太深入'),
+        (0.66, 1.0, '坦诚暴露内心，包括恐惧、不安、依赖感'),
+    ],
+    'playfulness': [
+        (0.0, 0.33, '严肃正经，不怎么开玩笑，语气平淡'),
+        (0.33, 0.66, '有时轻松有时认真，正常聊天状态'),
+        (0.66, 1.0, '各种撒娇卖萌、搞怪调皮，对话充满笑点'),
+    ],
+    'initiative': [
+        (0.0, 0.33, '被动回应，基本跟着对方走'),
+        (0.33, 0.66, '有来有回，不特别主动也不特别被动'),
+        (0.66, 1.0, '强势主导对话，主动抛话题、追问、引导方向'),
+    ],
+    'depth': [
+        (0.0, 0.33, '聊天偏浅，多是表面话题和日常琐事'),
+        (0.33, 0.66, '有时浅聊有时深聊，看情况'),
+        (0.66, 1.0, '倾向于深入话题，探讨感受、价值观、关系的本质'),
+    ],
+    'warmth': [
+        (0.0, 0.33, '冷淡疏离，不太主动表达关心'),
+        (0.33, 0.66, '不冷不热，正常回应但不特别热情'),
+        (0.66, 1.0, '非常温暖体贴，嘘寒问暖，充满关怀'),
+    ],
+    'defiance': [
+        (0.0, 0.33, '比较随和顺从，不怎么反驳'),
+        (0.33, 0.66, '有自己的想法但不会太坚持'),
+        (0.66, 1.0, '嘴硬倔强，喜欢反驳，越被质疑越硬杠'),
+    ],
+    'curiosity': [
+        (0.0, 0.33, '对对方的事不太感兴趣，不怎么追问'),
+        (0.33, 0.66, '正常程度的好奇，会追问一两句'),
+        (0.66, 1.0, '刨根问底，什么都想知道，追着问不放'),
+    ],
+}
+
+_FB_SIGNAL_CONFIG = {
+    sig: {'label': _FB_SIG_CN[sig], 'emoji_label': SIGNAL_LABELS[sig], 'buckets': _FB_DESCRIPTIONS[sig]}
+    for sig in SIGNALS
+}
+
+_FB_DRIVE_CONFIG = {
+    d: {'label': DRIVE_LABELS[d].split(' ')[1], 'emoji_label': DRIVE_LABELS[d]}
+    for d in DRIVES
+}
+
+
+# ══════════════════════════════════════════════
 # Conversation Scenario Templates
 # ══════════════════════════════════════════════
 
@@ -390,83 +455,26 @@ class Agent:
         v11: 3-bucket descriptions + numeric value tags + multi-drive tension + signal trends.
 
         Signal descriptions, labels, and drive labels are loaded from
-        config/prompts/signal_buckets.yaml (falls back to hardcoded defaults).
+        config/prompts/signal_buckets.yaml (falls back to module-level hardcoded defaults).
         """
         from core.prompt_registry import load_signal_config
 
-        # ── Hardcoded fallbacks (used if YAML doesn't exist) ──
-        _FB_SIG_CN = {
-            'directness': '直接感', 'vulnerability': '脆弱感',
-            'playfulness': '玩闹感', 'initiative': '主动性',
-            'depth': '深度', 'warmth': '温暖度',
-            'defiance': '倔强度', 'curiosity': '好奇心',
-        }
-        _FB_DESCRIPTIONS = {
-            'directness': [
-                (0.0, 0.33, '说话委婉含蓄，倾向于暗示和隐喻'),
-                (0.33, 0.66, '说话正常，不特别直也不特别绕'),
-                (0.66, 1.0, '说话非常直接，想到什么说什么，不在乎修饰'),
-            ],
-            'vulnerability': [
-                (0.0, 0.33, '封闭自己，很少暴露真实感受'),
-                (0.33, 0.66, '偶尔流露真心话，但不会太深入'),
-                (0.66, 1.0, '坦诚暴露内心，包括恐惧、不安、依赖感'),
-            ],
-            'playfulness': [
-                (0.0, 0.33, '严肃正经，不怎么开玩笑，语气平淡'),
-                (0.33, 0.66, '有时轻松有时认真，正常聊天状态'),
-                (0.66, 1.0, '各种撒娇卖萌、搞怪调皮，对话充满笑点'),
-            ],
-            'initiative': [
-                (0.0, 0.33, '被动回应，基本跟着对方走'),
-                (0.33, 0.66, '有来有回，不特别主动也不特别被动'),
-                (0.66, 1.0, '强势主导对话，主动抛话题、追问、引导方向'),
-            ],
-            'depth': [
-                (0.0, 0.33, '聊天偏浅，多是表面话题和日常琐事'),
-                (0.33, 0.66, '有时浅聊有时深聊，看情况'),
-                (0.66, 1.0, '倾向于深入话题，探讨感受、价值观、关系的本质'),
-            ],
-            'warmth': [
-                (0.0, 0.33, '冷淡疏离，不太主动表达关心'),
-                (0.33, 0.66, '不冷不热，正常回应但不特别热情'),
-                (0.66, 1.0, '非常温暖体贴，嘘寒问暖，充满关怀'),
-            ],
-            'defiance': [
-                (0.0, 0.33, '比较随和顺从，不怎么反驳'),
-                (0.33, 0.66, '有自己的想法但不会太坚持'),
-                (0.66, 1.0, '嘴硬倔强，喜欢反驳，越被质疑越硬杠'),
-            ],
-            'curiosity': [
-                (0.0, 0.33, '对对方的事不太感兴趣，不怎么追问'),
-                (0.33, 0.66, '正常程度的好奇，会追问一两句'),
-                (0.66, 1.0, '刨根问底，什么都想知道，追着问不放'),
-            ],
-        }
-        _FB_DRIVES = {
-            d: {'label': DRIVE_LABELS[d].split(' ')[1], 'emoji_label': DRIVE_LABELS[d]}
-            for d in DRIVES
-        }
-
-        # ── Load from YAML (or use fallbacks) ──
-        _fb_signals = {
-            sig: {'label': _FB_SIG_CN[sig], 'emoji_label': SIGNAL_LABELS[sig], 'buckets': _FB_DESCRIPTIONS[sig]}
-            for sig in SIGNALS
-        }
+        # ── Load from YAML (or use module-level fallbacks) ──
         config = load_signal_config(
-            fallback_signals=_fb_signals,
-            fallback_drives=_FB_DRIVES,
+            fallback_signals=_FB_SIGNAL_CONFIG,
+            fallback_drives=_FB_DRIVE_CONFIG,
         )
-        sig_config = config.get('signals', _fb_signals)
-        drv_config = config.get('drives', _FB_DRIVES)
+        sig_config = config.get('signals', _FB_SIGNAL_CONFIG)
+        drv_config = config.get('drives', _FB_DRIVE_CONFIG)
 
         # ── Build signal state lines with numeric tags ──
         lines = ["【你当前的状态】"]
         for sig_name in SIGNALS:
             val = signals[sig_name]
             info = sig_config.get(sig_name, {})
-            sig_label = info.get('label', _FB_SIG_CN.get(sig_name, sig_name))
-            buckets = info.get('buckets', _FB_DESCRIPTIONS.get(sig_name, []))
+            fb_info = _FB_SIGNAL_CONFIG.get(sig_name, {})
+            sig_label = info.get('label', fb_info.get('label', sig_name))
+            buckets = info.get('buckets', fb_info.get('buckets', []))
             for low, high, desc in buckets:
                 if val < high or high == 1.0:
                     lines.append(f"- {desc} [{sig_label}: {val:.2f}]")
