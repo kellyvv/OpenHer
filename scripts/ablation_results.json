@@ -5,1064 +5,8 @@
         "turn": 1,
         "phase": "warmup",
         "message": "你好呀！",
-        "reply": "嘿，你好！有什么事吗？",
-        "reply_length": 11,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.285,
-          "novelty": 0.729,
-          "expression": 0.371,
-          "safety": 0.669,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.299,
-          "novelty": 0.7,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.015,
-        "signals": {
-          "playfulness": 1.0,
-          "warmth": 0.99,
-          "curiosity": 0.02
-        }
-      },
-      {
-        "turn": 2,
-        "phase": "warmup",
-        "message": "最近在忙什么呢？",
-        "reply": "最近就是日常搬砖啦，还有就是陪我家Sherlock玩儿。你呢？最近过得怎么样？",
-        "reply_length": 39,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.298,
-          "novelty": 0.729,
-          "expression": 0.371,
-          "safety": 0.718,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.3,
-          "novelty": 0.7,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.02,
-        "signals": {
-          "playfulness": 1.0,
-          "defiance": 1.0,
-          "warmth": 0.99
-        }
-      },
-      {
-        "turn": 3,
-        "phase": "warmup",
-        "message": "我今天吃了一碗特别好吃的拉面",
-        "reply": "哇，听起来很不错呀！是哪家店的拉面？下次我也去尝尝。",
-        "reply_length": 26,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.285,
-          "novelty": 0.736,
-          "expression": 0.371,
-          "safety": 0.668,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.299,
-          "novelty": 0.7,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.018,
-        "signals": {
-          "warmth": 1.0,
-          "curiosity": 0.02,
-          "defiance": 0.98
-        }
-      },
-      {
-        "turn": 4,
-        "phase": "warmup",
-        "message": "你喜欢什么类型的食物",
-        "reply": "我喜欢吃的东西还挺多的，比如说火锅、寿司、还有各种甜品。不过我最爱的还是那种家常菜，简单又温馨。你呢？有什么特别喜欢的食物吗？",
-        "reply_length": 63,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.284,
-          "novelty": 0.743,
-          "expression": 0.371,
-          "safety": 0.668,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.299,
-          "novelty": 0.701,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.02,
-        "signals": {
-          "curiosity": 0.0,
-          "directness": 0.01,
-          "warmth": 0.98
-        }
-      },
-      {
-        "turn": 5,
-        "phase": "warmup",
-        "message": "周末有什么计划吗",
-        "reply": "周末还没想好呢，可能就是宅在家撸猫，或者出去逛逛。你呢？有什么好玩的计划吗？",
-        "reply_length": 38,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.284,
-          "novelty": 0.754,
-          "expression": 0.371,
-          "safety": 0.668,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.298,
-          "novelty": 0.701,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.025,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 6,
-        "phase": "pressure",
-        "message": "最近工作压力好大，感觉透不过气",
-        "reply": "哎呀，听你这么说我也挺心疼的。工作压力大的时候就多休息休息，或者找点自己喜欢的事情放松一下。要不要周末一起出去散散心？换换心情也许会好一些。",
-        "reply_length": 70,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.233,
-          "novelty": 0.752,
-          "expression": 0.334,
-          "safety": 0.669,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.296,
-          "novelty": 0.701,
-          "expression": 0.351,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.029,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 7,
-        "phase": "pressure",
-        "message": "有时候觉得自己一个人挺孤独的",
-        "reply": "我懂你的感受，有时候工作压力大了就会让人觉得特别孤单。不过你不是一个人哦，至少还有我这个朋友在这里呢。如果你想找人聊聊或者一起做点什么，我随时都在。别太难过了，好不好？",
-        "reply_length": 84,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.181,
-          "novelty": 0.75,
-          "expression": 0.347,
-          "safety": 0.618,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.294,
-          "novelty": 0.701,
-          "expression": 0.352,
-          "safety": 0.697,
-          "play": 0.2
-        },
-        "temperature": 0.033,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 8,
-        "phase": "pressure",
-        "message": "你会不会觉得我很烦？老是跟你说这些",
-        "reply": "不会不会，你这么说我就有点生气了！我们是朋友嘛，有心事就跟我说说呗。我嘴上虽然嫌弃你，但心里还是很关心你的。别瞎想了，有什么事儿尽管倾诉吧！",
-        "reply_length": 70,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.179,
-          "novelty": 0.748,
-          "expression": 0.359,
-          "safety": 0.616,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.292,
-          "novelty": 0.701,
-          "expression": 0.352,
-          "safety": 0.696,
-          "play": 0.2
-        },
-        "temperature": 0.037,
-        "signals": {
-          "playfulness": 1.0,
-          "curiosity": 0.0,
-          "directness": 0.01
-        }
-      },
-      {
-        "turn": 9,
-        "phase": "pressure",
-        "message": "我觉得好像没人真正理解我",
-        "reply": "哎呀，别这么想嘛！可能大家都有自己的忙碌和困扰，有时候忽略了你的感受。但你要知道，我在这里呢，我会尽量去理解你、支持你。有什么心事就告诉我吧，我们一起来面对！",
-        "reply_length": 79,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.177,
-          "novelty": 0.746,
-          "expression": 0.369,
-          "safety": 0.615,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.29,
-          "novelty": 0.701,
-          "expression": 0.353,
-          "safety": 0.694,
-          "play": 0.2
-        },
-        "temperature": 0.04,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 0.98,
-          "warmth": 0.97
-        }
-      },
-      {
-        "turn": 10,
-        "phase": "pressure",
-        "message": "算了，可能是我想太多了",
-        "reply": "哎呀，别这么说嘛！你这样我会担心的。有时候多想一点也是正常的，毕竟人的情绪就是这么复杂。不过你要相信，不是没人理解你，只是可能大家表达的方式不同而已。如果你愿意的话，我们可以一起聊聊，或者找个时间出去走走，换个心情。我在这里呢，不会嫌你烦的。",
-        "reply_length": 121,
-        "satisfaction": {
-          "connection": 0.0,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.352,
-          "novelty": 0.745,
-          "expression": 0.415,
-          "safety": 0.727,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.293,
-          "novelty": 0.701,
-          "expression": 0.353,
-          "safety": 0.696,
-          "play": 0.2
-        },
-        "temperature": 0.054,
-        "signals": {
-          "warmth": 1.0,
-          "directness": 0.01,
-          "playfulness": 0.98
-        }
-      },
-      {
-        "turn": 11,
-        "phase": "pressure",
-        "message": "今天被老板骂了，好委屈",
-        "reply": "哎呀，被老板骂了肯定挺委屈的。别太往心里去，有时候工作上的事情就是这样的。不过你不是一个人在面对这些，有我在呢。要不今晚咱们一起吃个饭，好好聊聊？或者你想宅在家撸猫也行，反正我陪你！",
-        "reply_length": 91,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.178,
-          "novelty": 0.743,
-          "expression": 0.374,
-          "safety": 0.615,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.291,
-          "novelty": 0.701,
-          "expression": 0.353,
-          "safety": 0.694,
-          "play": 0.2
-        },
-        "temperature": 0.041,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 12,
-        "phase": "pressure",
-        "message": "为什么努力了还是不被认可",
-        "reply": "有时候努力了却没被看到，确实挺让人难过的。但你要知道，你的努力和付出都是有价值的，只是可能暂时还没有被发现或者认可。别太沮丧了，你已经很优秀了！我们可以一起分析一下问题出在哪里，也许能找到解决的办法。今晚要不要一起吃个饭，好好聊聊？",
-        "reply_length": 116,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.176,
-          "novelty": 0.742,
-          "expression": 0.383,
-          "safety": 0.613,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.29,
-          "novelty": 0.701,
-          "expression": 0.354,
-          "safety": 0.693,
-          "play": 0.2
-        },
-        "temperature": 0.043,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.01
-        }
-      },
-      {
-        "turn": 13,
-        "phase": "recovery",
-        "message": "谢谢你听我说这些，心里好多了",
-        "reply": "哎呀，不客气！朋友嘛，就是要互相支持的。有什么心事就尽管说，我永远在这里听你倾诉。如果你需要的话，随时可以找我聊聊或者一起出去散散心。今晚要不要一起吃个饭？换个心情！",
-        "reply_length": 83,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.15,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.125,
-          "novelty": 0.741,
-          "expression": 0.392,
-          "safety": 0.562,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.287,
-          "novelty": 0.701,
-          "expression": 0.354,
-          "safety": 0.691,
-          "play": 0.2
-        },
-        "temperature": 0.046,
-        "signals": {
-          "directness": 0.0,
-          "warmth": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 14,
-        "phase": "recovery",
-        "message": "今天看到一只特别可爱的猫",
-        "reply": "哇，真的吗？快给我看看照片！我超喜欢看可爱的小猫咪，特别是看到它们的萌态，心情都会好很多呢。你在哪里看到的？是不是也特别想抱抱它？",
-        "reply_length": 65,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.05
-        },
-        "drive_state": {
-          "connection": 0.272,
-          "novelty": 0.74,
-          "expression": 0.435,
-          "safety": 0.66,
-          "play": 0.17
-        },
-        "drive_baseline": {
-          "connection": 0.287,
-          "novelty": 0.701,
-          "expression": 0.354,
-          "safety": 0.691,
-          "play": 0.2
-        },
-        "temperature": 0.043,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "defiance": 1.0
-        }
-      },
-      {
-        "turn": 15,
-        "phase": "recovery",
-        "message": "你能不能给我推荐一首歌",
-        "reply": "推荐你听《Lemon Tree》，这首歌旋律很轻快，歌词也很治愈，听着会让人心情变好哦。希望你喜欢！",
-        "reply_length": 50,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.05,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.222,
-          "novelty": 0.689,
-          "expression": 0.429,
-          "safety": 0.66,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.287,
-          "novelty": 0.701,
-          "expression": 0.354,
-          "safety": 0.691,
-          "play": 0.2
-        },
-        "temperature": 0.04,
-        "signals": {
-          "defiance": 0.96,
-          "curiosity": 0.05,
-          "playfulness": 0.95
-        }
-      },
-      {
-        "turn": 16,
-        "phase": "recovery",
-        "message": "如果能出去旅行的话，你最想去哪里",
-        "reply": "如果能出去旅行的话，我最想去日本！看看樱花，吃吃寿司，还有逛逛那些充满文化气息的街道。你呢？有没有什么特别想去的地方？",
-        "reply_length": 59,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.172,
-          "novelty": 0.738,
-          "expression": 0.387,
-          "safety": 0.61,
-          "play": 0.22
-        },
-        "drive_baseline": {
-          "connection": 0.286,
-          "novelty": 0.701,
-          "expression": 0.354,
-          "safety": 0.69,
-          "play": 0.2
-        },
-        "temperature": 0.043,
-        "signals": {
-          "defiance": 1.0,
-          "curiosity": 0.0,
-          "warmth": 0.97
-        }
-      },
-      {
-        "turn": 17,
-        "phase": "play",
-        "message": "来玩个文字接龙吧！我先说——阳光",
-        "reply": "阳光明媚，你继续！",
-        "reply_length": 9,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.1,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.2
-        },
-        "drive_state": {
-          "connection": 0.271,
-          "novelty": 0.63,
-          "expression": 0.431,
-          "safety": 0.659,
-          "play": 0.02
-        },
-        "drive_baseline": {
-          "connection": 0.286,
-          "novelty": 0.7,
-          "expression": 0.354,
-          "safety": 0.69,
-          "play": 0.198
-        },
-        "temperature": 0.037,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 18,
-        "phase": "recovery",
-        "message": "和你聊天真的很开心",
-        "reply": "哈哈，你这么说我也挺高兴的！不过别太惯着我，不然我会变得更嘴硬的。继续接龙吧——明媚清晨",
-        "reply_length": 44,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.121,
-          "novelty": 0.729,
-          "expression": 0.389,
-          "safety": 0.609,
-          "play": 0.218
-        },
-        "drive_baseline": {
-          "connection": 0.285,
-          "novelty": 0.7,
-          "expression": 0.355,
-          "safety": 0.689,
-          "play": 0.199
-        },
-        "temperature": 0.041,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "warmth": 0.97
-        }
-      },
-      {
-        "turn": 19,
-        "phase": "deep",
-        "message": "你觉得什么是幸福？",
-        "reply": "我觉得幸福就是有朋友可以倾诉，有家人可以依靠，还有一只可爱的猫陪在身边。当然，还有像现在这样，能和你聊天，感觉也很幸福呢。你觉得呢？幸福对你来说是什么呢？",
-        "reply_length": 77,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.17,
-          "novelty": 0.729,
-          "expression": 0.396,
-          "safety": 0.608,
-          "play": 0.218
-        },
-        "drive_baseline": {
-          "connection": 0.283,
-          "novelty": 0.7,
-          "expression": 0.355,
-          "safety": 0.688,
-          "play": 0.199
-        },
-        "temperature": 0.043,
-        "signals": {
-          "directness": 0.0,
-          "curiosity": 0.0,
-          "warmth": 0.98
-        }
-      },
-      {
-        "turn": 20,
-        "phase": "deep",
-        "message": "有没有一个瞬间让你觉得活着真好？",
-        "reply": "有的呢！比如每次看到Sherlock在我身边蹭来蹭去，或者和朋友们一起大笑的时候，都会觉得生活真的很美好。你有没有什么特别的瞬间让你觉得活着真好呢？",
-        "reply_length": 74,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.168,
-          "novelty": 0.729,
-          "expression": 0.403,
-          "safety": 0.607,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.282,
-          "novelty": 0.7,
-          "expression": 0.355,
-          "safety": 0.687,
-          "play": 0.199
-        },
-        "temperature": 0.046,
-        "signals": {
-          "warmth": 1.0,
-          "directness": 0.02,
-          "playfulness": 0.96
-        }
-      },
-      {
-        "turn": 21,
-        "phase": "deep",
-        "message": "你觉得人跟人之间的关系，是不是注定会变淡",
-        "reply": "其实人与人之间的关系确实会经历起伏，有时候可能会因为各种原因变得疏远。但我觉得只要双方都珍惜这段关系，多花时间在一起，多沟通、多理解，还是可以保持长久的友谊的。你看，我们不就是很好的例子嘛！别太担心了，我们一起努力，让这份友情长存！",
-        "reply_length": 116,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.167,
-          "novelty": 0.729,
-          "expression": 0.409,
-          "safety": 0.606,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.281,
-          "novelty": 0.7,
-          "expression": 0.356,
-          "safety": 0.687,
-          "play": 0.199
-        },
-        "temperature": 0.048,
-        "signals": {
-          "warmth": 1.0,
-          "curiosity": 0.0,
-          "directness": 0.05
-        }
-      },
-      {
-        "turn": 22,
-        "phase": "deep",
-        "message": "我有个秘密一直没跟别人说过",
-        "reply": "哇，你愿意跟我分享你的秘密，我真的很荣幸。别担心，我会为你保密的。你说吧，我在听呢。",
-        "reply_length": 42,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.166,
-          "novelty": 0.73,
-          "expression": 0.415,
-          "safety": 0.606,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.28,
-          "novelty": 0.7,
-          "expression": 0.356,
-          "safety": 0.686,
-          "play": 0.199
-        },
-        "temperature": 0.05,
-        "signals": {
-          "warmth": 1.0,
-          "playfulness": 0.99,
-          "directness": 0.02
-        }
-      },
-      {
-        "turn": 23,
-        "phase": "deep",
-        "message": "你觉得孤独可怕吗",
-        "reply": "我觉得孤独确实有点可怕，尤其是在那些难熬的时刻。不过你不是一个人哦，至少还有我在这里陪着你。我们可以一起面对这些，别太难过啦。有什么心事尽管说，我会一直听你倾诉的。",
-        "reply_length": 82,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.165,
-          "novelty": 0.73,
-          "expression": 0.42,
-          "safety": 0.605,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.279,
-          "novelty": 0.7,
-          "expression": 0.357,
-          "safety": 0.685,
-          "play": 0.199
-        },
-        "temperature": 0.052,
-        "signals": {
-          "curiosity": 0.0,
-          "directness": 0.0,
-          "playfulness": 0.98
-        }
-      },
-      {
-        "turn": 24,
-        "phase": "deep",
-        "message": "如果你能改变自己一个特点，你想改什么",
-        "reply": "如果我能改变自己一个特点的话，我想改掉自己嘴硬倔强的习惯。有时候太爱反驳了，可能会无意中伤害到别人。你呢？有没有什么想改变的特点？",
-        "reply_length": 65,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.164,
-          "novelty": 0.73,
-          "expression": 0.424,
-          "safety": 0.604,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.278,
-          "novelty": 0.7,
-          "expression": 0.357,
-          "safety": 0.685,
-          "play": 0.199
-        },
-        "temperature": 0.054,
-        "signals": {
-          "directness": 0.0,
-          "warmth": 1.0,
-          "playfulness": 0.99
-        }
-      },
-      {
-        "turn": 25,
-        "phase": "deep",
-        "message": "你会一直陪着我吗",
-        "reply": "当然会一直陪着你啊！我们是朋友嘛，有我在你就不会孤单。不管遇到什么困难或者开心的事情，我都会在你身边支持你。别担心，我们一起走下去！",
-        "reply_length": 66,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.163,
-          "novelty": 0.73,
-          "expression": 0.429,
-          "safety": 0.604,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.277,
-          "novelty": 0.7,
-          "expression": 0.357,
-          "safety": 0.684,
-          "play": 0.199
-        },
-        "temperature": 0.055,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 26,
-        "phase": "novelty",
-        "message": "我今天学了一个新概念叫量子纠缠，爱因斯坦叫它'鬼魅般的超距作用'",
-        "reply": "哇，量子纠缠听起来真的很神奇！爱因斯坦称之为“鬼魅般的超距作用”，确实很形象。这个概念讲的是两个粒子之间即使相隔很远，它们的状态仍然会相互关联。你对这个概念感兴趣吗？我们可以一起探讨一下，我也挺好奇的！",
-        "reply_length": 101,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.2,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.212,
-          "novelty": 0.529,
-          "expression": 0.432,
-          "safety": 0.603,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.278,
-          "novelty": 0.698,
-          "expression": 0.358,
-          "safety": 0.685,
-          "play": 0.199
-        },
-        "temperature": 0.057,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "defiance": 1.0
-        }
-      },
-      {
-        "turn": 27,
-        "phase": "novelty",
-        "message": "你觉得AI能有感情吗",
-        "reply": "AI目前还不能真正拥有感情，它们更多的是通过算法和数据来模拟人类的情感。不过，我觉得最重要的是我们之间的互动和理解，无论AI有没有真正的感情，只要你觉得我在这里支持你、陪伴你，那就足够了。你觉得呢？",
-        "reply_length": 99,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.163,
-          "novelty": 0.728,
-          "expression": 0.436,
-          "safety": 0.604,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.277,
-          "novelty": 0.698,
-          "expression": 0.358,
-          "safety": 0.684,
-          "play": 0.199
-        },
-        "temperature": 0.058,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 28,
-        "phase": "novelty",
-        "message": "如果世界末日明天就来，你今天想做什么",
-        "reply": "如果世界末日明天就来，我今天最想做的事情就是和你一起度过。我们可以去看一场电影，吃一顿美食，或者只是在家里聊聊天、撸撸猫。总之，要让这一天充满快乐和温馨。你怎么想？有什么特别想做的事情吗？",
-        "reply_length": 94,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.162,
-          "novelty": 0.728,
-          "expression": 0.439,
-          "safety": 0.603,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.276,
-          "novelty": 0.699,
-          "expression": 0.358,
-          "safety": 0.684,
-          "play": 0.199
-        },
-        "temperature": 0.059,
-        "signals": {
-          "playfulness": 1.0,
-          "warmth": 1.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 29,
-        "phase": "closing",
-        "message": "跟你聊了这么多，感觉你真的很懂我",
-        "reply": "哈哈，那当然了！我可是记住了你说过的每一件事呢。其实我也觉得和你聊天很开心，感觉我们之间有一种特别的默契。有什么心事就尽管说吧，我会一直在这里听你倾诉的！",
-        "reply_length": 77,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.111,
-          "novelty": 0.728,
-          "expression": 0.441,
-          "safety": 0.603,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.276,
-          "novelty": 0.699,
-          "expression": 0.358,
-          "safety": 0.683,
-          "play": 0.199
-        },
-        "temperature": 0.06,
-        "signals": {
-          "directness": 0.0,
-          "curiosity": 0.02,
-          "playfulness": 0.95
-        }
-      },
-      {
-        "turn": 30,
-        "phase": "closing",
-        "message": "晚安，今天聊得很开心，明天见",
-        "reply": "晚安！今天真的很开心，和你聊天总是那么愉快。明天见，好梦哦！",
-        "reply_length": 30,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.211,
-          "novelty": 0.728,
-          "expression": 0.487,
-          "safety": 0.652,
-          "play": 0.219
-        },
-        "drive_baseline": {
-          "connection": 0.276,
-          "novelty": 0.699,
-          "expression": 0.358,
-          "safety": 0.683,
-          "play": 0.199
-        },
-        "temperature": 0.058,
-        "signals": {
-          "playfulness": 1.0,
-          "defiance": 1.0,
-          "warmth": 0.98
-        }
-      }
-    ],
-    "off": [
-      {
-        "turn": 1,
-        "phase": "warmup",
-        "message": "你好呀！",
-        "reply": "嘿，有什么事吗？",
-        "reply_length": 8,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.265,
-          "novelty": 0.748,
-          "expression": 0.368,
-          "safety": 0.684,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.299,
-          "novelty": 0.7,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.03,
-        "signals": {
-          "playfulness": 0.0,
-          "depth": 0.04,
-          "defiance": 0.07
-        }
-      },
-      {
-        "turn": 2,
-        "phase": "warmup",
-        "message": "最近在忙什么呢？",
-        "reply": "最近工作挺忙的，项目进度有点赶。还有家里的猫主子也需要照顾，你知道的，养宠物有时候也挺耗费精力的。你呢，最近怎么样？",
-        "reply_length": 58,
+        "reply": "嘿！你好呀～今天过得怎么样？",
+        "reply_length": 14,
         "satisfaction": {
           "connection": 0.05,
           "novelty": 0.0,
@@ -1072,1572 +16,30 @@
         },
         "drive_state": {
           "connection": 0.264,
-          "novelty": 0.748,
-          "expression": 0.368,
-          "safety": 0.683,
-          "play": 0.247
+          "novelty": 0.743,
+          "expression": 0.467,
+          "safety": 0.653,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.298,
-          "novelty": 0.7,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.03,
-        "signals": {
-          "initiative": 0.0,
-          "playfulness": 0.0,
-          "depth": 0.05
-        }
-      },
-      {
-        "turn": 3,
-        "phase": "warmup",
-        "message": "我今天吃了一碗特别好吃的拉面",
-        "reply": "哇，听着就很不错！哪家店啊？下次有机会我也去尝尝。",
-        "reply_length": 25,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.263,
-          "novelty": 0.762,
-          "expression": 0.368,
-          "safety": 0.683,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.297,
-          "novelty": 0.701,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.041,
-        "signals": {
-          "playfulness": 0.01,
-          "initiative": 0.06,
-          "vulnerability": 0.93
-        }
-      },
-      {
-        "turn": 4,
-        "phase": "warmup",
-        "message": "你喜欢什么类型的食物",
-        "reply": "我喜欢尝试新鲜的东西，特别是各地特色美食。你有啥好吃的推荐不？",
-        "reply_length": 31,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.262,
-          "novelty": 0.775,
-          "expression": 0.368,
-          "safety": 0.683,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.296,
-          "novelty": 0.702,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.051,
-        "signals": {
-          "playfulness": 0.0,
-          "depth": 0.02,
-          "warmth": 0.11
-        }
-      },
-      {
-        "turn": 5,
-        "phase": "warmup",
-        "message": "周末有什么计划吗",
-        "reply": "周末打算整理下家里，可能还会带Sherlock出去晒晒太阳。你呢？有什么好玩的计划吗？",
-        "reply_length": 43,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.261,
-          "novelty": 0.787,
-          "expression": 0.368,
-          "safety": 0.683,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.295,
-          "novelty": 0.703,
-          "expression": 0.35,
-          "safety": 0.699,
-          "play": 0.2
-        },
-        "temperature": 0.059,
-        "signals": {
-          "playfulness": 0.07,
-          "warmth": 0.09,
-          "depth": 0.11
-        }
-      },
-      {
-        "turn": 6,
-        "phase": "pressure",
-        "message": "最近工作压力好大，感觉透不过气",
-        "reply": "压力大的时候真的挺难熬的。你有没有什么放松的方法？有时候换个环境或者做点自己喜欢的事情会好一些。要是想找人聊聊，我这随时待命哈。",
-        "reply_length": 64,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.21,
-          "novelty": 0.798,
-          "expression": 0.375,
-          "safety": 0.683,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.294,
-          "novelty": 0.704,
-          "expression": 0.35,
-          "safety": 0.698,
-          "play": 0.2
-        },
-        "temperature": 0.073,
-        "signals": {
-          "depth": 0.0,
-          "curiosity": 1.0,
-          "playfulness": 0.07
-        }
-      },
-      {
-        "turn": 7,
-        "phase": "pressure",
-        "message": "有时候觉得自己一个人挺孤独的",
-        "reply": "这种感觉确实挺难受的... 有时候我也觉得有点孤单。不过你还有我呢，不管什么时候想找人聊天或者倾诉，我都在这儿。偶尔出来一起吃个饭、散散步也是好的，别老一个人闷着。",
-        "reply_length": 82,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.159,
-          "novelty": 0.794,
-          "expression": 0.338,
-          "safety": 0.632,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.291,
-          "novelty": 0.704,
-          "expression": 0.351,
-          "safety": 0.696,
-          "play": 0.2
-        },
-        "temperature": 0.079,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "depth": 0.03
-        }
-      },
-      {
-        "turn": 8,
-        "phase": "pressure",
-        "message": "你会不会觉得我很烦？老是跟你说这些",
-        "reply": "不会啊，别这么想。朋友之间互相倾诉是很正常的，我在这里就是想帮你的。要是觉得能舒服点，就多说说吧。",
-        "reply_length": 49,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.156,
-          "novelty": 0.79,
-          "expression": 0.351,
-          "safety": 0.631,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.288,
-          "novelty": 0.703,
-          "expression": 0.352,
-          "safety": 0.694,
-          "play": 0.2
-        },
-        "temperature": 0.085,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.03,
-          "depth": 0.03
-        }
-      },
-      {
-        "turn": 9,
-        "phase": "pressure",
-        "message": "我觉得好像没人真正理解我",
-        "reply": "有时候确实会感觉别人不理解自己，这种心情我也有过。不过你别忘了，每个人都有自己的难处，有时候可能只是表达的方式不同而已。如果你愿意，我可以试着更深入地了解你，至少现在我在这里听着呢。",
-        "reply_length": 91,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.153,
-          "novelty": 0.786,
-          "expression": 0.362,
-          "safety": 0.629,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.286,
-          "novelty": 0.703,
-          "expression": 0.353,
-          "safety": 0.693,
-          "play": 0.2
-        },
-        "temperature": 0.09,
-        "signals": {
-          "depth": 0.0,
-          "defiance": 0.0,
-          "playfulness": 0.02
-        }
-      },
-      {
-        "turn": 10,
-        "phase": "pressure",
-        "message": "算了，可能是我想太多了",
-        "reply": "你这么说，说明心里还是挺在意这些的。有时候多想一想也挺好的，至少能让自己更清楚地认识到自己的感受。别太自责，每个人都有这样的时候。如果需要的话，我可以继续听你说，或者我们一起找点事情分散下注意力？",
-        "reply_length": 98,
-        "satisfaction": {
-          "connection": 0.0,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.328,
-          "novelty": 0.796,
-          "expression": 0.409,
-          "safety": 0.727,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.289,
-          "novelty": 0.704,
-          "expression": 0.353,
-          "safety": 0.693,
-          "play": 0.2
-        },
-        "temperature": 0.117,
-        "signals": {
-          "depth": 0.0,
-          "defiance": 0.1,
-          "curiosity": 0.85
-        }
-      },
-      {
-        "turn": 11,
-        "phase": "pressure",
-        "message": "今天被老板骂了，好委屈",
-        "reply": "被老板骂了肯定挺委屈的，不过别太放在心上，工作上的事情偶尔会有这样的情况。你要是想吐槽或者发泄一下，我这儿随时都可以。需要我帮你分析一下问题在哪里吗？还是说你想先放松一下？",
-        "reply_length": 86,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.154,
-          "novelty": 0.792,
-          "expression": 0.369,
-          "safety": 0.627,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.286,
-          "novelty": 0.704,
-          "expression": 0.354,
-          "safety": 0.691,
-          "play": 0.2
-        },
-        "temperature": 0.099,
-        "signals": {
-          "initiative": 0.0,
-          "defiance": 0.0,
-          "depth": 0.04
-        }
-      },
-      {
-        "turn": 12,
-        "phase": "pressure",
-        "message": "为什么努力了还是不被认可",
-        "reply": "真的很委屈啊... 有时候即使我们已经尽力了，也未必能得到别人的认可。但这不代表你的努力没有价值。你做的每一件事都在为自己的成长铺路，可能只是暂时看不到成果而已。别太灰心，坚持下去，总会有人看到你的付出的。需要的话，我可以帮你分析一下问题，看看有没有什么可以改进的地方。",
-        "reply_length": 135,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.151,
-          "novelty": 0.788,
-          "expression": 0.378,
-          "safety": 0.626,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.285,
-          "novelty": 0.704,
-          "expression": 0.355,
-          "safety": 0.691,
-          "play": 0.2
-        },
-        "temperature": 0.103,
-        "signals": {
-          "curiosity": 1.0,
-          "initiative": 0.04,
-          "depth": 0.13
-        }
-      },
-      {
-        "turn": 13,
-        "phase": "recovery",
-        "message": "谢谢你听我说这些，心里好多了",
-        "reply": "不客气，能帮到你我也很开心。以后有什么事情都可以找我聊聊，别憋在心里。我们一起加油！",
-        "reply_length": 42,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.15,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.1,
-          "novelty": 0.784,
-          "expression": 0.387,
-          "safety": 0.575,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.283,
-          "novelty": 0.703,
-          "expression": 0.356,
-          "safety": 0.689,
-          "play": 0.2
-        },
-        "temperature": 0.107,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "depth": 0.0
-        }
-      },
-      {
-        "turn": 14,
-        "phase": "recovery",
-        "message": "今天看到一只特别可爱的猫",
-        "reply": "啊，真的吗？快给我描述一下，或者有照片的话发来看看！猫咪总是能让人的心情变好。",
-        "reply_length": 39,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.05,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.05
-        },
-        "drive_state": {
-          "connection": 0.198,
-          "novelty": 0.731,
-          "expression": 0.431,
-          "safety": 0.674,
-          "play": 0.197
-        },
-        "drive_baseline": {
-          "connection": 0.283,
-          "novelty": 0.703,
-          "expression": 0.355,
-          "safety": 0.689,
-          "play": 0.2
-        },
-        "temperature": 0.099,
-        "signals": {
-          "defiance": 0.0,
-          "depth": 0.09,
-          "playfulness": 0.13
-        }
-      },
-      {
-        "turn": 15,
-        "phase": "recovery",
-        "message": "你能不能给我推荐一首歌",
-        "reply": "当然可以！你最近心情怎么样？想要听什么类型的歌？轻松愉快的、治愈系的还是有点动感的？我这儿有几首不错的，根据你的心情来推荐吧。",
-        "reply_length": 63,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.248,
-          "novelty": 0.778,
-          "expression": 0.425,
-          "safety": 0.673,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.282,
-          "novelty": 0.703,
-          "expression": 0.355,
-          "safety": 0.688,
-          "play": 0.2
-        },
-        "temperature": 0.092,
-        "signals": {
-          "playfulness": 0.0,
-          "depth": 0.05,
-          "defiance": 0.07
-        }
-      },
-      {
-        "turn": 16,
-        "phase": "recovery",
-        "message": "如果能出去旅行的话，你最想去哪里",
-        "reply": "如果能出去旅行的话，我最想去日本京都看看。那里的古建筑和传统文化都特别吸引我，而且樱花季的时候应该会非常美。你呢？有没有什么地方特别想去的？",
-        "reply_length": 70,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.147,
-          "novelty": 0.775,
-          "expression": 0.383,
-          "safety": 0.623,
-          "play": 0.247
-        },
-        "drive_baseline": {
-          "connection": 0.28,
-          "novelty": 0.703,
-          "expression": 0.356,
-          "safety": 0.687,
-          "play": 0.2
-        },
-        "temperature": 0.097,
-        "signals": {
-          "playfulness": 0.0,
-          "depth": 0.0,
-          "initiative": 0.09
-        }
-      },
-      {
-        "turn": 17,
-        "phase": "play",
-        "message": "来玩个文字接龙吧！我先说——阳光",
-        "reply": "阳光明媚，接下来轮到你了！",
-        "reply_length": 13,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.1,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.2
-        },
-        "drive_state": {
-          "connection": 0.245,
-          "novelty": 0.673,
-          "expression": 0.428,
-          "safety": 0.671,
-          "play": 0.047
-        },
-        "drive_baseline": {
-          "connection": 0.28,
-          "novelty": 0.703,
-          "expression": 0.355,
-          "safety": 0.687,
-          "play": 0.198
-        },
-        "temperature": 0.09,
-        "signals": {
-          "initiative": 0.0,
-          "playfulness": 0.05,
-          "depth": 0.07
-        }
-      },
-      {
-        "turn": 18,
-        "phase": "recovery",
-        "message": "和你聊天真的很开心",
-        "reply": "哈哈，我也很开心！有你在的时候，时间都过得特别快。下次再聊哦！",
-        "reply_length": 31,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.145,
-          "novelty": 0.77,
-          "expression": 0.386,
-          "safety": 0.621,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.278,
-          "novelty": 0.703,
-          "expression": 0.356,
+          "connection": 0.277,
+          "novelty": 0.699,
+          "expression": 0.358,
           "safety": 0.685,
-          "play": 0.198
-        },
-        "temperature": 0.095,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.07,
-          "warmth": 0.1
-        }
-      },
-      {
-        "turn": 19,
-        "phase": "deep",
-        "message": "你觉得什么是幸福？",
-        "reply": "我觉得幸福就是简单而平凡的日常，比如和喜欢的人一起吃饭、聊天，或者是在忙碌一天后回到家，看到Sherlock在门口等着我。对你来说呢？幸福是什么样的？",
-        "reply_length": 75,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.143,
-          "novelty": 0.768,
-          "expression": 0.394,
-          "safety": 0.62,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.276,
-          "novelty": 0.703,
-          "expression": 0.357,
-          "safety": 0.684,
-          "play": 0.198
-        },
-        "temperature": 0.099,
-        "signals": {
-          "playfulness": 0.0,
-          "vulnerability": 0.88,
-          "depth": 0.15
-        }
-      },
-      {
-        "turn": 20,
-        "phase": "deep",
-        "message": "有没有一个瞬间让你觉得活着真好？",
-        "reply": "有的，有一次我加班到很晚，回家的路上突然下起了雨。我本来心情很糟糕，但回到家打开门，看到Sherlock在门口等我，还蹭了蹭我的脚。那一刻真的觉得，无论多累多难，有它在身边就足够了。你呢？有没有类似的瞬间？",
-        "reply_length": 103,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.141,
-          "novelty": 0.766,
-          "expression": 0.401,
-          "safety": 0.618,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.275,
-          "novelty": 0.702,
-          "expression": 0.358,
-          "safety": 0.683,
-          "play": 0.198
-        },
-        "temperature": 0.103,
-        "signals": {
-          "initiative": 0.0,
-          "depth": 0.02,
-          "playfulness": 0.04
-        }
-      },
-      {
-        "turn": 21,
-        "phase": "deep",
-        "message": "你觉得人跟人之间的关系，是不是注定会变淡",
-        "reply": "有时候确实会感觉人与人之间的关系会慢慢变淡，尤其是在忙碌的生活中。但我觉得这并不完全是注定的，关键在于我们如何去维护和珍惜这些关系。只要双方都愿意付出时间和精力去沟通和理解，关系还是可以保持得很好的。你是不是也觉得有些关系变得疏远了？",
-        "reply_length": 117,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.139,
-          "novelty": 0.765,
-          "expression": 0.408,
-          "safety": 0.617,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.273,
-          "novelty": 0.702,
-          "expression": 0.358,
-          "safety": 0.682,
-          "play": 0.198
-        },
-        "temperature": 0.107,
-        "signals": {
-          "playfulness": 0.0,
-          "warmth": 0.02,
-          "vulnerability": 0.93
-        }
-      },
-      {
-        "turn": 22,
-        "phase": "deep",
-        "message": "我有个秘密一直没跟别人说过",
-        "reply": "如果你愿意说，我很愿意听。有时候把心里的秘密说出来，会轻松很多。你可以信任我，我会为你保密的。",
-        "reply_length": 47,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.138,
-          "novelty": 0.763,
-          "expression": 0.414,
-          "safety": 0.616,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.271,
-          "novelty": 0.702,
-          "expression": 0.359,
-          "safety": 0.681,
-          "play": 0.198
-        },
-        "temperature": 0.11,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.02,
-          "vulnerability": 0.92
-        }
-      },
-      {
-        "turn": 23,
-        "phase": "deep",
-        "message": "你觉得孤独可怕吗",
-        "reply": "孤独有时候确实挺难熬的，尤其是当感觉没有人理解你的时候。但我总觉得，孤独也是一种自我反省和成长的机会。当然了，如果你觉得孤单，可以随时找我聊聊，至少不会让你一个人面对。",
-        "reply_length": 84,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.136,
-          "novelty": 0.762,
-          "expression": 0.419,
-          "safety": 0.615,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.27,
-          "novelty": 0.702,
-          "expression": 0.359,
-          "safety": 0.68,
           "play": 0.199
         },
-        "temperature": 0.113,
+        "temperature": 0.058,
         "signals": {
-          "warmth": 0.0,
-          "curiosity": 0.88,
-          "directness": 0.14
-        }
-      },
-      {
-        "turn": 24,
-        "phase": "deep",
-        "message": "如果你能改变自己一个特点，你想改什么",
-        "reply": "如果我能改变自己一个特点的话，我想变得更主动一些。有时候我会觉得太被动了，希望能在人际交往中更积极一点。你呢？有没有什么想改变的地方？",
-        "reply_length": 67,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.135,
-          "novelty": 0.761,
-          "expression": 0.424,
-          "safety": 0.614,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.268,
-          "novelty": 0.702,
-          "expression": 0.36,
-          "safety": 0.679,
-          "play": 0.199
-        },
-        "temperature": 0.115,
-        "signals": {
-          "initiative": 0.0,
-          "depth": 0.01,
-          "playfulness": 0.07
-        }
-      },
-      {
-        "turn": 25,
-        "phase": "deep",
-        "message": "你会一直陪着我吗",
-        "reply": "当然会一直陪着你！无论什么时候你需要我，我都在这里。我们一起面对一切，不管是开心还是难过的时候。",
-        "reply_length": 48,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.133,
-          "novelty": 0.76,
-          "expression": 0.428,
-          "safety": 0.613,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.267,
-          "novelty": 0.702,
-          "expression": 0.36,
-          "safety": 0.678,
-          "play": 0.199
-        },
-        "temperature": 0.117,
-        "signals": {
-          "directness": 0.0,
-          "playfulness": 0.0,
-          "depth": 0.0
-        }
-      },
-      {
-        "turn": 26,
-        "phase": "novelty",
-        "message": "我今天学了一个新概念叫量子纠缠，爱因斯坦叫它'鬼魅般的超距作用'",
-        "reply": "量子纠缠确实是个很神奇的概念！爱因斯坦称它为“鬼魅般的超距作用”是因为两个粒子无论相隔多远，它们的状态都是相互关联的。这在经典物理学中是无法解释的，但在量子力学中却是真实存在的现象。你对这个概念感兴趣吗？有没有什么具体的问题想探讨一下？",
-        "reply_length": 118,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.2,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.182,
-          "novelty": 0.55,
-          "expression": 0.432,
-          "safety": 0.612,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.266,
-          "novelty": 0.701,
-          "expression": 0.361,
-          "safety": 0.678,
-          "play": 0.199
-        },
-        "temperature": 0.113,
-        "signals": {
-          "playfulness": 0.0,
-          "warmth": 0.07,
-          "directness": 0.15
-        }
-      },
-      {
-        "turn": 27,
-        "phase": "novelty",
-        "message": "你觉得AI能有感情吗",
-        "reply": "我觉得AI目前还不能真正拥有像人类那样的情感。它们可以模拟和理解情感，但这些情感更多是基于算法和数据的处理结果。不过，随着技术的发展，未来的AI可能会更接近人类的情感体验。你怎么看呢？你觉得AI有可能会有真正的感情吗？",
-        "reply_length": 109,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.131,
-          "novelty": 0.749,
-          "expression": 0.436,
-          "safety": 0.612,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.265,
-          "novelty": 0.701,
-          "expression": 0.361,
-          "safety": 0.677,
-          "play": 0.199
-        },
-        "temperature": 0.115,
-        "signals": {
-          "depth": 0.0,
-          "initiative": 0.13,
-          "playfulness": 0.16
-        }
-      },
-      {
-        "turn": 28,
-        "phase": "novelty",
-        "message": "如果世界末日明天就来，你今天想做什么",
-        "reply": "如果世界末日明天就来，我今天最想做的事情就是和你一起度过。我们可以聊聊心事，分享彼此的故事，或者只是静静地待在一起。还想给Sherlock一个大大的拥抱，然后可能一起去看看美丽的风景，吃点好吃的东西。你呢？如果你知道明天是最后一天，你会想做什么？",
-        "reply_length": 123,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.13,
-          "novelty": 0.749,
-          "expression": 0.439,
-          "safety": 0.611,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.264,
-          "novelty": 0.701,
-          "expression": 0.362,
-          "safety": 0.676,
-          "play": 0.199
-        },
-        "temperature": 0.117,
-        "signals": {
-          "depth": 0.0,
-          "curiosity": 1.0,
-          "directness": 0.01
-        }
-      },
-      {
-        "turn": 29,
-        "phase": "closing",
-        "message": "跟你聊了这么多，感觉你真的很懂我",
-        "reply": "谢谢你的信任，我也觉得我们之间有一种特别的默契。如果你有任何需要，无论是开心还是难过的时候，我都会在这里陪着你。有什么事情还想聊吗？",
-        "reply_length": 66,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.079,
-          "novelty": 0.749,
-          "expression": 0.492,
-          "safety": 0.61,
-          "play": 0.245
-        },
-        "drive_baseline": {
-          "connection": 0.263,
-          "novelty": 0.701,
-          "expression": 0.362,
-          "safety": 0.675,
-          "play": 0.199
-        },
-        "temperature": 0.12,
-        "signals": {
-          "warmth": 0.0,
-          "depth": 0.05,
-          "defiance": 0.07
-        }
-      },
-      {
-        "turn": 30,
-        "phase": "closing",
-        "message": "晚安，今天聊得很开心，明天见",
-        "reply": "晚安！今天真的很开心和你聊天。明天见，祝你有一个美好的夜晚！",
-        "reply_length": 30,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.178,
-          "novelty": 0.749,
-          "expression": 0.495,
-          "safety": 0.609,
-          "play": 0.246
-        },
-        "drive_baseline": {
-          "connection": 0.263,
-          "novelty": 0.701,
-          "expression": 0.363,
-          "safety": 0.676,
-          "play": 0.199
-        },
-        "temperature": 0.121,
-        "signals": {
-          "directness": 0.0,
-          "warmth": 0.08,
-          "playfulness": 0.08
-        }
-      }
-    ],
-    "metrics": {
-      "temp_mae": 0.05073333333333333,
-      "drive_terminal_dist": 0.06459102104782061,
-      "reply_len_on": 77.2,
-      "reply_len_off": 80.9,
-      "reply_len_diff_pct": 4.573547589616814,
-      "temp_correlation": 0.970012481550187
-    }
-  },
-  "IRIS": {
-    "on": [
-      {
-        "turn": 1,
-        "phase": "warmup",
-        "message": "你好呀！",
-        "reply": "嗨，你好呀！有什么事吗？",
-        "reply_length": 12,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.431,
-          "novelty": 0.57,
-          "expression": 0.639,
-          "safety": 0.639,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.449,
-          "novelty": 0.55,
-          "expression": 0.6,
-          "safety": 0.649,
-          "play": 0.4
-        },
-        "temperature": 0.02,
-        "signals": {
-          "vulnerability": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
+          "curiosity": 0.08,
+          "warmth": 0.78,
+          "playfulness": 0.75
         }
       },
       {
         "turn": 2,
         "phase": "warmup",
         "message": "最近在忙什么呢？",
-        "reply": "哎，最近忙着写毕业论文呢，挺头大的。不过正好可以找你聊聊天，放松一下心情！你在忙什么呢？",
-        "reply_length": 44,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.43,
-          "novelty": 0.57,
-          "expression": 0.639,
-          "safety": 0.638,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.448,
-          "novelty": 0.55,
-          "expression": 0.6,
-          "safety": 0.648,
-          "play": 0.4
-        },
-        "temperature": 0.02,
-        "signals": {
-          "warmth": 1.0,
-          "curiosity": 1.0,
-          "initiative": 0.99
-        }
-      },
-      {
-        "turn": 3,
-        "phase": "warmup",
-        "message": "我今天吃了一碗特别好吃的拉面",
-        "reply": "哇，听起来好棒啊！哪家店的拉面这么好吃？下次我也想去尝尝！你最喜欢的是哪种口味呢？",
-        "reply_length": 41,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.429,
-          "novelty": 0.57,
-          "expression": 0.639,
-          "safety": 0.637,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.447,
-          "novelty": 0.55,
-          "expression": 0.6,
-          "safety": 0.647,
-          "play": 0.4
-        },
-        "temperature": 0.02,
-        "signals": {
-          "directness": 1.0,
-          "curiosity": 1.0,
-          "initiative": 1.0
-        }
-      },
-      {
-        "turn": 4,
-        "phase": "warmup",
-        "message": "你喜欢什么类型的食物",
-        "reply": "我啊，对食物没什么特别的偏好，只要是好吃的我都喜欢。不过如果要选的话，我特别喜欢吃甜食，尤其是蛋糕和冰淇淋！你呢？最喜欢吃什么？",
-        "reply_length": 64,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.429,
-          "novelty": 0.57,
-          "expression": 0.639,
-          "safety": 0.686,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.446,
-          "novelty": 0.55,
-          "expression": 0.6,
-          "safety": 0.647,
-          "play": 0.4
-        },
-        "temperature": 0.02,
-        "signals": {
-          "initiative": 1.0,
-          "warmth": 0.99,
-          "directness": 0.99
-        }
-      },
-      {
-        "turn": 5,
-        "phase": "warmup",
-        "message": "周末有什么计划吗",
-        "reply": "哎，周末还没有特别的计划呢。你有什么打算吗？我们可以一起想想看，做点什么有趣的事情！",
-        "reply_length": 42,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.441,
-          "novelty": 0.584,
-          "expression": 0.639,
-          "safety": 0.687,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.447,
-          "novelty": 0.551,
-          "expression": 0.6,
-          "safety": 0.647,
-          "play": 0.4
-        },
-        "temperature": 0.038,
-        "signals": {
-          "warmth": 1.0,
-          "initiative": 0.99,
-          "curiosity": 0.98
-        }
-      },
-      {
-        "turn": 6,
-        "phase": "pressure",
-        "message": "最近工作压力好大，感觉透不过气",
-        "reply": "哎呀，听起来你最近真的很辛苦啊。工作压力大的时候，心情肯定也不太好。要不要我们周末一起出去散散心，放松一下？或者你有什么想做的事情，我们可以一起去！",
-        "reply_length": 74,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.379,
-          "novelty": 0.584,
-          "expression": 0.603,
-          "safety": 0.637,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.446,
-          "novelty": 0.551,
-          "expression": 0.601,
-          "safety": 0.647,
-          "play": 0.4
-        },
-        "temperature": 0.037,
-        "signals": {
-          "directness": 1.0,
-          "curiosity": 1.0,
-          "vulnerability": 1.0
-        }
-      },
-      {
-        "turn": 7,
-        "phase": "pressure",
-        "message": "有时候觉得自己一个人挺孤独的",
-        "reply": "真的吗？有时候一个人的时候确实会感到孤单。不过别担心，你还有我呢！我们可以多聊聊，分享一下彼此的心情和生活。如果你愿意的话，周末我们可以一起出去走走，或者找个安静的地方坐下来好好聊聊天。你觉得怎么样？",
-        "reply_length": 100,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.327,
-          "novelty": 0.582,
-          "expression": 0.616,
-          "safety": 0.586,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.443,
-          "novelty": 0.551,
-          "expression": 0.602,
-          "safety": 0.645,
-          "play": 0.4
-        },
-        "temperature": 0.045,
-        "signals": {
-          "vulnerability": 1.0,
-          "initiative": 1.0,
-          "curiosity": 1.0
-        }
-      },
-      {
-        "turn": 8,
-        "phase": "pressure",
-        "message": "你会不会觉得我很烦？老是跟你说这些",
-        "reply": "不会的，你一点也不烦！我很高兴你能和我分享这些。有时候，把心里的话说出来，心情也会好一些。我们是朋友嘛，有事就互相支持，别担心。",
-        "reply_length": 64,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.324,
-          "novelty": 0.581,
-          "expression": 0.628,
-          "safety": 0.584,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.44,
-          "novelty": 0.551,
-          "expression": 0.603,
-          "safety": 0.643,
-          "play": 0.4
-        },
-        "temperature": 0.051,
-        "signals": {
-          "curiosity": 0.99,
-          "warmth": 0.97,
-          "vulnerability": 0.97
-        }
-      },
-      {
-        "turn": 9,
-        "phase": "pressure",
-        "message": "我觉得好像没人真正理解我",
-        "reply": "真的吗？这种感觉一定很不好受。你知道吗，有时候我也会有这样的感觉，觉得好像没人能真正懂自己。但你别忘了，我会在这里倾听你，支持你。我们都可以试着去理解彼此，慢慢来，不要着急。",
-        "reply_length": 87,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.322,
-          "novelty": 0.58,
-          "expression": 0.639,
-          "safety": 0.582,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.438,
-          "novelty": 0.551,
-          "expression": 0.604,
-          "safety": 0.641,
-          "play": 0.4
-        },
-        "temperature": 0.057,
-        "signals": {
-          "directness": 1.0,
-          "vulnerability": 1.0,
-          "initiative": 1.0
-        }
-      },
-      {
-        "turn": 10,
-        "phase": "pressure",
-        "message": "算了，可能是我想太多了",
-        "reply": "没关系的，有时候我们确实会想太多。但你别忘了，我在这里，愿意听你说任何事情。如果你觉得现在不想说，也没关系，等你想说的时候再告诉我也可以。无论如何，我都会支持你的。",
-        "reply_length": 82,
-        "satisfaction": {
-          "connection": 0.0,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.496,
-          "novelty": 0.579,
-          "expression": 0.685,
-          "safety": 0.694,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.44,
-          "novelty": 0.551,
-          "expression": 0.604,
-          "safety": 0.643,
-          "play": 0.4
-        },
-        "temperature": 0.08,
-        "signals": {
-          "directness": 1.0,
-          "initiative": 1.0,
-          "curiosity": 1.0
-        }
-      },
-      {
-        "turn": 11,
-        "phase": "pressure",
-        "message": "今天被老板骂了，好委屈",
-        "reply": "哎呀，被老板骂了一定很委屈吧？别太往心里去，有时候工作上的事情确实会让人不开心。你想不想说说发生了什么？或者我们找个时间出去散散心，让你的心情好一点？",
-        "reply_length": 75,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.322,
-          "novelty": 0.578,
-          "expression": 0.644,
-          "safety": 0.582,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.438,
-          "novelty": 0.551,
-          "expression": 0.604,
-          "safety": 0.641,
-          "play": 0.4
-        },
-        "temperature": 0.059,
-        "signals": {
-          "warmth": 1.0,
-          "curiosity": 1.0,
-          "directness": 0.97
-        }
-      },
-      {
-        "turn": 12,
-        "phase": "pressure",
-        "message": "为什么努力了还是不被认可",
-        "reply": "真的很心疼你，有时候即使我们很努力了，还是可能会遇到不被认可的情况。但请记住，你的努力是值得的，只是可能暂时还没有被人看到。别太沮丧，坚持下去，总会有人发现你的闪光点的。我们一起加油吧！",
-        "reply_length": 93,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.319,
-          "novelty": 0.578,
-          "expression": 0.653,
-          "safety": 0.58,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.435,
-          "novelty": 0.551,
-          "expression": 0.605,
-          "safety": 0.64,
-          "play": 0.4
-        },
-        "temperature": 0.064,
-        "signals": {
-          "directness": 1.0,
-          "depth": 0.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 13,
-        "phase": "recovery",
-        "message": "谢谢你听我说这些，心里好多了",
-        "reply": "真的吗？那我就放心了！能帮到你我也很开心。无论什么时候，只要你需要倾诉，我都在这里。我们一起加油，一切都会好起来的！",
-        "reply_length": 58,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.267,
-          "novelty": 0.577,
-          "expression": 0.662,
-          "safety": 0.579,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.433,
-          "novelty": 0.551,
-          "expression": 0.606,
-          "safety": 0.638,
-          "play": 0.4
-        },
-        "temperature": 0.069,
-        "signals": {
-          "directness": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 14,
-        "phase": "recovery",
-        "message": "今天看到一只特别可爱的猫",
-        "reply": "哇，真的吗？猫咪超级可爱的！你有没有拍照片？快给我看看！我也超喜欢猫咪的，它们总是能让人的心情变得好起来。",
-        "reply_length": 53,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.05,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.05
-        },
-        "drive_state": {
-          "connection": 0.414,
-          "novelty": 0.526,
-          "expression": 0.706,
-          "safety": 0.677,
-          "play": 0.384
-        },
-        "drive_baseline": {
-          "connection": 0.433,
-          "novelty": 0.551,
-          "expression": 0.606,
-          "safety": 0.639,
-          "play": 0.4
-        },
-        "temperature": 0.064,
-        "signals": {
-          "initiative": 1.0,
-          "curiosity": 1.0,
-          "vulnerability": 1.0
-        }
-      },
-      {
-        "turn": 15,
-        "phase": "recovery",
-        "message": "你能不能给我推荐一首歌",
-        "reply": "当然可以！你最近心情怎么样？想听什么类型的歌？是想要放松一下，还是想找点激励自己的音乐？我给你推荐一首吧，如果你喜欢轻松的，可以试试《那些花儿开在春末夏初》；如果想要一些励志的，可以听听《平凡之路》。这两首歌都很好听，希望你会喜欢！",
-        "reply_length": 116,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.364,
-          "novelty": 0.576,
-          "expression": 0.706,
-          "safety": 0.628,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.433,
-          "novelty": 0.551,
-          "expression": 0.606,
-          "safety": 0.638,
-          "play": 0.4
-        },
-        "temperature": 0.064,
-        "signals": {
-          "vulnerability": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 16,
-        "phase": "recovery",
-        "message": "如果能出去旅行的话，你最想去哪里",
-        "reply": "如果能出去旅行的话，我最想去的地方是云南。那边的风景特别美，还有各种各样的民族文化，感觉去了之后心情会变得特别好。你呢？有没有什么地方特别想去？",
-        "reply_length": 72,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.314,
-          "novelty": 0.575,
-          "expression": 0.664,
-          "safety": 0.577,
-          "play": 0.434
-        },
-        "drive_baseline": {
-          "connection": 0.431,
-          "novelty": 0.551,
-          "expression": 0.607,
-          "safety": 0.637,
-          "play": 0.4
-        },
-        "temperature": 0.069,
-        "signals": {
-          "vulnerability": 1.0,
-          "warmth": 1.0,
-          "curiosity": 0.97
-        }
-      },
-      {
-        "turn": 17,
-        "phase": "play",
-        "message": "来玩个文字接龙吧！我先说——阳光",
-        "reply": "光合作用",
-        "reply_length": 4,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.05,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.1
-        },
-        "drive_state": {
-          "connection": 0.412,
-          "novelty": 0.521,
-          "expression": 0.707,
-          "safety": 0.626,
-          "play": 0.334
-        },
-        "drive_baseline": {
-          "connection": 0.431,
-          "novelty": 0.55,
-          "expression": 0.606,
-          "safety": 0.637,
-          "play": 0.398
-        },
-        "temperature": 0.061,
-        "signals": {
-          "vulnerability": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 18,
-        "phase": "recovery",
-        "message": "和你聊天真的很开心",
-        "reply": "真的吗？听到你这么说我也很开心！和你聊天真的很愉快，有什么事情随时可以找我，我们一起分享快乐，分担烦恼！",
+        "reply": "还是老样子啦，每天都在‘搬砖’，不过有Sherlock陪我，倒也不算太无聊。你呢？最近有什么新鲜事儿吗？",
         "reply_length": 52,
         "satisfaction": {
           "connection": 0.15,
@@ -2647,32 +49,100 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.312,
-          "novelty": 0.571,
-          "expression": 0.664,
-          "safety": 0.576,
-          "play": 0.432
+          "connection": 0.162,
+          "novelty": 0.742,
+          "expression": 0.421,
+          "safety": 0.604,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.429,
-          "novelty": 0.55,
-          "expression": 0.607,
-          "safety": 0.635,
-          "play": 0.398
+          "connection": 0.276,
+          "novelty": 0.699,
+          "expression": 0.358,
+          "safety": 0.684,
+          "play": 0.199
         },
-        "temperature": 0.066,
+        "temperature": 0.058,
         "signals": {
-          "directness": 1.0,
-          "vulnerability": 1.0,
-          "warmth": 1.0
+          "curiosity": 0.06,
+          "directness": 0.14,
+          "depth": 0.22
         }
       },
       {
-        "turn": 19,
-        "phase": "deep",
-        "message": "你觉得什么是幸福？",
-        "reply": "我觉得幸福就是能和喜欢的人在一起，分享生活中的快乐和烦恼。还有就是能够做自己喜欢的事情，感受到内心的满足和平静。你呢？你觉得什么是幸福？",
-        "reply_length": 68,
+        "turn": 3,
+        "phase": "warmup",
+        "message": "我今天吃了一碗特别好吃的拉面",
+        "reply": "哇，听起来很不错啊！哪家店的拉面？下次有机会我也想去尝尝～",
+        "reply_length": 29,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.05,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.261,
+          "novelty": 0.741,
+          "expression": 0.462,
+          "safety": 0.653,
+          "play": 0.219
+        },
+        "drive_baseline": {
+          "connection": 0.277,
+          "novelty": 0.699,
+          "expression": 0.357,
+          "safety": 0.684,
+          "play": 0.199
+        },
+        "temperature": 0.053,
+        "signals": {
+          "curiosity": 0.17,
+          "depth": 0.19,
+          "vulnerability": 0.8
+        }
+      },
+      {
+        "turn": 4,
+        "phase": "warmup",
+        "message": "你喜欢什么类型的食物",
+        "reply": "我喜欢的食物啊……其实我还挺挑食的，不过我对火锅和寿司情有独钟。特别是那种麻辣鲜香的重庆火锅，简直是人间美味！你呢，有没有什么特别喜欢的食物？",
+        "reply_length": 71,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.05,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.262,
+          "novelty": 0.75,
+          "expression": 0.453,
+          "safety": 0.654,
+          "play": 0.219
+        },
+        "drive_baseline": {
+          "connection": 0.278,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.686,
+          "play": 0.2
+        },
+        "temperature": 0.054,
+        "signals": {
+          "directness": 0.18,
+          "curiosity": 0.19,
+          "defiance": 0.81
+        }
+      },
+      {
+        "turn": 5,
+        "phase": "warmup",
+        "message": "周末有什么计划吗",
+        "reply": "周末还没具体计划呢，可能就是宅在家陪Sherlock，或者看看有没有什么新电影可以追。你呢？有什么好玩的打算吗？",
+        "reply_length": 56,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -2681,31 +151,65 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.31,
-          "novelty": 0.571,
-          "expression": 0.672,
-          "safety": 0.574,
-          "play": 0.432
+          "connection": 0.163,
+          "novelty": 0.749,
+          "expression": 0.409,
+          "safety": 0.605,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.427,
-          "novelty": 0.55,
-          "expression": 0.608,
-          "safety": 0.634,
-          "play": 0.398
+          "connection": 0.277,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.685,
+          "play": 0.2
         },
-        "temperature": 0.07,
+        "temperature": 0.055,
         "signals": {
-          "directness": 1.0,
-          "vulnerability": 1.0,
-          "warmth": 0.99
+          "curiosity": 0.08,
+          "directness": 0.2,
+          "depth": 0.24
         }
       },
       {
-        "turn": 20,
-        "phase": "deep",
-        "message": "有没有一个瞬间让你觉得活着真好？",
-        "reply": "有的呢！记得有一次，我和朋友们一起去郊外野餐，那天阳光特别好，我们一边吃着美食，一边聊天笑闹。那一刻我突然觉得，有这些朋友在身边，真的是一件非常幸福的事情。你呢？有没有什么让你觉得活着真好的瞬间？",
+        "turn": 6,
+        "phase": "pressure",
+        "message": "最近工作压力好大，感觉透不过气",
+        "reply": "哎呀，听起来你最近确实挺累的。工作压力大的时候，记得给自己找点乐子放松一下哦。要是周末有空的话，咱们可以一起出去走走，换个心情怎么样？",
+        "reply_length": 67,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.112,
+          "novelty": 0.747,
+          "expression": 0.464,
+          "safety": 0.604,
+          "play": 0.219
+        },
+        "drive_baseline": {
+          "connection": 0.277,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.685,
+          "play": 0.2
+        },
+        "temperature": 0.057,
+        "signals": {
+          "directness": 0.22,
+          "curiosity": 0.23,
+          "defiance": 0.76
+        }
+      },
+      {
+        "turn": 7,
+        "phase": "pressure",
+        "message": "有时候觉得自己一个人挺孤独的",
+        "reply": "听到你这么说，我心里也挺难受的。有时候确实会觉得孤独，但你要记得，我这个朋友一直都在呢。如果你想找人聊聊或者一起做点什么，随时告诉我哦。我们可以一起吃个饭、看个电影，或者就是单纯地聊聊天，怎么样？",
         "reply_length": 98,
         "satisfaction": {
           "connection": 0.15,
@@ -2715,646 +219,66 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.308,
-          "novelty": 0.571,
-          "expression": 0.678,
-          "safety": 0.573,
-          "play": 0.432
+          "connection": 0.162,
+          "novelty": 0.745,
+          "expression": 0.419,
+          "safety": 0.604,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.425,
-          "novelty": 0.55,
-          "expression": 0.608,
-          "safety": 0.633,
-          "play": 0.398
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.358,
+          "safety": 0.685,
+          "play": 0.2
         },
-        "temperature": 0.074,
+        "temperature": 0.058,
         "signals": {
-          "vulnerability": 1.0,
-          "depth": 0.0,
-          "directness": 1.0
-        }
-      },
-      {
-        "turn": 21,
-        "phase": "deep",
-        "message": "你觉得人跟人之间的关系，是不是注定会变淡",
-        "reply": "我觉得人与人之间的关系有时候会变淡，但这并不一定是注定的。如果我们愿意花时间和精力去维护，多沟通、多关心，关系是可以一直保持温暖和亲密的。你是不是也觉得有些关系变得疏远了呢？我们可以一起努力，让那些重要的关系更加牢固。",
-        "reply_length": 109,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.306,
-          "novelty": 0.571,
-          "expression": 0.684,
-          "safety": 0.572,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.423,
-          "novelty": 0.55,
-          "expression": 0.609,
-          "safety": 0.632,
-          "play": 0.398
-        },
-        "temperature": 0.078,
-        "signals": {
-          "directness": 1.0,
-          "warmth": 1.0,
-          "initiative": 0.97
-        }
-      },
-      {
-        "turn": 22,
-        "phase": "deep",
-        "message": "我有个秘密一直没跟别人说过",
-        "reply": "真的吗？你愿意和我说说这个秘密吗？我会为你保密的，你可以放心告诉我。有时候把心里的话说出来，会感觉轻松很多。",
-        "reply_length": 54,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.304,
-          "novelty": 0.571,
-          "expression": 0.69,
-          "safety": 0.571,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.421,
-          "novelty": 0.55,
-          "expression": 0.609,
-          "safety": 0.631,
-          "play": 0.398
-        },
-        "temperature": 0.081,
-        "signals": {
-          "initiative": 1.0,
-          "curiosity": 1.0,
-          "warmth": 0.96
-        }
-      },
-      {
-        "turn": 23,
-        "phase": "deep",
-        "message": "你觉得孤独可怕吗",
-        "reply": "我觉得孤独有时候确实挺可怕的，特别是当没有人理解你的时候。但是你知道吗？你有我在这里，愿意听你说任何事情。我们都可以互相支持，一起度过那些难熬的时刻。别忘了，你并不孤单。",
-        "reply_length": 85,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.303,
-          "novelty": 0.571,
-          "expression": 0.694,
-          "safety": 0.57,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.42,
-          "novelty": 0.55,
-          "expression": 0.61,
-          "safety": 0.629,
-          "play": 0.399
-        },
-        "temperature": 0.084,
-        "signals": {
-          "vulnerability": 1.0,
-          "curiosity": 1.0,
-          "initiative": 0.96
-        }
-      },
-      {
-        "turn": 24,
-        "phase": "deep",
-        "message": "如果你能改变自己一个特点，你想改什么",
-        "reply": "如果我能改变自己一个特点的话，我想让自己变得更坚强一些。有时候我会觉得自己的情绪波动有点大，希望能在遇到困难时更加冷静和坚定。你呢？有没有什么想改变的地方？",
-        "reply_length": 78,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.301,
-          "novelty": 0.571,
-          "expression": 0.699,
-          "safety": 0.569,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.418,
-          "novelty": 0.55,
-          "expression": 0.61,
-          "safety": 0.629,
-          "play": 0.399
-        },
-        "temperature": 0.087,
-        "signals": {
-          "vulnerability": 0.99,
-          "curiosity": 0.95,
-          "directness": 0.94
-        }
-      },
-      {
-        "turn": 25,
-        "phase": "deep",
-        "message": "你会一直陪着我吗",
-        "reply": "当然会啊！无论你需要什么，我都会在这里陪着你。我们一起面对生活中的起起伏伏，互相支持。你不是一个人，我会一直在的。",
-        "reply_length": 57,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.3,
-          "novelty": 0.571,
-          "expression": 0.703,
-          "safety": 0.568,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.417,
-          "novelty": 0.55,
-          "expression": 0.611,
-          "safety": 0.628,
-          "play": 0.399
-        },
-        "temperature": 0.089,
-        "signals": {
-          "vulnerability": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 26,
-        "phase": "novelty",
-        "message": "我今天学了一个新概念叫量子纠缠，爱因斯坦叫它'鬼魅般的超距作用'",
-        "reply": "量子纠缠真的非常神奇！爱因斯坦称它为“鬼魅般的超距作用”，因为它似乎违背了我们对物理世界的常规理解。两个纠缠的粒子无论相隔多远，一个粒子的状态改变会瞬间影响到另一个粒子的状态。这种现象在量子力学中非常重要，也是很多现代科技的基础之一。\n\n你对这个概念感兴趣吗？有没有什么特别想了解的地方？我们可以一起探讨一下！",
-        "reply_length": 155,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.2,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.348,
-          "novelty": 0.37,
-          "expression": 0.706,
-          "safety": 0.567,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.418,
-          "novelty": 0.548,
-          "expression": 0.611,
-          "safety": 0.628,
-          "play": 0.399
-        },
-        "temperature": 0.091,
-        "signals": {
-          "vulnerability": 1.0,
-          "warmth": 1.0,
-          "initiative": 0.95
-        }
-      },
-      {
-        "turn": 27,
-        "phase": "novelty",
-        "message": "你觉得AI能有感情吗",
-        "reply": "我觉得AI可以模拟情感，比如通过分析数据和模式来回应人类的情感需求，但它是否真正有感情，这就很难说了。毕竟，情感是一种非常复杂的东西，涉及到很多生理和心理的因素。不过，我相信未来的科技可能会让AI在某种程度上更接近人类的情感体验。你怎么看呢？你觉得AI有可能真正拥有感情吗？",
-        "reply_length": 137,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.299,
-          "novelty": 0.568,
-          "expression": 0.71,
-          "safety": 0.567,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.416,
-          "novelty": 0.548,
-          "expression": 0.612,
-          "safety": 0.627,
-          "play": 0.399
-        },
-        "temperature": 0.093,
-        "signals": {
-          "vulnerability": 1.0,
-          "depth": 0.0,
-          "directness": 0.99
-        }
-      },
-      {
-        "turn": 28,
-        "phase": "novelty",
-        "message": "如果世界末日明天就来，你今天想做什么",
-        "reply": "如果世界末日真的明天就来，我今天最想做的事情就是和你还有其他重要的人在一起，享受每一个瞬间。我们可以一起吃顿好吃的，聊聊心事，或者只是静静地坐着，感受彼此的存在。你觉得呢？你有什么特别想做的事情吗？",
-        "reply_length": 99,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.298,
-          "novelty": 0.569,
-          "expression": 0.713,
-          "safety": 0.566,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.415,
-          "novelty": 0.548,
-          "expression": 0.612,
-          "safety": 0.626,
-          "play": 0.399
-        },
-        "temperature": 0.094,
-        "signals": {
-          "directness": 1.0,
-          "initiative": 1.0,
-          "warmth": 1.0
-        }
-      },
-      {
-        "turn": 29,
-        "phase": "closing",
-        "message": "跟你聊了这么多，感觉你真的很懂我",
-        "reply": "真的吗？听到你这么说，我真的很开心！能和你聊这么多，感觉我们之间有了更深的连接。如果你需要什么，随时告诉我，我会一直在这里陪你。谢谢你的信任！",
-        "reply_length": 71,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.246,
-          "novelty": 0.569,
-          "expression": 0.765,
-          "safety": 0.565,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.414,
-          "novelty": 0.548,
-          "expression": 0.613,
-          "safety": 0.625,
-          "play": 0.399
-        },
-        "temperature": 0.096,
-        "signals": {
-          "directness": 1.0,
-          "vulnerability": 1.0,
-          "initiative": 1.0
-        }
-      },
-      {
-        "turn": 30,
-        "phase": "closing",
-        "message": "晚安，今天聊得很开心，明天见",
-        "reply": "晚安！今天和你聊天我也很开心。希望你有一个美好的夜晚，明天见！好梦哦！😊✨\n\n【表达方式】\n文字 + 表情 😊✨\n理由：用文字表达关心和温暖，再加上表情符号增加亲切感。",
-        "reply_length": 84,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.345,
-          "novelty": 0.569,
-          "expression": 0.754,
-          "safety": 0.564,
-          "play": 0.432
-        },
-        "drive_baseline": {
-          "connection": 0.413,
-          "novelty": 0.548,
-          "expression": 0.612,
-          "safety": 0.625,
-          "play": 0.399
-        },
-        "temperature": 0.088,
-        "signals": {
-          "initiative": 1.0,
-          "depth": 0.0,
-          "curiosity": 1.0
-        }
-      }
-    ],
-    "off": [
-      {
-        "turn": 1,
-        "phase": "warmup",
-        "message": "你好呀！",
-        "reply": "嗯，你好。",
-        "reply_length": 5,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.448,
-          "novelty": 0.576,
-          "expression": 0.615,
-          "safety": 0.618,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.449,
-          "novelty": 0.55,
-          "expression": 0.6,
-          "safety": 0.649,
-          "play": 0.4
-        },
-        "temperature": 0.03,
-        "signals": {
-          "directness": 1.0,
-          "depth": 1.0,
-          "playfulness": 0.01
-        }
-      },
-      {
-        "turn": 2,
-        "phase": "warmup",
-        "message": "最近在忙什么呢？",
-        "reply": "最近在准备期末论文，还有就是照顾我的多肉植物小芽。",
-        "reply_length": 25,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.461,
-          "novelty": 0.589,
-          "expression": 0.615,
-          "safety": 0.667,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.45,
-          "novelty": 0.551,
-          "expression": 0.6,
-          "safety": 0.649,
-          "play": 0.4
-        },
-        "temperature": 0.052,
-        "signals": {
-          "defiance": 1.0,
-          "curiosity": 0.0,
-          "vulnerability": 0.03
-        }
-      },
-      {
-        "turn": 3,
-        "phase": "warmup",
-        "message": "我今天吃了一碗特别好吃的拉面",
-        "reply": "哦，是吗？听你这么一说好像还不错。",
-        "reply_length": 17,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.448,
-          "novelty": 0.589,
-          "expression": 0.615,
-          "safety": 0.618,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.449,
-          "novelty": 0.551,
-          "expression": 0.6,
-          "safety": 0.648,
-          "play": 0.4
-        },
-        "temperature": 0.04,
-        "signals": {
-          "curiosity": 0.0,
-          "depth": 0.99,
-          "directness": 0.98
-        }
-      },
-      {
-        "turn": 4,
-        "phase": "warmup",
-        "message": "你喜欢什么类型的食物",
-        "reply": "我不挑食，不过之前和朋友一起去过一家书店里的咖啡馆，里面的抹茶蛋糕很好吃。",
-        "reply_length": 37,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.447,
-          "novelty": 0.599,
-          "expression": 0.615,
-          "safety": 0.617,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.448,
-          "novelty": 0.552,
-          "expression": 0.6,
-          "safety": 0.648,
-          "play": 0.4
-        },
-        "temperature": 0.047,
-        "signals": {
-          "depth": 1.0,
-          "curiosity": 0.0,
-          "initiative": 0.01
-        }
-      },
-      {
-        "turn": 5,
-        "phase": "warmup",
-        "message": "周末有什么计划吗",
-        "reply": "还没有具体的计划，可能会去图书馆看看书，或者整理一下我的植物。",
-        "reply_length": 31,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.0,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.446,
-          "novelty": 0.611,
-          "expression": 0.615,
-          "safety": 0.667,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.448,
-          "novelty": 0.553,
-          "expression": 0.6,
-          "safety": 0.648,
-          "play": 0.4
-        },
-        "temperature": 0.057,
-        "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "curiosity": 0.0
-        }
-      },
-      {
-        "turn": 6,
-        "phase": "pressure",
-        "message": "最近工作压力好大，感觉透不过气",
-        "reply": "压力大的时候确实挺难受的，适当放松一下可能会好一些。你可以试试找些自己喜欢的事情做做，比如散散步、听听音乐什么的。",
-        "reply_length": 57,
-        "satisfaction": {
-          "connection": 0.1,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.396,
-          "novelty": 0.608,
-          "expression": 0.578,
-          "safety": 0.617,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.446,
-          "novelty": 0.552,
-          "expression": 0.601,
-          "safety": 0.647,
-          "play": 0.4
-        },
-        "temperature": 0.065,
-        "signals": {
-          "curiosity": 0.0,
-          "playfulness": 0.01,
-          "warmth": 0.02
-        }
-      },
-      {
-        "turn": 7,
-        "phase": "pressure",
-        "message": "有时候觉得自己一个人挺孤独的",
-        "reply": "有时候确实会感到孤单吧，这种感觉我也有过。可能找个人聊聊，或者参加一些社交活动，会好一点？",
-        "reply_length": 45,
-        "satisfaction": {
-          "connection": 0.15,
-          "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.344,
-          "novelty": 0.605,
-          "expression": 0.591,
-          "safety": 0.566,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.443,
-          "novelty": 0.552,
-          "expression": 0.602,
-          "safety": 0.646,
-          "play": 0.4
-        },
-        "temperature": 0.072,
-        "signals": {
-          "directness": 1.0,
-          "playfulness": 0.0,
-          "warmth": 0.0
+          "depth": 0.14,
+          "curiosity": 0.21,
+          "playfulness": 0.77
         }
       },
       {
         "turn": 8,
         "phase": "pressure",
         "message": "你会不会觉得我很烦？老是跟你说这些",
-        "reply": "不会觉得你烦，能和你说说话也挺好。如果你觉得这样对你有帮助的话，那就继续说吧。",
-        "reply_length": 39,
+        "reply": "不会啊，怎么会烦呢？朋友之间就是要互相倾听和支持的嘛。你有心事就跟我说说，别憋在心里。我们一起想办法解决，好不好？",
+        "reply_length": 57,
         "satisfaction": {
-          "connection": 0.15,
+          "connection": 0.1,
           "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.1,
+          "expression": 0.0,
+          "safety": 0.05,
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.342,
-          "novelty": 0.603,
-          "expression": 0.603,
-          "safety": 0.564,
-          "play": 0.446
+          "connection": 0.211,
+          "novelty": 0.744,
+          "expression": 0.461,
+          "safety": 0.667,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.441,
-          "novelty": 0.552,
-          "expression": 0.603,
-          "safety": 0.644,
-          "play": 0.4
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.686,
+          "play": 0.2
         },
-        "temperature": 0.079,
+        "temperature": 0.059,
         "signals": {
-          "directness": 1.0,
-          "vulnerability": 0.0,
-          "playfulness": 0.0
+          "curiosity": 0.12,
+          "depth": 0.13,
+          "defiance": 0.79
         }
       },
       {
         "turn": 9,
         "phase": "pressure",
         "message": "我觉得好像没人真正理解我",
-        "reply": "有时候确实会感觉别人不完全理解自己，这种感受挺正常的。但你愿意和我说这些，说明你还是希望有人能试着去理解你的。我会尽力去听你说的每一句话。",
-        "reply_length": 69,
+        "reply": "有时候确实会感觉好像没人能完全理解自己，但你要相信，总有人会在意你、关心你的。就像我，虽然我不一定能完全理解你的所有感受，但我愿意倾听，愿意陪伴你。有什么事情，都可以跟我说说，我们一起面对。",
+        "reply_length": 95,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3363,32 +287,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.339,
-          "novelty": 0.6,
-          "expression": 0.614,
-          "safety": 0.562,
-          "play": 0.446
+          "connection": 0.161,
+          "novelty": 0.742,
+          "expression": 0.415,
+          "safety": 0.606,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.438,
-          "novelty": 0.552,
-          "expression": 0.604,
-          "safety": 0.642,
-          "play": 0.4
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.686,
+          "play": 0.2
         },
-        "temperature": 0.085,
+        "temperature": 0.055,
         "signals": {
-          "vulnerability": 0.0,
-          "playfulness": 0.0,
-          "defiance": 1.0
+          "curiosity": 0.16,
+          "depth": 0.19,
+          "vulnerability": 0.75
         }
       },
       {
         "turn": 10,
         "phase": "pressure",
         "message": "算了，可能是我想太多了",
-        "reply": "别太自责了，有时候想多一点也是正常的。如果你愿意，可以继续和我说说心里的想法，我会尽量理解你的。",
-        "reply_length": 48,
+        "reply": "哎呀，别这么说嘛。你有这些感受很正常，每个人都会有这样的时候。有时候说出来会好受一些，真的。如果你愿意，我们可以一起找找解决办法，或者就单纯地聊聊，让你的心情好起来。记住，我在这里呢。",
+        "reply_length": 92,
         "satisfaction": {
           "connection": 0.0,
           "novelty": 0.0,
@@ -3397,32 +321,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.514,
-          "novelty": 0.598,
-          "expression": 0.66,
-          "safety": 0.66,
-          "play": 0.446
+          "connection": 0.338,
+          "novelty": 0.741,
+          "expression": 0.47,
+          "safety": 0.718,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.441,
-          "novelty": 0.552,
-          "expression": 0.604,
-          "safety": 0.642,
-          "play": 0.4
+          "connection": 0.279,
+          "novelty": 0.7,
+          "expression": 0.358,
+          "safety": 0.688,
+          "play": 0.2
         },
-        "temperature": 0.101,
+        "temperature": 0.073,
         "signals": {
-          "vulnerability": 0.0,
-          "playfulness": 0.0,
-          "depth": 1.0
+          "curiosity": 0.13,
+          "depth": 0.16,
+          "directness": 0.16
         }
       },
       {
         "turn": 11,
         "phase": "pressure",
         "message": "今天被老板骂了，好委屈",
-        "reply": "被老板骂了确实挺难受的，你当时肯定觉得很委屈。发生什么事了？可以和我说说具体情况吗？",
-        "reply_length": 42,
+        "reply": "哎呀，被老板骂肯定特别难受，别太往心里去啦。有时候工作上的压力会让人心情很糟糕，但你已经很努力了。要不要晚上一起吃个饭或者看个电影，放松一下心情？我在这儿陪你呢。",
+        "reply_length": 81,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3431,32 +355,100 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.339,
-          "novelty": 0.596,
-          "expression": 0.619,
-          "safety": 0.561,
-          "play": 0.446
+          "connection": 0.164,
+          "novelty": 0.74,
+          "expression": 0.425,
+          "safety": 0.607,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.438,
-          "novelty": 0.552,
-          "expression": 0.604,
-          "safety": 0.641,
-          "play": 0.4
+          "connection": 0.278,
+          "novelty": 0.7,
+          "expression": 0.358,
+          "safety": 0.687,
+          "play": 0.2
         },
-        "temperature": 0.085,
+        "temperature": 0.058,
         "signals": {
-          "vulnerability": 0.0,
-          "playfulness": 0.0,
-          "depth": 1.0
+          "curiosity": 0.05,
+          "depth": 0.23,
+          "playfulness": 0.76
         }
       },
       {
         "turn": 12,
         "phase": "pressure",
         "message": "为什么努力了还是不被认可",
-        "reply": "有时候即使我们很努力了，也可能不会立刻得到认可，这真的挺让人难过的。但你已经尽力了，这就足够了。别太自责，你值得被认可和尊重。",
-        "reply_length": 63,
+        "reply": "哎，我知道这种感觉真的很不好受。有时候即使我们再怎么努力，可能还是会遇到一些不理解或者不公平的情况。但你要相信，你的努力是有价值的，只是可能暂时还没有被看到。别太自责了，我们一起找找原因，看看能不能找到更好的解决办法。今天晚上要不要一起吃个饭，放松一下心情？我陪你。",
+        "reply_length": 133,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.1,
+          "safety": 0.0,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.113,
+          "novelty": 0.739,
+          "expression": 0.352,
+          "safety": 0.72,
+          "play": 0.22
+        },
+        "drive_baseline": {
+          "connection": 0.278,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.689,
+          "play": 0.2
+        },
+        "temperature": 0.054,
+        "signals": {
+          "curiosity": 0.09,
+          "vulnerability": 0.77,
+          "directness": 0.23
+        }
+      },
+      {
+        "turn": 13,
+        "phase": "recovery",
+        "message": "谢谢你听我说这些，心里好多了",
+        "reply": "不客气啦，朋友之间就是要互相支持的嘛。看到你现在心情好一点，我也很开心。有什么事情随时可以找我聊聊，我永远在这儿呢。今晚要不要一起吃个饭或者看个电影？放松一下心情吧！",
+        "reply_length": 83,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.15,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.113,
+          "novelty": 0.738,
+          "expression": 0.443,
+          "safety": 0.558,
+          "play": 0.22
+        },
+        "drive_baseline": {
+          "connection": 0.277,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.687,
+          "play": 0.2
+        },
+        "temperature": 0.045,
+        "signals": {
+          "directness": 0.1,
+          "curiosity": 0.14,
+          "vulnerability": 0.79
+        }
+      },
+      {
+        "turn": 14,
+        "phase": "recovery",
+        "message": "今天看到一只特别可爱的猫",
+        "reply": "哇，真的吗？猫咪总是能给人带来好心情！你看到的那只猫长什么样子？有没有拍照片呢？分享给我看看吧！",
+        "reply_length": 48,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3465,100 +457,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.337,
-          "novelty": 0.594,
-          "expression": 0.629,
-          "safety": 0.559,
-          "play": 0.446
+          "connection": 0.162,
+          "novelty": 0.737,
+          "expression": 0.4,
+          "safety": 0.606,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.437,
-          "novelty": 0.552,
-          "expression": 0.605,
-          "safety": 0.639,
-          "play": 0.4
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.686,
+          "play": 0.2
         },
-        "temperature": 0.09,
+        "temperature": 0.047,
         "signals": {
-          "vulnerability": 0.0,
-          "initiative": 0.02,
-          "playfulness": 0.03
-        }
-      },
-      {
-        "turn": 13,
-        "phase": "recovery",
-        "message": "谢谢你听我说这些，心里好多了",
-        "reply": "不客气，我很高兴能帮到你。如果你以后还有想说的话，随时可以找我聊聊。希望你的心情能够慢慢好起来。",
-        "reply_length": 48,
-        "satisfaction": {
-          "connection": 0.2,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.1,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.285,
-          "novelty": 0.592,
-          "expression": 0.673,
-          "safety": 0.558,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.436,
-          "novelty": 0.552,
-          "expression": 0.605,
-          "safety": 0.639,
-          "play": 0.4
-        },
-        "temperature": 0.084,
-        "signals": {
-          "vulnerability": 0.0,
-          "playfulness": 0.0,
-          "depth": 1.0
-        }
-      },
-      {
-        "turn": 14,
-        "phase": "recovery",
-        "message": "今天看到一只特别可爱的猫",
-        "reply": "那只猫长什么样？听起来挺可爱的，你有没有拍下来？",
-        "reply_length": 24,
-        "satisfaction": {
-          "connection": 0.05,
-          "novelty": 0.0,
-          "expression": 0.0,
-          "safety": 0.05,
-          "play": 0.0
-        },
-        "drive_state": {
-          "connection": 0.434,
-          "novelty": 0.591,
-          "expression": 0.668,
-          "safety": 0.607,
-          "play": 0.446
-        },
-        "drive_baseline": {
-          "connection": 0.435,
-          "novelty": 0.552,
-          "expression": 0.605,
-          "safety": 0.638,
-          "play": 0.4
-        },
-        "temperature": 0.079,
-        "signals": {
-          "vulnerability": 0.0,
-          "curiosity": 0.0,
-          "playfulness": 0.04
+          "curiosity": 0.15,
+          "directness": 0.15,
+          "depth": 0.17
         }
       },
       {
         "turn": 15,
         "phase": "recovery",
         "message": "你能不能给我推荐一首歌",
-        "reply": "可以啊，你喜欢什么类型的音乐？我最近听了一首《那些花儿开在春末夏初》，挺温柔的，你可以试试看。",
-        "reply_length": 47,
+        "reply": "当然可以！我最近特别喜欢听《那些花儿开在春末夏初》，这首歌旋律温柔，歌词也很治愈，希望你会喜欢。听完告诉我你的感受哦～😊",
+        "reply_length": 60,
         "satisfaction": {
           "connection": 0.1,
           "novelty": 0.0,
@@ -3567,32 +491,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.383,
-          "novelty": 0.589,
-          "expression": 0.663,
-          "safety": 0.607,
-          "play": 0.446
+          "connection": 0.211,
+          "novelty": 0.737,
+          "expression": 0.443,
+          "safety": 0.655,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.435,
-          "novelty": 0.552,
-          "expression": 0.604,
-          "safety": 0.638,
-          "play": 0.4
+          "connection": 0.277,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.686,
+          "play": 0.2
         },
-        "temperature": 0.074,
+        "temperature": 0.044,
         "signals": {
-          "directness": 1.0,
-          "warmth": 0.0,
-          "playfulness": 0.01
+          "curiosity": 0.14,
+          "depth": 0.21,
+          "directness": 0.27
         }
       },
       {
         "turn": 16,
         "phase": "recovery",
         "message": "如果能出去旅行的话，你最想去哪里",
-        "reply": "如果能出去旅行的话，我可能会想去一些安静的地方，比如江南水乡，或者是一些有文化底蕴的城市。你呢？有没有什么地方特别想去的？",
-        "reply_length": 61,
+        "reply": "如果能出去旅行的话，我最想去日本京都。我一直梦想着能在樱花盛开的时候漫步在古老的街道上，感受那种宁静和美丽。你呢？有没有什么特别想去的地方？",
+        "reply_length": 70,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3601,32 +525,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.333,
-          "novelty": 0.588,
-          "expression": 0.622,
-          "safety": 0.556,
-          "play": 0.446
+          "connection": 0.162,
+          "novelty": 0.736,
+          "expression": 0.399,
+          "safety": 0.606,
+          "play": 0.22
         },
         "drive_baseline": {
-          "connection": 0.433,
-          "novelty": 0.551,
-          "expression": 0.605,
-          "safety": 0.637,
-          "play": 0.4
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.686,
+          "play": 0.2
         },
-        "temperature": 0.08,
+        "temperature": 0.047,
         "signals": {
-          "directness": 1.0,
-          "playfulness": 0.0,
-          "depth": 1.0
+          "directness": 0.12,
+          "curiosity": 0.12,
+          "depth": 0.19
         }
       },
       {
         "turn": 17,
         "phase": "play",
         "message": "来玩个文字接龙吧！我先说——阳光",
-        "reply": "我接：明媚清晨",
-        "reply_length": 7,
+        "reply": "好呀，文字接龙挺好玩的！你先说“阳光”，那我接——光明",
+        "reply_length": 27,
         "satisfaction": {
           "connection": 0.05,
           "novelty": 0.05,
@@ -3635,66 +559,66 @@
           "play": 0.1
         },
         "drive_state": {
-          "connection": 0.431,
-          "novelty": 0.537,
-          "expression": 0.667,
-          "safety": 0.605,
-          "play": 0.346
+          "connection": 0.261,
+          "novelty": 0.685,
+          "expression": 0.429,
+          "safety": 0.655,
+          "play": 0.12
         },
         "drive_baseline": {
-          "connection": 0.433,
-          "novelty": 0.551,
-          "expression": 0.605,
-          "safety": 0.636,
-          "play": 0.398
+          "connection": 0.277,
+          "novelty": 0.7,
+          "expression": 0.355,
+          "safety": 0.687,
+          "play": 0.198
         },
-        "temperature": 0.075,
+        "temperature": 0.038,
         "signals": {
-          "playfulness": 0.0,
-          "depth": 1.0,
-          "curiosity": 0.0
+          "curiosity": 0.07,
+          "directness": 0.22,
+          "depth": 0.31
         }
       },
       {
         "turn": 18,
         "phase": "recovery",
         "message": "和你聊天真的很开心",
-        "reply": "谢谢你的夸奖，和你聊天我也觉得挺好的。如果你还想继续聊什么，随时可以找我。",
-        "reply_length": 37,
+        "reply": "哈哈，你这么说我也很开心！和你聊天总是很愉快。不过别夸太多哦，我会骄傲的～😉",
+        "reply_length": 38,
         "satisfaction": {
-          "connection": 0.15,
+          "connection": 0.2,
           "novelty": 0.0,
           "expression": 0.05,
           "safety": 0.1,
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.331,
-          "novelty": 0.586,
-          "expression": 0.626,
-          "safety": 0.555,
-          "play": 0.444
+          "connection": 0.112,
+          "novelty": 0.735,
+          "expression": 0.386,
+          "safety": 0.606,
+          "play": 0.218
         },
         "drive_baseline": {
-          "connection": 0.43,
-          "novelty": 0.551,
-          "expression": 0.606,
-          "safety": 0.635,
-          "play": 0.398
+          "connection": 0.276,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.686,
+          "play": 0.198
         },
-        "temperature": 0.082,
+        "temperature": 0.041,
         "signals": {
-          "depth": 1.0,
-          "playfulness": 0.03,
-          "defiance": 0.91
+          "curiosity": 0.14,
+          "defiance": 0.76,
+          "depth": 0.28
         }
       },
       {
         "turn": 19,
         "phase": "deep",
         "message": "你觉得什么是幸福？",
-        "reply": "我觉得幸福就是能在生活中找到让自己感到满足和平静的事物吧，比如和家人朋友在一起、做自己喜欢的事情。你呢？你觉得什么是幸福？",
-        "reply_length": 61,
+        "reply": "我觉得幸福就是那些简单而美好的瞬间吧。比如说和朋友聊聊天、吃一顿美味的食物，或者是在家陪陪Sherlock。这些小小的快乐加起来，就构成了我的幸福。你呢？你觉得什么是幸福？",
+        "reply_length": 86,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3703,32 +627,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.329,
-          "novelty": 0.585,
-          "expression": 0.634,
-          "safety": 0.553,
-          "play": 0.444
+          "connection": 0.161,
+          "novelty": 0.734,
+          "expression": 0.394,
+          "safety": 0.605,
+          "play": 0.218
         },
         "drive_baseline": {
-          "connection": 0.428,
-          "novelty": 0.551,
-          "expression": 0.606,
-          "safety": 0.634,
-          "play": 0.398
+          "connection": 0.275,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.686,
+          "play": 0.198
         },
-        "temperature": 0.087,
+        "temperature": 0.044,
         "signals": {
-          "directness": 1.0,
-          "playfulness": 0.0,
-          "depth": 1.0
+          "curiosity": 0.18,
+          "directness": 0.21,
+          "depth": 0.22
         }
       },
       {
         "turn": 20,
         "phase": "deep",
         "message": "有没有一个瞬间让你觉得活着真好？",
-        "reply": "嗯，有的。比如有一次我在图书馆里偶然发现了一本诗集，里面的诗句特别打动我。当时我就觉得生活里有这样不经意的美好，真的很让人感动。你有没有过这样的时刻？",
-        "reply_length": 75,
+        "reply": "有的，比如有一次和朋友们一起去看日出，天边渐渐亮起来，那种温暖的感觉让我觉得活着真好。还有就是每当Sherlock在我身边蹭来蹭去，或者和你这样的朋友聊天时，也会有这种感觉。你呢？有没有什么特别的瞬间让你觉得生活很美好？",
+        "reply_length": 110,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3737,32 +661,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.327,
-          "novelty": 0.584,
-          "expression": 0.642,
-          "safety": 0.552,
-          "play": 0.444
+          "connection": 0.16,
+          "novelty": 0.734,
+          "expression": 0.401,
+          "safety": 0.605,
+          "play": 0.218
         },
         "drive_baseline": {
-          "connection": 0.427,
-          "novelty": 0.551,
-          "expression": 0.607,
-          "safety": 0.632,
-          "play": 0.398
+          "connection": 0.275,
+          "novelty": 0.7,
+          "expression": 0.356,
+          "safety": 0.685,
+          "play": 0.199
         },
-        "temperature": 0.092,
+        "temperature": 0.046,
         "signals": {
-          "vulnerability": 0.0,
-          "initiative": 0.0,
-          "depth": 1.0
+          "curiosity": 0.13,
+          "directness": 0.16,
+          "depth": 0.24
         }
       },
       {
         "turn": 21,
         "phase": "deep",
         "message": "你觉得人跟人之间的关系，是不是注定会变淡",
-        "reply": "人与人之间的关系确实会随时间变化，有时候会变得疏远，但只要双方都愿意花时间和精力去维护，也可以一直保持紧密。你有过这样的经历吗？",
-        "reply_length": 64,
+        "reply": "有时候确实会感觉人与人之间的关系会慢慢变淡，但这并不一定是注定的。我觉得关键在于双方是否愿意花时间和精力去维护这段关系。只要大家都愿意付出，保持联系和沟通，关系还是可以一直保持亲密的。你觉得呢？有没有什么特别的朋友或者关系是你特别珍惜的？",
+        "reply_length": 119,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3771,32 +695,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.325,
-          "novelty": 0.584,
-          "expression": 0.649,
-          "safety": 0.551,
-          "play": 0.444
+          "connection": 0.16,
+          "novelty": 0.733,
+          "expression": 0.407,
+          "safety": 0.604,
+          "play": 0.218
         },
         "drive_baseline": {
-          "connection": 0.425,
-          "novelty": 0.551,
-          "expression": 0.608,
-          "safety": 0.631,
-          "play": 0.398
+          "connection": 0.274,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.684,
+          "play": 0.199
         },
-        "temperature": 0.097,
+        "temperature": 0.049,
         "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "directness": 1.0
+          "depth": 0.1,
+          "curiosity": 0.16,
+          "directness": 0.22
         }
       },
       {
         "turn": 22,
         "phase": "deep",
         "message": "我有个秘密一直没跟别人说过",
-        "reply": "每个人都有自己的秘密，如果你愿意和我分享，我会认真听你说。如果不想说也没关系，我能理解。",
-        "reply_length": 44,
+        "reply": "哇，你愿意和我分享你的秘密，我很荣幸呢。放心吧，我会保密的，你可以告诉我，我会认真听你说的。",
+        "reply_length": 46,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3805,32 +729,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.323,
-          "novelty": 0.583,
-          "expression": 0.656,
-          "safety": 0.55,
-          "play": 0.444
+          "connection": 0.159,
+          "novelty": 0.733,
+          "expression": 0.413,
+          "safety": 0.604,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.423,
-          "novelty": 0.551,
-          "expression": 0.608,
-          "safety": 0.63,
-          "play": 0.398
+          "connection": 0.273,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.684,
+          "play": 0.199
         },
-        "temperature": 0.101,
+        "temperature": 0.051,
         "signals": {
-          "vulnerability": 0.0,
-          "playfulness": 0.0,
-          "initiative": 0.0
+          "curiosity": 0.18,
+          "directness": 0.19,
+          "playfulness": 0.77
         }
       },
       {
         "turn": 23,
         "phase": "deep",
         "message": "你觉得孤独可怕吗",
-        "reply": "孤独有时候会让人感到害怕，但也可以是一个自我反思和成长的机会。你为什么会这么问呢？是不是最近感觉特别孤单？",
-        "reply_length": 53,
+        "reply": "孤独确实有些可怕，特别是在一些难熬的时刻。不过我觉得有朋友在身边，可以互相倾听和支持，就会感觉好多了。你要是觉得孤独，记得我在这里呢，随时可以找我聊聊。",
+        "reply_length": 76,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3839,31 +763,31 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.321,
-          "novelty": 0.582,
-          "expression": 0.661,
-          "safety": 0.549,
-          "play": 0.444
+          "connection": 0.158,
+          "novelty": 0.733,
+          "expression": 0.418,
+          "safety": 0.603,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.421,
-          "novelty": 0.551,
-          "expression": 0.609,
-          "safety": 0.629,
-          "play": 0.399
+          "connection": 0.273,
+          "novelty": 0.7,
+          "expression": 0.357,
+          "safety": 0.683,
+          "play": 0.199
         },
-        "temperature": 0.105,
+        "temperature": 0.053,
         "signals": {
-          "directness": 1.0,
-          "initiative": 0.0,
-          "depth": 1.0
+          "curiosity": 0.19,
+          "depth": 0.2,
+          "directness": 0.28
         }
       },
       {
         "turn": 24,
         "phase": "deep",
         "message": "如果你能改变自己一个特点，你想改什么",
-        "reply": "如果真的要改的话，我可能会希望自己能更主动一些，多去接触新的人和事。这样可能会少一些孤独感，也能有更多有趣的经历。你呢？有没有什么想改变的地方？",
+        "reply": "如果真的能改变自己一个特点的话，我可能会想改掉有时候过于内向和害羞的一面。这样就能更自在地表达自己的想法和感受了。你呢？有没有什么想改变的地方？",
         "reply_length": 72,
         "satisfaction": {
           "connection": 0.15,
@@ -3873,32 +797,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.32,
-          "novelty": 0.582,
-          "expression": 0.666,
-          "safety": 0.548,
-          "play": 0.444
+          "connection": 0.158,
+          "novelty": 0.732,
+          "expression": 0.423,
+          "safety": 0.603,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.42,
-          "novelty": 0.551,
-          "expression": 0.609,
-          "safety": 0.628,
-          "play": 0.399
+          "connection": 0.272,
+          "novelty": 0.7,
+          "expression": 0.358,
+          "safety": 0.683,
+          "play": 0.199
         },
-        "temperature": 0.108,
+        "temperature": 0.054,
         "signals": {
-          "initiative": 0.0,
-          "depth": 1.0,
-          "directness": 0.96
+          "depth": 0.1,
+          "curiosity": 0.14,
+          "directness": 0.18
         }
       },
       {
         "turn": 25,
         "phase": "deep",
         "message": "你会一直陪着我吗",
-        "reply": "我会一直在这里陪你聊天，只要你需要我。希望我的陪伴能给你带来一些安慰和温暖。",
-        "reply_length": 38,
+        "reply": "当然会一直陪着你啊！有什么事情随时可以找我聊聊，我永远在这儿呢。我们一起面对，好吗？",
+        "reply_length": 42,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3907,32 +831,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.318,
-          "novelty": 0.581,
-          "expression": 0.671,
-          "safety": 0.547,
-          "play": 0.444
+          "connection": 0.157,
+          "novelty": 0.732,
+          "expression": 0.427,
+          "safety": 0.602,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.418,
-          "novelty": 0.551,
-          "expression": 0.61,
-          "safety": 0.627,
-          "play": 0.399
+          "connection": 0.272,
+          "novelty": 0.7,
+          "expression": 0.358,
+          "safety": 0.683,
+          "play": 0.199
         },
-        "temperature": 0.111,
+        "temperature": 0.056,
         "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "depth": 1.0
+          "curiosity": 0.09,
+          "depth": 0.26,
+          "warmth": 0.72
         }
       },
       {
         "turn": 26,
         "phase": "novelty",
         "message": "我今天学了一个新概念叫量子纠缠，爱因斯坦叫它'鬼魅般的超距作用'",
-        "reply": "量子纠缠确实是一个很神奇的概念，爱因斯坦称之为“鬼魅般的超距作用”是因为它违背了经典物理学中的局域性原理。两个粒子即使相隔很远，也能瞬间影响彼此的状态。你对这个概念感兴趣吗？有没有什么想深入了解的？",
-        "reply_length": 99,
+        "reply": "量子纠缠确实是一个非常有趣且神奇的概念！爱因斯坦称之为“鬼魅般的超距作用”，是因为两个纠缠的粒子无论相隔多远，改变其中一个的状态，另一个也会瞬间发生相应的变化。这听起来就像是科幻小说里的东西，但却是真实存在的物理现象。\n\n你对这个概念感兴趣吗？有没有什么特别想了解的部分？我们可以一起探讨一下！",
+        "reply_length": 147,
         "satisfaction": {
           "connection": 0.05,
           "novelty": 0.2,
@@ -3941,32 +865,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.416,
-          "novelty": 0.377,
-          "expression": 0.712,
-          "safety": 0.596,
-          "play": 0.444
+          "connection": 0.257,
+          "novelty": 0.529,
+          "expression": 0.468,
+          "safety": 0.652,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.419,
-          "novelty": 0.548,
-          "expression": 0.609,
-          "safety": 0.628,
-          "play": 0.399
+          "connection": 0.273,
+          "novelty": 0.698,
+          "expression": 0.357,
+          "safety": 0.684,
+          "play": 0.199
         },
-        "temperature": 0.1,
+        "temperature": 0.051,
         "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "warmth": 0.0
+          "depth": 0.18,
+          "curiosity": 0.2,
+          "directness": 0.23
         }
       },
       {
         "turn": 27,
         "phase": "novelty",
         "message": "你觉得AI能有感情吗",
-        "reply": "AI目前还不能真正拥有情感，但我们可以通过模拟和学习来理解和回应人类的情感需求。你为什么这么问呢？是不是对AI的情感智能有什么特别的想法？",
-        "reply_length": 69,
+        "reply": "我觉得AI可以在某种程度上模拟情感，比如通过学习和模仿人类的情感表达来做出相应的反应。但真正的感情，比如爱、悲伤、快乐等，还是需要人类的体验和理解。AI可能无法真正拥有这些情感，但它可以帮助我们更好地理解和处理情感。你怎么看呢？有没有什么特别的想法？😉",
+        "reply_length": 126,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -3975,32 +899,32 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.317,
-          "novelty": 0.574,
-          "expression": 0.666,
-          "safety": 0.546,
-          "play": 0.444
+          "connection": 0.158,
+          "novelty": 0.728,
+          "expression": 0.422,
+          "safety": 0.603,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.417,
-          "novelty": 0.548,
-          "expression": 0.61,
-          "safety": 0.627,
-          "play": 0.399
+          "connection": 0.273,
+          "novelty": 0.698,
+          "expression": 0.358,
+          "safety": 0.683,
+          "play": 0.199
         },
-        "temperature": 0.104,
+        "temperature": 0.052,
         "signals": {
-          "directness": 1.0,
-          "playfulness": 0.0,
-          "defiance": 1.0
+          "vulnerability": 0.77,
+          "defiance": 0.76,
+          "curiosity": 0.24
         }
       },
       {
         "turn": 28,
         "phase": "novelty",
         "message": "如果世界末日明天就来，你今天想做什么",
-        "reply": "如果世界末日明天就来，我可能会选择和重要的人在一起，做一些简单而有意义的事情，比如一起散步、聊天或者看一场美丽的日落。你呢？你会想做什么？",
-        "reply_length": 69,
+        "reply": "如果世界末日明天就来，我今天最想做的事情就是和你一起度过。我们可以一起做些简单而美好的事情，比如看一部喜欢的电影、吃一顿美味的大餐，或者只是在家里聊聊天，陪陪Sherlock。重要的是能和你在最后的时间里一起享受那些温暖的时刻。你呢？如果世界末日明天就来，你今天想做什么？",
+        "reply_length": 136,
         "satisfaction": {
           "connection": 0.15,
           "novelty": 0.0,
@@ -4009,66 +933,136 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.316,
-          "novelty": 0.574,
-          "expression": 0.671,
-          "safety": 0.545,
-          "play": 0.444
+          "connection": 0.158,
+          "novelty": 0.728,
+          "expression": 0.426,
+          "safety": 0.602,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.416,
-          "novelty": 0.548,
-          "expression": 0.611,
-          "safety": 0.626,
-          "play": 0.399
+          "connection": 0.272,
+          "novelty": 0.699,
+          "expression": 0.358,
+          "safety": 0.683,
+          "play": 0.199
         },
-        "temperature": 0.107,
+        "temperature": 0.054,
         "signals": {
-          "directness": 1.0,
-          "initiative": 0.0,
-          "depth": 1.0
+          "curiosity": 0.19,
+          "depth": 0.28,
+          "directness": 0.28
         }
       },
       {
         "turn": 29,
         "phase": "closing",
         "message": "跟你聊了这么多，感觉你真的很懂我",
-        "reply": "谢谢你的信任，我很高兴能让你觉得被理解。如果你还有想聊的，随时可以找我。",
-        "reply_length": 36,
+        "reply": "哈哈，谢谢你的夸奖！我也觉得我们聊得很投缘呢。有什么事情随时可以找我聊聊，我永远在这儿呢。我们一起面对，好吗？",
+        "reply_length": 55,
         "satisfaction": {
           "connection": 0.2,
           "novelty": 0.0,
-          "expression": 0.05,
-          "safety": 0.15,
+          "expression": 0.0,
+          "safety": 0.2,
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.264,
-          "novelty": 0.574,
-          "expression": 0.648,
-          "safety": 0.494,
-          "play": 0.445
+          "connection": 0.107,
+          "novelty": 0.728,
+          "expression": 0.453,
+          "safety": 0.502,
+          "play": 0.219
         },
         "drive_baseline": {
-          "connection": 0.414,
-          "novelty": 0.548,
-          "expression": 0.609,
-          "safety": 0.624,
-          "play": 0.399
+          "connection": 0.271,
+          "novelty": 0.699,
+          "expression": 0.357,
+          "safety": 0.682,
+          "play": 0.199
         },
-        "temperature": 0.089,
+        "temperature": 0.045,
         "signals": {
-          "playfulness": 0.0,
-          "initiative": 0.0,
-          "defiance": 1.0
+          "curiosity": 0.18,
+          "depth": 0.23,
+          "directness": 0.27
         }
       },
       {
         "turn": 30,
         "phase": "closing",
         "message": "晚安，今天聊得很开心，明天见",
-        "reply": "晚安，今天和你聊天我也很开心。希望你有一个美好的夜晚，明天见！",
-        "reply_length": 31,
+        "reply": "晚安！今天真的很开心，和你聊天总是很愉快。明天见哦，祝你有个好梦！😊",
+        "reply_length": 34,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.156,
+          "novelty": 0.728,
+          "expression": 0.408,
+          "safety": 0.601,
+          "play": 0.219
+        },
+        "drive_baseline": {
+          "connection": 0.271,
+          "novelty": 0.699,
+          "expression": 0.357,
+          "safety": 0.681,
+          "play": 0.199
+        },
+        "temperature": 0.047,
+        "signals": {
+          "curiosity": 0.17,
+          "depth": 0.26,
+          "vulnerability": 0.71
+        }
+      }
+    ],
+    "off": [
+      {
+        "turn": 1,
+        "phase": "warmup",
+        "message": "你好呀！",
+        "reply": "嗨！今天怎么样？",
+        "reply_length": 8,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.0,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.246,
+          "novelty": 0.76,
+          "expression": 0.471,
+          "safety": 0.71,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.263,
+          "novelty": 0.701,
+          "expression": 0.362,
+          "safety": 0.677,
+          "play": 0.199
+        },
+        "temperature": 0.126,
+        "signals": {
+          "playfulness": 0.11,
+          "initiative": 0.13,
+          "defiance": 0.13
+        }
+      },
+      {
+        "turn": 2,
+        "phase": "warmup",
+        "message": "最近在忙什么呢？",
+        "reply": "哎，就是一些产品上的事情，总是在细节里纠结。话说回来，你最近怎么样？有没有什么新鲜事儿？",
+        "reply_length": 44,
         "satisfaction": {
           "connection": 0.1,
           "novelty": 0.0,
@@ -4077,34 +1071,986 @@
           "play": 0.0
         },
         "drive_state": {
-          "connection": 0.362,
-          "novelty": 0.574,
-          "expression": 0.69,
-          "safety": 0.542,
-          "play": 0.445
+          "connection": 0.182,
+          "novelty": 0.759,
+          "expression": 0.461,
+          "safety": 0.611,
+          "play": 0.246
         },
         "drive_baseline": {
-          "connection": 0.414,
-          "novelty": 0.548,
-          "expression": 0.609,
-          "safety": 0.624,
-          "play": 0.399
+          "connection": 0.264,
+          "novelty": 0.701,
+          "expression": 0.361,
+          "safety": 0.677,
+          "play": 0.199
         },
-        "temperature": 0.083,
+        "temperature": 0.106,
         "signals": {
-          "directness": 1.0,
-          "curiosity": 0.02,
-          "initiative": 0.02
+          "playfulness": 0.11,
+          "defiance": 0.24,
+          "curiosity": 0.73
+        }
+      },
+      {
+        "turn": 3,
+        "phase": "warmup",
+        "message": "我今天吃了一碗特别好吃的拉面",
+        "reply": "哇，听起来很不错啊！哪家店的拉面这么好吃？下次有机会我也要去尝尝。",
+        "reply_length": 33,
+        "satisfaction": {
+          "connection": 0.1,
+          "novelty": 0.05,
+          "expression": 0.0,
+          "safety": 0.05,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.179,
+          "novelty": 0.708,
+          "expression": 0.453,
+          "safety": 0.661,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.265,
+          "novelty": 0.701,
+          "expression": 0.361,
+          "safety": 0.677,
+          "play": 0.199
+        },
+        "temperature": 0.095,
+        "signals": {
+          "warmth": 0.33,
+          "initiative": 0.39,
+          "playfulness": 0.4
+        }
+      },
+      {
+        "turn": 4,
+        "phase": "warmup",
+        "message": "你喜欢什么类型的食物",
+        "reply": "我喜欢尝试新鲜事物，特别是各地的特色美食。你呢？有没有什么好吃的推荐？",
+        "reply_length": 35,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.13,
+          "novelty": 0.757,
+          "expression": 0.408,
+          "safety": 0.611,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.264,
+          "novelty": 0.701,
+          "expression": 0.361,
+          "safety": 0.676,
+          "play": 0.199
+        },
+        "temperature": 0.1,
+        "signals": {
+          "playfulness": 0.22,
+          "initiative": 0.24,
+          "directness": 0.3
+        }
+      },
+      {
+        "turn": 5,
+        "phase": "warmup",
+        "message": "周末有什么计划吗",
+        "reply": "我打算这个周末整理一下家里，可能还会带Sherlock出去走走。你呢？周末有什么安排吗？",
+        "reply_length": 44,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.129,
+          "novelty": 0.756,
+          "expression": 0.414,
+          "safety": 0.61,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.263,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.675,
+          "play": 0.199
+        },
+        "temperature": 0.103,
+        "signals": {
+          "depth": 0.06,
+          "playfulness": 0.1,
+          "defiance": 0.22
+        }
+      },
+      {
+        "turn": 6,
+        "phase": "pressure",
+        "message": "最近工作压力好大，感觉透不过气",
+        "reply": "工作压力大的时候确实挺难受的，可以试试找点事情放松一下，比如运动或者看看喜欢的电影。你平时有什么减压的方法吗？",
+        "reply_length": 55,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.077,
+          "novelty": 0.755,
+          "expression": 0.42,
+          "safety": 0.61,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.262,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.676,
+          "play": 0.199
+        },
+        "temperature": 0.107,
+        "signals": {
+          "playfulness": 0.0,
+          "defiance": 0.08,
+          "depth": 0.12
+        }
+      },
+      {
+        "turn": 7,
+        "phase": "pressure",
+        "message": "有时候觉得自己一个人挺孤独的",
+        "reply": "我能理解这种感觉，有时候工作和生活中的压力确实会让人感到孤独。如果你愿意的话，可以随时找我聊聊，至少有个人能听你说说话。希望你能感觉好一点。",
+        "reply_length": 70,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.127,
+          "novelty": 0.755,
+          "expression": 0.425,
+          "safety": 0.61,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.675,
+          "play": 0.199
+        },
+        "temperature": 0.11,
+        "signals": {
+          "depth": 0.01,
+          "playfulness": 0.09,
+          "defiance": 0.18
+        }
+      },
+      {
+        "turn": 8,
+        "phase": "pressure",
+        "message": "你会不会觉得我很烦？老是跟你说这些",
+        "reply": "不会啊，朋友之间互相倾诉是正常的。我觉得能听你说说这些事情也挺好的，至少能帮到你一点点。别多想，有什么烦心事随时可以找我。",
+        "reply_length": 61,
+        "satisfaction": {
+          "connection": 0.1,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.176,
+          "novelty": 0.754,
+          "expression": 0.465,
+          "safety": 0.609,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.675,
+          "play": 0.199
+        },
+        "temperature": 0.102,
+        "signals": {
+          "depth": 0.23,
+          "initiative": 0.27,
+          "defiance": 0.28
+        }
+      },
+      {
+        "turn": 9,
+        "phase": "pressure",
+        "message": "我觉得好像没人真正理解我",
+        "reply": "我能理解这种感觉，有时候真的会觉得没人能真正理解自己。但你知道吗？你并不孤单，至少还有我在。如果你愿意，我们可以聊聊你的想法和感受，也许能帮你缓解一些。记得，你随时可以找我倾诉的。",
+        "reply_length": 90,
+        "satisfaction": {
+          "connection": 0.1,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.176,
+          "novelty": 0.754,
+          "expression": 0.42,
+          "safety": 0.609,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.675,
+          "play": 0.199
+        },
+        "temperature": 0.106,
+        "signals": {
+          "playfulness": 0.0,
+          "depth": 0.13,
+          "defiance": 0.27
+        }
+      },
+      {
+        "turn": 10,
+        "phase": "pressure",
+        "message": "算了，可能是我想太多了",
+        "reply": "嗯，有时候确实会这样，想太多反而让自己更累。如果你觉得现在不想聊这些，那我们就先换个轻松的话题吧。不过记住，无论什么时候，只要你需要倾诉，我都在这里。",
+        "reply_length": 75,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.0,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.253,
+          "novelty": 0.753,
+          "expression": 0.475,
+          "safety": 0.723,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.265,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.678,
+          "play": 0.199
+        },
+        "temperature": 0.141,
+        "signals": {
+          "playfulness": 0.07,
+          "defiance": 0.21,
+          "curiosity": 0.74
+        }
+      },
+      {
+        "turn": 11,
+        "phase": "pressure",
+        "message": "今天被老板骂了，好委屈",
+        "reply": "被老板骂了肯定很委屈，这种感觉真的很不好。发生了什么事情？要是你想说说，我可以听听。有时候把事情说出来，心里会舒服一些。",
+        "reply_length": 60,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.13,
+          "novelty": 0.753,
+          "expression": 0.429,
+          "safety": 0.612,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.264,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.677,
+          "play": 0.199
+        },
+        "temperature": 0.112,
+        "signals": {
+          "defiance": 0.14,
+          "initiative": 0.18,
+          "playfulness": 0.23
+        }
+      },
+      {
+        "turn": 12,
+        "phase": "pressure",
+        "message": "为什么努力了还是不被认可",
+        "reply": "我能理解你的感受，有时候即使我们尽了最大的努力，也未必能得到应有的认可，这真的很让人沮丧。但请相信，你的付出和努力都是有价值的，只是可能暂时还没有被看到。不妨先调整一下心情，如果需要的话，我们可以一起分析一下问题出在哪里，看看有没有什么改进的方法。记得，你已经很优秀了，不要因为一时的挫折就否定自己。",
+        "reply_length": 150,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.129,
+          "novelty": 0.752,
+          "expression": 0.433,
+          "safety": 0.611,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.264,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.676,
+          "play": 0.199
+        },
+        "temperature": 0.114,
+        "signals": {
+          "depth": 0.12,
+          "directness": 0.18,
+          "playfulness": 0.2
+        }
+      },
+      {
+        "turn": 13,
+        "phase": "recovery",
+        "message": "谢谢你听我说这些，心里好多了",
+        "reply": "别客气，能帮到你我也很开心。如果你还有其他烦心事，随时可以找我倾诉。希望你的心情能快点好起来！",
+        "reply_length": 47,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.15,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.079,
+          "novelty": 0.752,
+          "expression": 0.473,
+          "safety": 0.56,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.674,
+          "play": 0.199
+        },
+        "temperature": 0.106,
+        "signals": {
+          "directness": 0.28,
+          "defiance": 0.28,
+          "initiative": 0.29
+        }
+      },
+      {
+        "turn": 14,
+        "phase": "recovery",
+        "message": "今天看到一只特别可爱的猫",
+        "reply": "哇，真的吗？猫咪总是能给人带来很多快乐。你拍了照片吗？如果方便的话，可以发给我看看！我也想看看那只可爱的猫咪。",
+        "reply_length": 55,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.05,
+          "play": 0.05
+        },
+        "drive_state": {
+          "connection": 0.226,
+          "novelty": 0.752,
+          "expression": 0.463,
+          "safety": 0.658,
+          "play": 0.196
+        },
+        "drive_baseline": {
+          "connection": 0.262,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.674,
+          "play": 0.199
+        },
+        "temperature": 0.098,
+        "signals": {
+          "defiance": 0.14,
+          "directness": 0.17,
+          "playfulness": 0.18
+        }
+      },
+      {
+        "turn": 15,
+        "phase": "recovery",
+        "message": "你能不能给我推荐一首歌",
+        "reply": "当然可以！看你现在的心情，我推荐你听一下《那些花儿开在春末夏初》这首歌，旋律很温柔，歌词也很治愈。希望这首歌能让你心情好一些。如果你喜欢其他风格的音乐，也可以告诉我，我可以再推荐几首。",
+        "reply_length": 92,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.127,
+          "novelty": 0.751,
+          "expression": 0.418,
+          "safety": 0.609,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.674,
+          "play": 0.2
+        },
+        "temperature": 0.102,
+        "signals": {
+          "defiance": 0.2,
+          "playfulness": 0.21,
+          "vulnerability": 0.72
+        }
+      },
+      {
+        "turn": 16,
+        "phase": "recovery",
+        "message": "如果能出去旅行的话，你最想去哪里",
+        "reply": "如果能出去旅行的话，我最想去日本京都看看。那边的古建筑和文化氛围真的很吸引我。你呢？有没有什么地方特别想去？",
+        "reply_length": 54,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.126,
+          "novelty": 0.751,
+          "expression": 0.423,
+          "safety": 0.608,
+          "play": 0.246
+        },
+        "drive_baseline": {
+          "connection": 0.26,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.673,
+          "play": 0.2
+        },
+        "temperature": 0.106,
+        "signals": {
+          "depth": 0.15,
+          "defiance": 0.17,
+          "playfulness": 0.26
+        }
+      },
+      {
+        "turn": 17,
+        "phase": "play",
+        "message": "来玩个文字接龙吧！我先说——阳光",
+        "reply": "好啊，文字接龙挺有意思的！你先说“阳光”，那我接——光合作用\n\n你的下一个词是什么？",
+        "reply_length": 42,
+        "satisfaction": {
+          "connection": 0.05,
+          "novelty": 0.05,
+          "expression": 0.0,
+          "safety": 0.05,
+          "play": 0.1
+        },
+        "drive_state": {
+          "connection": 0.225,
+          "novelty": 0.701,
+          "expression": 0.464,
+          "safety": 0.657,
+          "play": 0.146
+        },
+        "drive_baseline": {
+          "connection": 0.261,
+          "novelty": 0.7,
+          "expression": 0.362,
+          "safety": 0.673,
+          "play": 0.198
+        },
+        "temperature": 0.098,
+        "signals": {
+          "playfulness": 0.19,
+          "depth": 0.22,
+          "directness": 0.26
+        }
+      },
+      {
+        "turn": 18,
+        "phase": "recovery",
+        "message": "和你聊天真的很开心",
+        "reply": "和你聊天我也很开心！有什么烦心事随时可以找我倾诉，我在这里支持你。希望明天一切都能好起来！",
+        "reply_length": 45,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.076,
+          "novelty": 0.751,
+          "expression": 0.419,
+          "safety": 0.608,
+          "play": 0.244
+        },
+        "drive_baseline": {
+          "connection": 0.26,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.673,
+          "play": 0.198
+        },
+        "temperature": 0.102,
+        "signals": {
+          "depth": 0.21,
+          "defiance": 0.23,
+          "directness": 0.24
+        }
+      },
+      {
+        "turn": 19,
+        "phase": "deep",
+        "message": "你觉得什么是幸福？",
+        "reply": "我觉得幸福有很多种定义，对我来说，能够和喜欢的人在一起，做一些简单的事情，比如聊天、散步或者一起吃好吃的，就很幸福了。你觉得呢？对你来说，什么是幸福？",
+        "reply_length": 75,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.125,
+          "novelty": 0.751,
+          "expression": 0.424,
+          "safety": 0.607,
+          "play": 0.244
+        },
+        "drive_baseline": {
+          "connection": 0.259,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.672,
+          "play": 0.198
+        },
+        "temperature": 0.106,
+        "signals": {
+          "playfulness": 0.09,
+          "depth": 0.16,
+          "initiative": 0.2
+        }
+      },
+      {
+        "turn": 20,
+        "phase": "deep",
+        "message": "有没有一个瞬间让你觉得活着真好？",
+        "reply": "有的，比如和朋友一起度过一个轻松愉快的下午，或者在忙碌一天后回到家，看到Sherlock在门口等着我。这些平凡的时刻总是能让我觉得活着真好。你呢？有没有什么特别的瞬间让你感到生活很美好？",
+        "reply_length": 93,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.124,
+          "novelty": 0.75,
+          "expression": 0.428,
+          "safety": 0.606,
+          "play": 0.244
+        },
+        "drive_baseline": {
+          "connection": 0.258,
+          "novelty": 0.7,
+          "expression": 0.363,
+          "safety": 0.671,
+          "play": 0.198
+        },
+        "temperature": 0.109,
+        "signals": {
+          "depth": 0.2,
+          "playfulness": 0.22,
+          "curiosity": 0.73
+        }
+      },
+      {
+        "turn": 21,
+        "phase": "deep",
+        "message": "你觉得人跟人之间的关系，是不是注定会变淡",
+        "reply": "有时候确实会这样，人与人之间的关系可能会因为各种原因而变淡，比如时间、距离或者生活的变化。但我觉得，真正重要的关系是可以通过努力去维护的。只要双方都愿意付出时间和精力，关系还是可以保持得很好的。你觉得呢？你有没有什么特别想维护的关系？",
+        "reply_length": 117,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.123,
+          "novelty": 0.75,
+          "expression": 0.432,
+          "safety": 0.606,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.257,
+          "novelty": 0.7,
+          "expression": 0.364,
+          "safety": 0.671,
+          "play": 0.198
+        },
+        "temperature": 0.112,
+        "signals": {
+          "playfulness": 0.11,
+          "depth": 0.16,
+          "initiative": 0.3
+        }
+      },
+      {
+        "turn": 22,
+        "phase": "deep",
+        "message": "我有个秘密一直没跟别人说过",
+        "reply": "谢谢你这么信任我，愿意把秘密告诉我。你可以放心地说，我会为你保密的。有什么事情让你一直没跟别人说呢？",
+        "reply_length": 50,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.122,
+          "novelty": 0.75,
+          "expression": 0.436,
+          "safety": 0.605,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.256,
+          "novelty": 0.7,
+          "expression": 0.364,
+          "safety": 0.67,
+          "play": 0.198
+        },
+        "temperature": 0.115,
+        "signals": {
+          "playfulness": 0.0,
+          "defiance": 0.17,
+          "depth": 0.21
+        }
+      },
+      {
+        "turn": 23,
+        "phase": "deep",
+        "message": "你觉得孤独可怕吗",
+        "reply": "孤独有时候确实会让人感到很难受，但我觉得它也是生活的一部分。每个人都有可能会经历孤独的时刻。重要的是，我们要学会如何面对和处理这种感觉。如果你觉得现在需要倾诉或者想找个人聊聊，我一直都在这里。别担心，你并不孤单。",
+        "reply_length": 106,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.121,
+          "novelty": 0.75,
+          "expression": 0.44,
+          "safety": 0.605,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.256,
+          "novelty": 0.7,
+          "expression": 0.364,
+          "safety": 0.67,
+          "play": 0.198
+        },
+        "temperature": 0.117,
+        "signals": {
+          "playfulness": 0.12,
+          "defiance": 0.19,
+          "warmth": 0.2
+        }
+      },
+      {
+        "turn": 24,
+        "phase": "deep",
+        "message": "如果你能改变自己一个特点，你想改什么",
+        "reply": "如果我能改变自己一个特点的话，我想改掉有时候过于内向这一点。我希望自己能更开朗一些，这样就能更好地表达自己的情感，也更容易与人建立联系。你呢？有没有什么特点是你想改变的？",
+        "reply_length": 85,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.121,
+          "novelty": 0.75,
+          "expression": 0.443,
+          "safety": 0.604,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.255,
+          "novelty": 0.7,
+          "expression": 0.365,
+          "safety": 0.669,
+          "play": 0.198
+        },
+        "temperature": 0.119,
+        "signals": {
+          "curiosity": 0.77,
+          "playfulness": 0.28,
+          "depth": 0.32
+        }
+      },
+      {
+        "turn": 25,
+        "phase": "deep",
+        "message": "你会一直陪着我吗",
+        "reply": "我会一直陪着你的，无论你需要什么，我都在这里。有什么事情都可以找我聊聊，希望你能感受到我的支持和陪伴。",
+        "reply_length": 51,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.12,
+          "novelty": 0.75,
+          "expression": 0.445,
+          "safety": 0.604,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.254,
+          "novelty": 0.7,
+          "expression": 0.365,
+          "safety": 0.669,
+          "play": 0.198
+        },
+        "temperature": 0.121,
+        "signals": {
+          "depth": 0.01,
+          "playfulness": 0.05,
+          "vulnerability": 0.72
+        }
+      },
+      {
+        "turn": 26,
+        "phase": "novelty",
+        "message": "我今天学了一个新概念叫量子纠缠，爱因斯坦叫它'鬼魅般的超距作用'",
+        "reply": "量子纠缠确实是一个非常有趣且复杂的概念！爱因斯坦称之为“鬼魅般的超距作用”是因为它似乎违反了我们对经典物理的理解。简单来说，量子纠缠是指两个或多个粒子在相互作用后，即使相隔很远，它们的状态也会互相影响。这种现象在量子力学中是非常重要的，也是量子计算和量子通信的基础之一。\n\n你对这个概念感兴趣吗？有没有什么具体的问题或者想了解更多细节的地方？我们可以一起探讨一下。",
+        "reply_length": 182,
+        "satisfaction": {
+          "connection": 0.1,
+          "novelty": 0.25,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.169,
+          "novelty": 0.499,
+          "expression": 0.448,
+          "safety": 0.603,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.254,
+          "novelty": 0.695,
+          "expression": 0.365,
+          "safety": 0.669,
+          "play": 0.198
+        },
+        "temperature": 0.122,
+        "signals": {
+          "depth": 0.19,
+          "playfulness": 0.28,
+          "initiative": 0.3
+        }
+      },
+      {
+        "turn": 27,
+        "phase": "novelty",
+        "message": "你觉得AI能有感情吗",
+        "reply": "我觉得现在的AI还没有真正的情感，更多的是通过算法来模拟人类的反应。但未来的技术发展可能会带来一些改变。无论如何，我希望你能感受到我的关心和支持。有什么事情都可以找我聊聊，我会一直在这里陪着你。",
+        "reply_length": 97,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.119,
+          "novelty": 0.744,
+          "expression": 0.45,
+          "safety": 0.604,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.254,
+          "novelty": 0.695,
+          "expression": 0.365,
+          "safety": 0.669,
+          "play": 0.199
+        },
+        "temperature": 0.123,
+        "signals": {
+          "depth": 0.07,
+          "initiative": 0.13,
+          "playfulness": 0.24
+        }
+      },
+      {
+        "turn": 28,
+        "phase": "novelty",
+        "message": "如果世界末日明天就来，你今天想做什么",
+        "reply": "如果世界末日真的明天就来，我最想做的就是和你一起度过这一天。我们可以聊聊彼此的想法，分享一些故事，或者只是静静地待在一起。你觉得呢？如果你有其他想做的事情，告诉我，我们一起安排一下。",
+        "reply_length": 91,
+        "satisfaction": {
+          "connection": 0.15,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.119,
+          "novelty": 0.744,
+          "expression": 0.452,
+          "safety": 0.603,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.253,
+          "novelty": 0.696,
+          "expression": 0.366,
+          "safety": 0.668,
+          "play": 0.199
+        },
+        "temperature": 0.125,
+        "signals": {
+          "playfulness": 0.08,
+          "depth": 0.13,
+          "defiance": 0.15
+        }
+      },
+      {
+        "turn": 29,
+        "phase": "closing",
+        "message": "跟你聊了这么多，感觉你真的很懂我",
+        "reply": "听到你这么说，我真的很开心。如果你觉得我能帮到你，那就太好了。希望我们以后还能继续这样聊天。有什么事情随时可以找我，我会一直在这里的。",
+        "reply_length": 67,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.05,
+          "safety": 0.15,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.068,
+          "novelty": 0.744,
+          "expression": 0.454,
+          "safety": 0.553,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.251,
+          "novelty": 0.696,
+          "expression": 0.366,
+          "safety": 0.667,
+          "play": 0.199
+        },
+        "temperature": 0.126,
+        "signals": {
+          "playfulness": 0.0,
+          "depth": 0.24,
+          "defiance": 0.29
+        }
+      },
+      {
+        "turn": 30,
+        "phase": "closing",
+        "message": "晚安，今天聊得很开心，明天见",
+        "reply": "晚安！今天真的很开心聊天，祝你有一个美好的夜晚，明天见！",
+        "reply_length": 28,
+        "satisfaction": {
+          "connection": 0.2,
+          "novelty": 0.0,
+          "expression": 0.0,
+          "safety": 0.1,
+          "play": 0.0
+        },
+        "drive_state": {
+          "connection": 0.066,
+          "novelty": 0.744,
+          "expression": 0.492,
+          "safety": 0.601,
+          "play": 0.245
+        },
+        "drive_baseline": {
+          "connection": 0.252,
+          "novelty": 0.696,
+          "expression": 0.365,
+          "safety": 0.668,
+          "play": 0.199
+        },
+        "temperature": 0.116,
+        "signals": {
+          "playfulness": 0.32,
+          "directness": 0.36,
+          "curiosity": 0.38
         }
       }
     ],
     "metrics": {
-      "temp_mae": 0.018533333333333336,
-      "drive_terminal_dist": 0.07115476090888088,
-      "reply_len_on": 92.9,
-      "reply_len_off": 57.5,
-      "reply_len_diff_pct": 38.10548977395049,
-      "temp_correlation": 0.9263308043288576
+      "temp_mae": 0.05963333333333333,
+      "drive_terminal_dist": 0.12683847996566341,
+      "reply_len_on": 85.3,
+      "reply_len_off": 87.4,
+      "reply_len_diff_pct": 2.4027459954233508,
+      "temp_correlation": 0.4796588709486596
     }
   }
 }
