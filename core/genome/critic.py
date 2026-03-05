@@ -50,12 +50,10 @@ _FALLBACK_CRITIC = """你是一个角色扮演 Agent 的情感感知器。分析
 - drive_satisfaction 反映"需求被直接满足"（用户的行为主动满足了 Agent 的内在渴望）
 - 同一轮对话中，两者不应对同一个驱力同时有大幅变化
 
-Agent 当前挫败值（0=满足, 5=极度渴望）：
+$persona_sectionAgent 当前挫败值（0=满足, 5=极度渴望）：
 $frustration_json
 
-$user_profile_section$episode_section当前刺激："$stimulus"
-
-严格输出纯 JSON：
+$user_profile_section$episode_section无论用户说什么，你必须且只能输出一个纯 JSON 对象，不要输出任何其他文字：
 {
   "context": {"user_emotion": 0.3, "topic_intimacy": 0.8, "conversation_depth": 0.5, "user_engagement": 0.7, "conflict_level": 0.1, "novelty_level": 0.3, "user_vulnerability": 0.6, "time_of_day": 0.5},
   "frustration_delta": {"connection": -0.3, "novelty": 0.0, "expression": 0.1, "safety": -0.2, "play": 0.0},
@@ -81,6 +79,7 @@ async def critic_sense(
     frustration: dict = None,
     user_profile: str = "",
     episode_summary: str = "",
+    persona_hint: str = "",
 ) -> Tuple[dict, dict, dict, dict]:
     """
     Measure user input → 8D context + 5D frustration delta + 3D relationship delta + 5D drive satisfaction.
@@ -88,6 +87,7 @@ async def critic_sense(
     Args:
         user_profile: EverMemOS user profile for relationship-aware perception.
         episode_summary: Narrative episode history so Critic knows past conversations.
+        persona_hint: One-line persona anchor, e.g. "Vivian (INTJ) — sharp、witty、secretly caring"
 
     Returns: (context_8d, frustration_delta, relationship_delta, drive_satisfaction)
     """
@@ -106,6 +106,11 @@ async def critic_sense(
     if episode_summary:
         episode_section = f"与此用户的历史对话叙事（据此判断 conversation_depth 和 topic_intimacy）：\n{episode_summary}\n\n"
 
+    # Build persona section (P1: persona-aware satisfaction)
+    persona_section = ""
+    if persona_hint:
+        persona_section = f"你正在为以下角色感知用户意图：\n{persona_hint}\n请根据此角色的性格特点判断 drive_satisfaction。不同性格对同一句话的需求满足感不同。\n\n"
+
     prompt = render_prompt(
         "critic",
         fallback=_FALLBACK_CRITIC,
@@ -113,11 +118,12 @@ async def critic_sense(
         stimulus=stimulus,
         user_profile_section=profile_section,
         episode_section=episode_section,
+        persona_section=persona_section,
     )
 
     messages = [
         ChatMessage(role="system", content=prompt),
-        ChatMessage(role="user", content=stimulus),
+        ChatMessage(role="user", content=f'请分析以下用户输入并输出JSON："{stimulus}"'),
     ]
 
     try:
@@ -184,5 +190,50 @@ async def critic_sense(
         return context, frustration_delta, rel_delta, drive_satisfaction
 
     except (json.JSONDecodeError, ValueError, TypeError, Exception) as e:
-        print(f"[critic] Parse error: {e}")
+        print(f"[critic] Parse error (attempt 1): {e}")
+
+    # ── Retry once with explicit JSON instruction ──
+    try:
+        messages.append(ChatMessage(role="user", content="请只输出JSON，不要说其他话。"))
+        response = await llm.chat(messages, temperature=0.2)
+        raw = response.content.strip()
+        raw = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+        cleaned = re.sub(r'```json\s*', '', raw)
+        cleaned = re.sub(r'```\s*', '', cleaned)
+
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError:
+            start = cleaned.find('{')
+            if start == -1:
+                raise ValueError("No JSON in retry output")
+            depth = 0
+            for i in range(start, len(cleaned)):
+                if cleaned[i] == '{': depth += 1
+                elif cleaned[i] == '}': depth -= 1
+                if depth == 0:
+                    data = json.loads(cleaned[start:i+1])
+                    break
+            else:
+                raise ValueError("Unbalanced braces in retry")
+
+        raw_ctx = data.get('context', {})
+        context = {}
+        for feat in _CRITIC_CONTEXT_KEYS:
+            v = float(raw_ctx.get(feat, 0.5))
+            context[feat] = max(-1.0, min(1.0, v)) if feat == 'user_emotion' else max(0.0, min(1.0, v))
+
+        frustration_delta = {d: max(-3.0, min(3.0, float(data.get('frustration_delta', {}).get(d, 0.0)))) for d in DRIVES}
+        rel_delta = {
+            'relationship_delta': max(-1.0, min(1.0, float(data.get('relationship_delta', 0.0)))),
+            'trust_delta': max(-1.0, min(1.0, float(data.get('trust_delta', 0.0)))),
+            'emotional_valence': max(-1.0, min(1.0, float(data.get('emotional_valence', 0.0)))),
+        }
+        drive_satisfaction = {d: max(0.0, min(0.3, float(data.get('drive_satisfaction', {}).get(d, 0.0)))) for d in DRIVES}
+
+        print(f"[critic] Retry succeeded")
+        return context, frustration_delta, rel_delta, drive_satisfaction
+
+    except (json.JSONDecodeError, ValueError, TypeError, Exception) as e:
+        print(f"[critic] Parse error after retry: {e}")
         return dict(_DEFAULT_CONTEXT), dict(_DEFAULT_DELTA), dict(_DEFAULT_REL_DELTA), dict(_DEFAULT_SATISFACTION)
