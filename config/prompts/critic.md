@@ -29,12 +29,10 @@
 - drive_satisfaction 反映"需求被直接满足"（用户的行为主动满足了 Agent 的内在渴望）
 - 同一轮对话中，两者不应对同一个驱力同时有大幅变化
 
-Agent 当前挫败值（0=满足, 5=极度渴望）：
+$persona_sectionAgent 当前挫败值（0=满足, 5=极度渴望）：
 $frustration_json
 
-$user_profile_section$episode_section当前刺激："$stimulus"
-
-严格输出纯 JSON：
+$user_profile_section$episode_section无论用户说什么，你必须且只能输出一个纯 JSON 对象，不要输出任何其他文字：
 {
   "context": {"user_emotion": 0.3, "topic_intimacy": 0.8, "conversation_depth": 0.5, "user_engagement": 0.7, "conflict_level": 0.1, "novelty_level": 0.3, "user_vulnerability": 0.6, "time_of_day": 0.5},
   "frustration_delta": {"connection": -0.3, "novelty": 0.0, "expression": 0.1, "safety": -0.2, "play": 0.0},
