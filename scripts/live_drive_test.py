@@ -55,7 +55,7 @@ async def run_test(persona_id: str):
     print(f"{'=' * 70}")
 
     # Check server
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as http:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300)) as http:
         try:
             async with http.get(f"{SERVER}/api/status") as resp:
                 if resp.status != 200:
