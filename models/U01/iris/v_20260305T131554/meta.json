@@ -1,0 +1,18 @@
+{
+  "trained_at": "2026-03-05T13:15:54.668679",
+  "model_version": "v1_lr",
+  "db_path": ".data/policy_logs/U01/policy_log_real.db",
+  "days": 365,
+  "explore_only": true,
+  "n_rows": 368,
+  "max_turn": 2177,
+  "chunk_types": [
+    "boundary",
+    "identity",
+    "style"
+  ],
+  "models_saved": [
+    "models/U01/iris/v_20260305T131554/lr_identity.joblib",
+    "models/U01/iris/v_20260305T131554/lr_style.joblib"
+  ]
+}

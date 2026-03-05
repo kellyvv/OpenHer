@@ -84,6 +84,7 @@ N_CONTEXT = len(CONTEXT_FEATURES)
 RECURRENT_SIZE = 8
 INPUT_SIZE = N_DRIVES + N_CONTEXT + RECURRENT_SIZE
 HIDDEN_SIZE = 24
+WEIGHT_DECAY = 0.995  # L2 decay per step — prevents weight explosion / signal saturation
 
 
 # ══════════════════════════════════════════════
@@ -241,7 +242,7 @@ class Agent:
         # ── Genome: random neural network weights ──
         self.W1 = [[rng.gauss(0, 0.6) for _ in range(INPUT_SIZE)] for _ in range(HIDDEN_SIZE)]
         self.b1 = [rng.gauss(0, 0.3) for _ in range(HIDDEN_SIZE)]
-        self.W2 = [[rng.gauss(0, 0.5) for _ in range(HIDDEN_SIZE)] for _ in range(N_SIGNALS)]
+        self.W2 = [[rng.gauss(0, 0.2) for _ in range(HIDDEN_SIZE)] for _ in range(N_SIGNALS)]
         self.b2 = [rng.gauss(0, 0.2) for _ in range(N_SIGNALS)]
 
         # ── Recurrent state (internal "mood") ──
@@ -287,6 +288,7 @@ class Agent:
             z = self.b2[i]
             for j, h in enumerate(hidden):
                 z += self.W2[i][j] * h
+            z /= math.sqrt(HIDDEN_SIZE / 3)  # Scaled normalization — prevents sigmoid saturation while preserving signal spread
             raw_signals.append(z)
 
         # Sigmoid → [0, 1]
@@ -365,12 +367,14 @@ class Agent:
         self.total_reward += reward
         self.interaction_count += 1
 
-        # Prevent weight explosion from increased learning rate
+        # Weight decay + clamp — prevent weight explosion / signal saturation
         for i in range(N_SIGNALS):
             for j in range(HIDDEN_SIZE):
-                self.W2[i][j] = max(-3.0, min(3.0, self.W2[i][j]))
+                self.W2[i][j] *= WEIGHT_DECAY
+                self.W2[i][j] = max(-1.5, min(1.5, self.W2[i][j]))
         for i in range(HIDDEN_SIZE):
             for j in range(INPUT_SIZE):
+                self.W1[i][j] *= WEIGHT_DECAY
                 self.W1[i][j] = max(-2.0, min(2.0, self.W1[i][j]))
 
     def step(self, context: dict, reward: float = 0.0,

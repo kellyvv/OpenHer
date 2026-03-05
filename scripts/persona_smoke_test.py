@@ -41,10 +41,10 @@ class HealthBounds:
     w2_drift_min: float = 0.002     # Too low = not learning at all
     w2_drift_max: float = 0.800     # Too high = weight explosion (60-turn sim normal range: 0.10-0.58)
     baseline_max_drift: float = 0.15 # With ELASTICITY=0.05, theoretical max ~0.10
-    signal_spread_min: float = 0.05  # Minimum std across 8 signals (not collapsed)
+    signal_spread_min: float = 0.03  # Minimum std across 8 signals (continuous regime: ~0.05-0.10)
     signal_mean_min: float = 0.15    # Not all signals crushed to 0
     signal_mean_max: float = 0.85    # Not all signals saturated to 1
-    w2_max_abs: float = 3.5          # Clip is 3.0, allow small headroom
+    w2_max_abs: float = 2.0          # Clip is 1.5, allow small headroom
     w1_max_abs: float = 3.0          # Allow slightly above clip (clip is 2.0, transient overshoot OK)
     coupling_rate_min: float = 0.05  # At least 5% of turns show coupled learning
     drive_spread_min: float = 0.03   # Drives shouldn't all converge to same value
@@ -142,11 +142,11 @@ def run_smoke_test(persona, sequence_idx=0):
             sat = {d: max(0.0, reward * 0.05) for d in DRIVES} if reward > 0 else None
             agent.step(ctx, reward, drive_satisfaction=sat)
 
-            # Track coupling (signal shift > 0.1 correlated with reward direction)
+            # Track coupling (signal shift > 0.03 correlated with reward direction)
             if all_signals:
                 prev = all_signals[-1]
                 max_shift = max(abs(signals[s] - prev[s]) for s in SIGNALS)
-                if max_shift > 0.1 and abs(reward) > 0.15:
+                if max_shift > 0.03 and abs(reward) > 0.15:
                     coupling_events += 1
 
             all_signals.append(dict(signals))
