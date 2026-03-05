@@ -110,8 +110,16 @@ class DriveMetabolism:
         return sum(self.frustration.values())
 
     def temperature(self) -> float:
-        """Compute temperature from total frustration (per-persona coefficients)."""
-        return self.total() * self.temp_coeff + self.temp_floor
+        """Compute temperature from total frustration (tanh saturation curve).
+
+        Linear formula caused signal destruction at high frustration:
+          frust=5, coeff=0.10 → temp=0.52 → noise σ=0.52 → signals = random
+        Tanh saturates: same inputs → temp≈0.26 → signals still directional.
+        """
+        import math
+        total = self.total()
+        max_temp = self.temp_coeff * 2.5  # Saturation ceiling
+        return max_temp * math.tanh(total * self.temp_coeff / max_temp) + self.temp_floor
 
     def apply_thermodynamic_noise(self, base_signals: dict) -> dict:
         """

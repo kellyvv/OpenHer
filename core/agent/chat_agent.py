@@ -246,9 +246,15 @@ class ChatAgent:
             self.agent.drive_state[d] = self.agent.drive_baseline[d]
         self.agent._frustration = 0.0
 
-    def _build_actor_prompt(self, few_shot: str, signals: dict) -> str:
-        """Build the Actor system prompt with identity anchor + dynamic signals.
-        Identity anchor provides "who am I"; signal injection provides "how I feel now".
+    def _build_actor_prompt(self, few_shot: str, signals: dict, retrieval_signals: dict = None) -> str:
+        """
+        Build the Actor system prompt.
+
+        Args:
+            few_shot: Pre-built few-shot prompt string.
+            signals: Noisy signals for V5 number display (behavioral diversity).
+            retrieval_signals: Clean pre-noise signals for KNN retrieval
+                               (accurate genesis matching). Falls back to signals.
         """
         import time as _time
         import datetime as _dt
@@ -507,10 +513,8 @@ class ChatAgent:
                 system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
                 system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
-            # P1: Inject foresight prediction text
             if self._foresight_text:
                 system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
-            # P1: Inject profile from search
             if self._relevant_profile:
                 system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             # Track if this turn used relevant content
@@ -646,8 +650,8 @@ class ChatAgent:
 
             # ── Step 7-8: KNN + Actor prompt ──
             self.style_memory.set_clock(now)
-            few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
-            system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+            few_shot = self.style_memory.build_few_shot_prompt(base_signals, top_k=3)
+            system_prompt = self._build_actor_prompt(few_shot, noisy_signals, retrieval_signals=base_signals)
 
             # ── Step 8.5: Memory injection ──
             if self._session_ctx and self._session_ctx.has_history:
@@ -1098,8 +1102,8 @@ class ChatAgent:
 
         # ── Step 9: Build Actor prompt ──
         self.style_memory.set_clock(start)
-        few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+        few_shot = self.style_memory.build_few_shot_prompt(base_signals, top_k=3)
+        system_prompt = self._build_actor_prompt(few_shot, noisy_signals, retrieval_signals=base_signals)
 
         # ── Step 9.5: Memory injection (foresight is key driver here) ──
         if self._session_ctx and self._session_ctx.has_history:
