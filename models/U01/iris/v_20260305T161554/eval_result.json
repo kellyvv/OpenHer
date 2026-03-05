@@ -1,0 +1,17 @@
+{
+  "evaluated_at": "2026-03-05T16:15:55.025841",
+  "candidate_dir": "models/U01/iris/v_20260305T161554",
+  "user_id": "U01",
+  "days": 365,
+  "n_eval_rows": 430,
+  "n_scored_rows": 430,
+  "candidate_snips": 0.631869,
+  "baseline_snips": 0.510039,
+  "delta": 0.12183,
+  "threshold": 0.02,
+  "chunk_types": [
+    "style",
+    "identity"
+  ],
+  "decision": "APPROVE"
+}

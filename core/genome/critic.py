@@ -134,7 +134,22 @@ async def critic_sense(
         cleaned = re.sub(r'```json\s*', '', raw)
         cleaned = re.sub(r'```\s*', '', cleaned)
 
-        data = json.loads(cleaned)
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError:
+            # Fallback: extract first complete JSON object via bracket counting
+            start = cleaned.find('{')
+            if start == -1:
+                raise ValueError("No JSON object found in Critic output")
+            depth = 0
+            for i in range(start, len(cleaned)):
+                if cleaned[i] == '{': depth += 1
+                elif cleaned[i] == '}': depth -= 1
+                if depth == 0:
+                    data = json.loads(cleaned[start:i+1])
+                    break
+            else:
+                raise ValueError("Unbalanced braces in Critic output")
 
         # Parse 8D context (Critic-output dims only; EverMemOS 4D set by EMA in ChatAgent)
         raw_ctx = data.get('context', {})

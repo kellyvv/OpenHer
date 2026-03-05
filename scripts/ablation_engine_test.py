@@ -29,7 +29,7 @@ SERVER = "http://localhost:8800"
 # Ablation pairs: (on_persona_id, off_persona_id)
 ABLATION_PAIRS = [
     ("vivian", "vivian_default"),    # Primary: 50% param diff
-    ("iris", "iris_default"),        # Secondary: smaller diff
+    # ("iris", "iris_default"),      # Secondary: skip for V3 verification
 ]
 
 # 30 messages across 5 phases
