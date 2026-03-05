@@ -272,7 +272,9 @@ class ChatAgent:
 
         # Use pre-computed signals (same as KNN retrieval) — no re-computation
         signal_injection = self.agent.to_prompt_injection_from_signals(
-            signals, signal_overrides=self.persona.signal_overrides
+            signals,
+            signal_overrides=self.persona.signal_overrides,
+            frustration=self.metabolism.frustration,
         )
 
         # ── Signal change trend injection (compare to previous turn) ──

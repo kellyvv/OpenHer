@@ -73,6 +73,8 @@ def load_signal_config(fallback_signals: dict = None, fallback_drives: dict = No
             result['signals'][sig_name] = {
                 'label': sig_data.get('label', sig_name),
                 'emoji_label': sig_data.get('emoji_label', sig_name),
+                'low_anchor': sig_data.get('low_anchor', '低'),
+                'high_anchor': sig_data.get('high_anchor', '高'),
                 'buckets': [
                     (b['low'], b['high'], b['desc'])
                     for b in sig_data.get('buckets', [])

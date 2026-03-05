@@ -141,8 +141,21 @@ _FB_DESCRIPTIONS = {
     ],
 }
 
+_FB_ANCHORS = {
+    'directness': ('委婉', '直白'), 'vulnerability': ('封闭', '袒露'),
+    'playfulness': ('正经', '调皮'), 'initiative': ('被动', '主导'),
+    'depth': ('闲聊', '探底'), 'warmth': ('疏离', '热切'),
+    'defiance': ('随和', '硬杠'), 'curiosity': ('无感', '追问'),
+}
+
 _FB_SIGNAL_CONFIG = {
-    sig: {'label': _FB_SIG_CN[sig], 'emoji_label': SIGNAL_LABELS[sig], 'buckets': _FB_DESCRIPTIONS[sig]}
+    sig: {
+        'label': _FB_SIG_CN[sig],
+        'emoji_label': SIGNAL_LABELS[sig],
+        'low_anchor': _FB_ANCHORS[sig][0],
+        'high_anchor': _FB_ANCHORS[sig][1],
+        'buckets': _FB_DESCRIPTIONS[sig],
+    }
     for sig in SIGNALS
 }
 
@@ -461,13 +474,22 @@ class Agent:
         signals = self.compute_signals(context)
         return self.to_prompt_injection_from_signals(signals)
 
-    def to_prompt_injection_from_signals(self, signals: dict, signal_overrides: dict = None) -> str:
+    def to_prompt_injection_from_signals(
+        self, signals: dict,
+        signal_overrides: dict = None,
+        frustration: dict = None,
+    ) -> str:
         """
         Convert pre-computed behavioral signals into text for LLM system prompt.
-        v11: 3-bucket descriptions + numeric value tags + multi-drive tension + signal trends.
+        v12: De-descriptified — numbers + scale endpoints only, no bucket descriptions.
 
-        Signal descriptions, labels, and drive labels are loaded from
-        config/prompts/signal_buckets.yaml (falls back to module-level hardcoded defaults).
+        The LLM interprets signal values through persona + conversation context,
+        producing emergent behavior instead of executing static descriptions.
+
+        Args:
+            signals: 8D behavioral signals (0~1).
+            signal_overrides: Per-persona overrides for emoji_label / anchors.
+            frustration: Per-drive frustration dict from DriveMetabolism (0~5).
         """
         from core.prompt_registry import load_signal_config
 
@@ -479,59 +501,38 @@ class Agent:
         sig_config = config.get('signals', _FB_SIGNAL_CONFIG)
         drv_config = config.get('drives', _FB_DRIVE_CONFIG)
 
-        # Per-persona signal description overrides (deep copy to avoid polluting cache)
+        # Per-persona overrides (emoji_label, anchors)
         if signal_overrides:
             import copy
             sig_config = copy.deepcopy(sig_config)
             for sig_name, override in signal_overrides.items():
                 if sig_name in sig_config:
-                    if 'buckets' in override:
-                        sig_config[sig_name]['buckets'] = [
-                            (b['low'], b['high'], b['desc']) for b in override['buckets']
-                        ]
-                    if 'label' in override:
-                        sig_config[sig_name]['label'] = override['label']
-                    if 'emoji_label' in override:
-                        sig_config[sig_name]['emoji_label'] = override['emoji_label']
+                    for key in ('emoji_label', 'low_anchor', 'high_anchor'):
+                        if key in override:
+                            sig_config[sig_name][key] = override[key]
 
-        # ── Build signal state lines with numeric tags ──
-        lines = ["【你当前的状态】"]
+        # ── Signal state: number + scale endpoints ──
+        lines = [
+            "【你当前的状态】",
+            "（结合你的性格和当前对话，自然地体现这些状态，不要直接引用数字）",
+        ]
         for sig_name in SIGNALS:
             val = signals[sig_name]
             info = sig_config.get(sig_name, {})
-            fb_info = _FB_SIGNAL_CONFIG.get(sig_name, {})
-            sig_label = info.get('label', fb_info.get('label', sig_name))
-            buckets = info.get('buckets', fb_info.get('buckets', []))
-            for low, high, desc in buckets:
-                if val < high or high == 1.0:
-                    lines.append(f"- {desc} [{sig_label}: {val:.2f}]")
-                    break
+            emoji_label = info.get('emoji_label', sig_name)
+            lo = info.get('low_anchor', '低')
+            hi = info.get('high_anchor', '高')
+            lines.append(f"{emoji_label}: {val:.2f} (0{lo}→1{hi})")
 
-        # ── Multi-drive tension injection (top-2 drives) ──
-        sorted_drives = sorted(self.drive_state.items(), key=lambda x: x[1], reverse=True)
-        d1_name, d1_val = sorted_drives[0]
-        d2_name, d2_val = sorted_drives[1]
-
-        d1_label = drv_config.get(d1_name, {}).get('emoji_label', DRIVE_LABELS.get(d1_name, d1_name))
-        d2_label = drv_config.get(d2_name, {}).get('emoji_label', DRIVE_LABELS.get(d2_name, d2_name))
-
-        lines.append(f"\n【内在需求】")
-        lines.append(f"主驱力：{d1_label} ({d1_val:.2f})")
-        if d2_val > d1_val * 0.7:  # Only inject tension when secondary drive is strong enough
-            lines.append(f"次驱力：{d2_label} ({d2_val:.2f})")
-            lines.append(f"内心张力：{d1_name} 和 {d2_name} 之间的拉扯影响着你的表达方式")
-
-        # ── Internal contradiction hint ──
-        fp = self.personality_fingerprint(30)
-        if fp.get('contradictions'):
-            top_c = fp['contradictions'][0]
-            # Use emoji_label from config, split to get action word
-            c0_label = sig_config.get(top_c[0], {}).get('emoji_label', SIGNAL_LABELS.get(top_c[0], top_c[0]))
-            c1_label = sig_config.get(top_c[1], {}).get('emoji_label', SIGNAL_LABELS.get(top_c[1], top_c[1]))
-            lines.append(
-                f"【矛盾】你一方面想{c0_label.split(' ')[1]}，"
-                f"一方面又想{c1_label.split(' ')[1]}，这让你纠结"
-            )
+        # ── All 5 drives + per-drive frustration ──
+        lines.append("")
+        lines.append("【内在需求】")
+        frust = frustration or {}
+        for d in DRIVES:
+            d_label = drv_config.get(d, {}).get('emoji_label', d)
+            d_val = self.drive_state[d]
+            d_frust = frust.get(d, 0.0)
+            lines.append(f"{d_label}: {d_val:.2f} (渴望: {d_frust:.1f})")
 
         return '\n'.join(lines)
 
