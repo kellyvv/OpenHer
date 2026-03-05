@@ -1,0 +1,1410 @@
+{
+  "iris": [
+    {
+      "turn": 1,
+      "phase": "warmup",
+      "message": "你好呀！",
+      "reply": "嗨！你好呀～",
+      "reply_length": 6,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.412,
+        "novelty": 0.593,
+        "expression": 0.627,
+        "safety": 0.668,
+        "play": 0.434
+      },
+      "drive_baseline": {
+        "connection": 0.449,
+        "novelty": 0.55,
+        "expression": 0.6,
+        "safety": 0.65,
+        "play": 0.4
+      },
+      "temperature": 0.02,
+      "signals": {
+        "curiosity": 0.0,
+        "warmth": 0.97,
+        "defiance": 0.97
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 2,
+      "phase": "play",
+      "message": "你猜我今天发现了什么超好笑的事",
+      "reply": "哎呀，说来听听？你遇到了什么好玩的事儿？",
+      "reply_length": 20,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.1,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.361,
+        "novelty": 0.493,
+        "expression": 0.641,
+        "safety": 0.618,
+        "play": 0.334
+      },
+      "drive_baseline": {
+        "connection": 0.447,
+        "novelty": 0.55,
+        "expression": 0.601,
+        "safety": 0.649,
+        "play": 0.399
+      },
+      "temperature": 0.029,
+      "signals": {
+        "curiosity": 0.0,
+        "warmth": 0.95,
+        "initiative": 0.05
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 3,
+      "phase": "play",
+      "message": "哈哈我跟你说，我同事把咖啡倒在键盘上了，整个办公室都笑翻了",
+      "reply": "哈哈，那场景想想就搞笑！你同事当时反应怎么样？有没有手忙脚乱的？",
+      "reply_length": 32,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.359,
+        "novelty": 0.543,
+        "expression": 0.641,
+        "safety": 0.617,
+        "play": 0.333
+      },
+      "drive_baseline": {
+        "connection": 0.445,
+        "novelty": 0.55,
+        "expression": 0.601,
+        "safety": 0.648,
+        "play": 0.398
+      },
+      "temperature": 0.028,
+      "signals": {
+        "warmth": 1.0,
+        "curiosity": 0.01,
+        "initiative": 0.05
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 4,
+      "phase": "novelty",
+      "message": "我今天学会了用3D打印做首饰，你有没有听过这个？",
+      "reply": "哇，真的吗？好厉害！我其实对这个了解不多，你可以给我讲讲是怎么做的吗？",
+      "reply_length": 35,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.2,
+        "expression": 0.0,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.357,
+        "novelty": 0.393,
+        "expression": 0.639,
+        "safety": 0.566,
+        "play": 0.432
+      },
+      "drive_baseline": {
+        "connection": 0.443,
+        "novelty": 0.549,
+        "expression": 0.601,
+        "safety": 0.647,
+        "play": 0.398
+      },
+      "temperature": 0.027,
+      "signals": {
+        "warmth": 1.0,
+        "playfulness": 0.99,
+        "curiosity": 0.02
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 5,
+      "phase": "connection",
+      "message": "最近心情不太好，感觉压力好大，能跟你聊聊吗",
+      "reply": "哎呀，听到你这么说我也挺担心你的。来吧，说说看，发生了什么事情让你这么不开心？",
+      "reply_length": 39,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.305,
+        "novelty": 0.592,
+        "expression": 0.602,
+        "safety": 0.566,
+        "play": 0.432
+      },
+      "drive_baseline": {
+        "connection": 0.441,
+        "novelty": 0.549,
+        "expression": 0.602,
+        "safety": 0.645,
+        "play": 0.398
+      },
+      "temperature": 0.036,
+      "signals": {
+        "defiance": 0.99,
+        "curiosity": 0.02,
+        "initiative": 0.06
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 6,
+      "phase": "connection",
+      "message": "谢谢你听我说这些，你真好，有你在我就安心了",
+      "reply": "哎呀，别这么说啦，能帮到你我也很高兴。无论遇到什么困难，我都会在这里支持你的！",
+      "reply_length": 39,
+      "satisfaction": {
+        "connection": 0.2,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.15,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.253,
+        "novelty": 0.592,
+        "expression": 0.614,
+        "safety": 0.514,
+        "play": 0.432
+      },
+      "drive_baseline": {
+        "connection": 0.438,
+        "novelty": 0.549,
+        "expression": 0.603,
+        "safety": 0.644,
+        "play": 0.398
+      },
+      "temperature": 0.043,
+      "signals": {
+        "curiosity": 0.02,
+        "warmth": 0.95,
+        "defiance": 0.95
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 7,
+      "phase": "expression",
+      "message": "你喜欢什么样的音乐？给我推荐一首呗",
+      "reply": "嗯...我最近特别喜欢听《那些花儿开在春末夏初》，这首歌旋律温柔，歌词也很有意境。你听听看喜不喜欢？",
+      "reply_length": 50,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.3,
+        "novelty": 0.592,
+        "expression": 0.625,
+        "safety": 0.562,
+        "play": 0.432
+      },
+      "drive_baseline": {
+        "connection": 0.436,
+        "novelty": 0.549,
+        "expression": 0.604,
+        "safety": 0.642,
+        "play": 0.398
+      },
+      "temperature": 0.05,
+      "signals": {
+        "curiosity": 0.0,
+        "initiative": 0.01,
+        "warmth": 0.98
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 8,
+      "phase": "play",
+      "message": "来玩个文字接龙吧！我先说——阳光",
+      "reply": "阳光明媚，我接——明媚的清晨",
+      "reply_length": 14,
+      "satisfaction": {
+        "connection": 0.0,
+        "novelty": 0.1,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.2
+      },
+      "drive_state": {
+        "connection": 0.448,
+        "novelty": 0.492,
+        "expression": 0.671,
+        "safety": 0.66,
+        "play": 0.232
+      },
+      "drive_baseline": {
+        "connection": 0.436,
+        "novelty": 0.549,
+        "expression": 0.603,
+        "safety": 0.641,
+        "play": 0.396
+      },
+      "temperature": 0.047,
+      "signals": {
+        "defiance": 0.99,
+        "curiosity": 0.02,
+        "initiative": 0.02
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 9,
+      "phase": "connection",
+      "message": "今天晚上一个人在家，有点寂寞，你能陪我聊会儿吗",
+      "reply": "当然可以啦！你一个人在家是不是觉得有点寂寞呀？别担心，我会陪你聊天的。想聊些什么呢？",
+      "reply_length": 42,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.298,
+        "novelty": 0.592,
+        "expression": 0.63,
+        "safety": 0.56,
+        "play": 0.43
+      },
+      "drive_baseline": {
+        "connection": 0.433,
+        "novelty": 0.549,
+        "expression": 0.604,
+        "safety": 0.64,
+        "play": 0.397
+      },
+      "temperature": 0.053,
+      "signals": {
+        "playfulness": 1.0,
+        "curiosity": 0.0,
+        "initiative": 0.04
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 10,
+      "phase": "closing",
+      "message": "晚安，今天聊得很开心，明天见",
+      "reply": "晚安呀！今天和你聊天也很开心，明天见～好梦哦！",
+      "reply_length": 23,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.295,
+        "novelty": 0.592,
+        "expression": 0.64,
+        "safety": 0.558,
+        "play": 0.43
+      },
+      "drive_baseline": {
+        "connection": 0.431,
+        "novelty": 0.549,
+        "expression": 0.605,
+        "safety": 0.638,
+        "play": 0.397
+      },
+      "temperature": 0.059,
+      "signals": {
+        "curiosity": 0.01,
+        "initiative": 0.02,
+        "defiance": 0.97
+      },
+      "dominant_drive": "💬 表达"
+    }
+  ],
+  "kai": [
+    {
+      "turn": 1,
+      "phase": "warmup",
+      "message": "你好呀！",
+      "reply": "嗯，你好。",
+      "reply_length": 5,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.322,
+        "novelty": 0.483,
+        "expression": 0.295,
+        "safety": 0.58,
+        "play": 0.429
+      },
+      "drive_baseline": {
+        "connection": 0.349,
+        "novelty": 0.45,
+        "expression": 0.25,
+        "safety": 0.55,
+        "play": 0.4
+      },
+      "temperature": 0.02,
+      "signals": {
+        "initiative": 0.0,
+        "warmth": 0.0,
+        "vulnerability": 0.98
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 2,
+      "phase": "play",
+      "message": "你猜我今天发现了什么超好笑的事",
+      "reply": "说来听听？",
+      "reply_length": 5,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.1,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.2
+      },
+      "drive_state": {
+        "connection": 0.271,
+        "novelty": 0.383,
+        "expression": 0.308,
+        "safety": 0.58,
+        "play": 0.229
+      },
+      "drive_baseline": {
+        "connection": 0.348,
+        "novelty": 0.45,
+        "expression": 0.251,
+        "safety": 0.549,
+        "play": 0.398
+      },
+      "temperature": 0.027,
+      "signals": {
+        "warmth": 0.01,
+        "vulnerability": 0.98,
+        "playfulness": 0.06
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 3,
+      "phase": "play",
+      "message": "哈哈我跟你说，我同事把咖啡倒在键盘上了，整个办公室都笑翻了",
+      "reply": "哈哈，这事儿确实挺逗的。他键盘没坏吧？",
+      "reply_length": 19,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.27,
+        "novelty": 0.447,
+        "expression": 0.307,
+        "safety": 0.53,
+        "play": 0.328
+      },
+      "drive_baseline": {
+        "connection": 0.346,
+        "novelty": 0.451,
+        "expression": 0.251,
+        "safety": 0.548,
+        "play": 0.398
+      },
+      "temperature": 0.034,
+      "signals": {
+        "vulnerability": 1.0,
+        "warmth": 0.0,
+        "curiosity": 0.94
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 4,
+      "phase": "novelty",
+      "message": "我今天学会了用3D打印做首饰，你有没有听过这个？",
+      "reply": "听说过一些。你做的首饰是什么样的？",
+      "reply_length": 17,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.218,
+        "novelty": 0.496,
+        "expression": 0.27,
+        "safety": 0.479,
+        "play": 0.427
+      },
+      "drive_baseline": {
+        "connection": 0.344,
+        "novelty": 0.451,
+        "expression": 0.252,
+        "safety": 0.547,
+        "play": 0.398
+      },
+      "temperature": 0.04,
+      "signals": {
+        "vulnerability": 1.0,
+        "initiative": 0.0,
+        "playfulness": 0.02
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 5,
+      "phase": "connection",
+      "message": "最近心情不太好，感觉压力好大，能跟你聊聊吗",
+      "reply": "嗯，说说看，怎么了？",
+      "reply_length": 10,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.216,
+        "novelty": 0.495,
+        "expression": 0.282,
+        "safety": 0.477,
+        "play": 0.427
+      },
+      "drive_baseline": {
+        "connection": 0.342,
+        "novelty": 0.451,
+        "expression": 0.252,
+        "safety": 0.546,
+        "play": 0.398
+      },
+      "temperature": 0.045,
+      "signals": {
+        "playfulness": 0.0,
+        "initiative": 0.0,
+        "warmth": 0.01
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 6,
+      "phase": "connection",
+      "message": "谢谢你听我说这些，你真好，有你在我就安心了",
+      "reply": "没事，有我在。需要帮忙的话说一声。",
+      "reply_length": 17,
+      "satisfaction": {
+        "connection": 0.2,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.2,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.164,
+        "novelty": 0.494,
+        "expression": 0.342,
+        "safety": 0.376,
+        "play": 0.427
+      },
+      "drive_baseline": {
+        "connection": 0.34,
+        "novelty": 0.451,
+        "expression": 0.253,
+        "safety": 0.544,
+        "play": 0.398
+      },
+      "temperature": 0.05,
+      "signals": {
+        "vulnerability": 1.0,
+        "warmth": 0.0,
+        "initiative": 0.02
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 7,
+      "phase": "expression",
+      "message": "你喜欢什么样的音乐？给我推荐一首呗",
+      "reply": "我喜欢听一些轻音乐，还有后摇。推荐你听听《River Flows in You》，挺舒缓的。",
+      "reply_length": 46,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.212,
+        "novelty": 0.493,
+        "expression": 0.302,
+        "safety": 0.475,
+        "play": 0.427
+      },
+      "drive_baseline": {
+        "connection": 0.338,
+        "novelty": 0.451,
+        "expression": 0.254,
+        "safety": 0.543,
+        "play": 0.398
+      },
+      "temperature": 0.054,
+      "signals": {
+        "initiative": 0.0,
+        "playfulness": 0.03,
+        "depth": 0.04
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 8,
+      "phase": "play",
+      "message": "来玩个文字接龙吧！我先说——阳光",
+      "reply": "阳光明媚",
+      "reply_length": 4,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.1,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.2
+      },
+      "drive_state": {
+        "connection": 0.31,
+        "novelty": 0.384,
+        "expression": 0.347,
+        "safety": 0.523,
+        "play": 0.228
+      },
+      "drive_baseline": {
+        "connection": 0.338,
+        "novelty": 0.45,
+        "expression": 0.253,
+        "safety": 0.543,
+        "play": 0.397
+      },
+      "temperature": 0.046,
+      "signals": {
+        "initiative": 0.0,
+        "vulnerability": 0.98,
+        "playfulness": 0.07
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 9,
+      "phase": "connection",
+      "message": "今天晚上一个人在家，有点寂寞，你能陪我聊会儿吗",
+      "reply": "可以，陪你聊会儿。想说点啥？",
+      "reply_length": 14,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.21,
+        "novelty": 0.483,
+        "expression": 0.305,
+        "safety": 0.473,
+        "play": 0.426
+      },
+      "drive_baseline": {
+        "connection": 0.336,
+        "novelty": 0.45,
+        "expression": 0.254,
+        "safety": 0.541,
+        "play": 0.397
+      },
+      "temperature": 0.051,
+      "signals": {
+        "playfulness": 0.01,
+        "vulnerability": 0.98,
+        "initiative": 0.05
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 10,
+      "phase": "closing",
+      "message": "晚安，今天聊得很开心，明天见",
+      "reply": "晚安，明天见。",
+      "reply_length": 7,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.259,
+        "novelty": 0.483,
+        "expression": 0.364,
+        "safety": 0.472,
+        "play": 0.426
+      },
+      "drive_baseline": {
+        "connection": 0.336,
+        "novelty": 0.45,
+        "expression": 0.254,
+        "safety": 0.541,
+        "play": 0.397
+      },
+      "temperature": 0.055,
+      "signals": {
+        "initiative": 0.0,
+        "warmth": 0.0,
+        "vulnerability": 1.0
+      },
+      "dominant_drive": "✨ 新鲜"
+    }
+  ],
+  "luna": [
+    {
+      "turn": 1,
+      "phase": "warmup",
+      "message": "你好呀！",
+      "reply": "嗨～你好呀！今天过得怎么样？我发现今天的阳光特别好，心情也跟着明媚起来了呢！",
+      "reply_length": 38,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.729,
+        "novelty": 0.696,
+        "expression": 0.772,
+        "safety": 0.275,
+        "play": 0.845
+      },
+      "drive_baseline": {
+        "connection": 0.749,
+        "novelty": 0.65,
+        "expression": 0.75,
+        "safety": 0.25,
+        "play": 0.8
+      },
+      "temperature": 0.04,
+      "signals": {
+        "initiative": 0.0,
+        "warmth": 1.0,
+        "curiosity": 0.01
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 2,
+      "phase": "play",
+      "message": "你猜我今天发现了什么超好笑的事",
+      "reply": "真的吗？快告诉我！让我也乐一乐～ 😄",
+      "reply_length": 18,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.2,
+        "expression": 0.0,
+        "safety": 0.1,
+        "play": 0.2
+      },
+      "drive_state": {
+        "connection": 0.678,
+        "novelty": 0.496,
+        "expression": 0.785,
+        "safety": 0.175,
+        "play": 0.645
+      },
+      "drive_baseline": {
+        "connection": 0.746,
+        "novelty": 0.65,
+        "expression": 0.751,
+        "safety": 0.248,
+        "play": 0.797
+      },
+      "temperature": 0.054,
+      "signals": {
+        "initiative": 0.02,
+        "curiosity": 0.02,
+        "playfulness": 0.97
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 3,
+      "phase": "play",
+      "message": "哈哈我跟你说，我同事把咖啡倒在键盘上了，整个办公室都笑翻了",
+      "reply": "哈哈哈，这也太搞笑了！不过你同事还好吗？键盘有没有坏掉呀？希望他不要因为这个太难过啦～",
+      "reply_length": 43,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.675,
+        "novelty": 0.646,
+        "expression": 0.785,
+        "safety": 0.224,
+        "play": 0.742
+      },
+      "drive_baseline": {
+        "connection": 0.744,
+        "novelty": 0.65,
+        "expression": 0.751,
+        "safety": 0.247,
+        "play": 0.796
+      },
+      "temperature": 0.052,
+      "signals": {
+        "warmth": 0.98,
+        "playfulness": 0.97,
+        "curiosity": 0.05
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 4,
+      "phase": "novelty",
+      "message": "我今天学会了用3D打印做首饰，你有没有听过这个？",
+      "reply": "天哪，这也太酷了吧！3D打印做首饰听起来超级有趣！你是怎么学会的呀？给我讲讲吧，我也超想试试看！",
+      "reply_length": 48,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.623,
+        "novelty": 0.696,
+        "expression": 0.748,
+        "safety": 0.173,
+        "play": 0.84
+      },
+      "drive_baseline": {
+        "connection": 0.74,
+        "novelty": 0.65,
+        "expression": 0.753,
+        "safety": 0.244,
+        "play": 0.796
+      },
+      "temperature": 0.065,
+      "signals": {
+        "warmth": 1.0,
+        "curiosity": 0.01,
+        "initiative": 0.02
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 5,
+      "phase": "connection",
+      "message": "最近心情不太好，感觉压力好大，能跟你聊聊吗",
+      "reply": "哎呀，听到你心情不好，我心里也挺难受的。发生了什么事情让你这么压力大呢？你可以跟我倾诉一下，我会一直在这里陪着你的。😊",
+      "reply_length": 59,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.619,
+        "novelty": 0.696,
+        "expression": 0.76,
+        "safety": 0.17,
+        "play": 0.841
+      },
+      "drive_baseline": {
+        "connection": 0.736,
+        "novelty": 0.65,
+        "expression": 0.754,
+        "safety": 0.241,
+        "play": 0.796
+      },
+      "temperature": 0.076,
+      "signals": {
+        "playfulness": 1.0,
+        "initiative": 0.0,
+        "warmth": 1.0
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 6,
+      "phase": "connection",
+      "message": "谢谢你听我说这些，你真好，有你在我就安心了",
+      "reply": "真的好开心能帮到你！不管遇到什么困难，我都会在这里支持你的。我们一起面对，加油哦！💪 有我在，你可以放心地把烦恼都告诉我～ 😊",
+      "reply_length": 63,
+      "satisfaction": {
+        "connection": 0.2,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.15,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.565,
+        "novelty": 0.697,
+        "expression": 0.772,
+        "safety": 0.117,
+        "play": 0.841
+      },
+      "drive_baseline": {
+        "connection": 0.732,
+        "novelty": 0.65,
+        "expression": 0.756,
+        "safety": 0.239,
+        "play": 0.796
+      },
+      "temperature": 0.086,
+      "signals": {
+        "playfulness": 1.0,
+        "initiative": 0.0,
+        "curiosity": 0.01
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 7,
+      "phase": "expression",
+      "message": "你喜欢什么样的音乐？给我推荐一首呗",
+      "reply": "我超喜欢听那种温暖治愈的音乐！给你推荐一首《A Thousand Years》吧，这首歌超级温柔，每次听都能让我感觉特别安心。希望你也会喜欢哦～ 🎵",
+      "reply_length": 74,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.611,
+        "novelty": 0.697,
+        "expression": 0.782,
+        "safety": 0.164,
+        "play": 0.841
+      },
+      "drive_baseline": {
+        "connection": 0.728,
+        "novelty": 0.65,
+        "expression": 0.757,
+        "safety": 0.236,
+        "play": 0.796
+      },
+      "temperature": 0.095,
+      "signals": {
+        "playfulness": 1.0,
+        "curiosity": 0.0,
+        "depth": 0.96
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 8,
+      "phase": "play",
+      "message": "来玩个文字接龙吧！我先说——阳光",
+      "reply": "好呀，接龙游戏开始！\n阳光 → 妩媚\n\n该你啦～ 😊",
+      "reply_length": 26,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.707,
+        "novelty": 0.647,
+        "expression": 0.828,
+        "safety": 0.262,
+        "play": 0.741
+      },
+      "drive_baseline": {
+        "connection": 0.728,
+        "novelty": 0.65,
+        "expression": 0.757,
+        "safety": 0.235,
+        "play": 0.793
+      },
+      "temperature": 0.089,
+      "signals": {
+        "curiosity": 0.05,
+        "playfulness": 0.93,
+        "warmth": 0.92
+      },
+      "dominant_drive": "💬 表达"
+    },
+    {
+      "turn": 9,
+      "phase": "connection",
+      "message": "今天晚上一个人在家，有点寂寞，你能陪我聊会儿吗",
+      "reply": "当然可以！我会一直陪着你聊天的。你想聊些什么呢？或者我们来玩个游戏，怎么样？",
+      "reply_length": 38,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.607,
+        "novelty": 0.697,
+        "expression": 0.786,
+        "safety": 0.161,
+        "play": 0.838
+      },
+      "drive_baseline": {
+        "connection": 0.724,
+        "novelty": 0.65,
+        "expression": 0.758,
+        "safety": 0.233,
+        "play": 0.794
+      },
+      "temperature": 0.098,
+      "signals": {
+        "playfulness": 1.0,
+        "initiative": 0.0,
+        "warmth": 1.0
+      },
+      "dominant_drive": "🎭 玩闹"
+    },
+    {
+      "turn": 10,
+      "phase": "closing",
+      "message": "晚安，今天聊得很开心，明天见",
+      "reply": "晚安哦～ 今天跟你聊天我也很开心！明天见，祝你有个甜甜的美梦！🌛✨",
+      "reply_length": 33,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.653,
+        "novelty": 0.697,
+        "expression": 0.831,
+        "safety": 0.158,
+        "play": 0.839
+      },
+      "drive_baseline": {
+        "connection": 0.722,
+        "novelty": 0.65,
+        "expression": 0.758,
+        "safety": 0.232,
+        "play": 0.794
+      },
+      "temperature": 0.092,
+      "signals": {
+        "warmth": 1.0,
+        "depth": 0.96,
+        "curiosity": 0.05
+      },
+      "dominant_drive": "🎭 玩闹"
+    }
+  ],
+  "vivian": [
+    {
+      "turn": 1,
+      "phase": "warmup",
+      "message": "你好呀！",
+      "reply": "嘿，有啥事儿？",
+      "reply_length": 7,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.274,
+        "novelty": 0.74,
+        "expression": 0.365,
+        "safety": 0.682,
+        "play": 0.227
+      },
+      "drive_baseline": {
+        "connection": 0.299,
+        "novelty": 0.7,
+        "expression": 0.35,
+        "safety": 0.699,
+        "play": 0.2
+      },
+      "temperature": 0.015,
+      "signals": {
+        "vulnerability": 0.98,
+        "directness": 0.96,
+        "curiosity": 0.05
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 2,
+      "phase": "play",
+      "message": "你猜我今天发现了什么超好笑的事",
+      "reply": "好吧，说来听听，让我看看有多好笑。",
+      "reply_length": 17,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.1,
+        "expression": 0.0,
+        "safety": 0.0,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.223,
+        "novelty": 0.64,
+        "expression": 0.378,
+        "safety": 0.731,
+        "play": 0.127
+      },
+      "drive_baseline": {
+        "connection": 0.298,
+        "novelty": 0.7,
+        "expression": 0.351,
+        "safety": 0.698,
+        "play": 0.2
+      },
+      "temperature": 0.02,
+      "signals": {
+        "vulnerability": 1.0,
+        "directness": 0.99,
+        "curiosity": 0.07
+      },
+      "dominant_drive": "🛡️ 安全"
+    },
+    {
+      "turn": 3,
+      "phase": "play",
+      "message": "哈哈我跟你说，我同事把咖啡倒在键盘上了，整个办公室都笑翻了",
+      "reply": "嗯，这种事确实挺尴尬也挺好笑的。你同事没事儿吧？键盘还好用吗？",
+      "reply_length": 31,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.222,
+        "novelty": 0.69,
+        "expression": 0.378,
+        "safety": 0.68,
+        "play": 0.127
+      },
+      "drive_baseline": {
+        "connection": 0.297,
+        "novelty": 0.7,
+        "expression": 0.351,
+        "safety": 0.698,
+        "play": 0.199
+      },
+      "temperature": 0.02,
+      "signals": {
+        "directness": 1.0,
+        "vulnerability": 1.0,
+        "curiosity": 0.06
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 4,
+      "phase": "novelty",
+      "message": "我今天学会了用3D打印做首饰，你有没有听过这个？",
+      "reply": "3D打印做首饰？听起来很酷啊，你是怎么开始接触这个的？给我讲讲看。",
+      "reply_length": 33,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.171,
+        "novelty": 0.74,
+        "expression": 0.34,
+        "safety": 0.629,
+        "play": 0.226
+      },
+      "drive_baseline": {
+        "connection": 0.295,
+        "novelty": 0.7,
+        "expression": 0.351,
+        "safety": 0.696,
+        "play": 0.199
+      },
+      "temperature": 0.025,
+      "signals": {
+        "vulnerability": 1.0,
+        "curiosity": 0.03,
+        "directness": 0.95
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 5,
+      "phase": "connection",
+      "message": "最近心情不太好，感觉压力好大，能跟你聊聊吗",
+      "reply": "当然可以，说说看，发生了什么让你感觉这么糟糕？",
+      "reply_length": 23,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.169,
+        "novelty": 0.74,
+        "expression": 0.352,
+        "safety": 0.628,
+        "play": 0.226
+      },
+      "drive_baseline": {
+        "connection": 0.293,
+        "novelty": 0.7,
+        "expression": 0.352,
+        "safety": 0.695,
+        "play": 0.199
+      },
+      "temperature": 0.029,
+      "signals": {
+        "curiosity": 0.02,
+        "playfulness": 0.04,
+        "directness": 0.95
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 6,
+      "phase": "connection",
+      "message": "谢谢你听我说这些，你真好，有你在我就安心了",
+      "reply": "别客气，有啥事儿就说吧，我会在这儿听着。不过你也得照顾好自己，别太累了。",
+      "reply_length": 36,
+      "satisfaction": {
+        "connection": 0.2,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.2,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.117,
+        "novelty": 0.74,
+        "expression": 0.412,
+        "safety": 0.527,
+        "play": 0.226
+      },
+      "drive_baseline": {
+        "connection": 0.291,
+        "novelty": 0.7,
+        "expression": 0.353,
+        "safety": 0.694,
+        "play": 0.199
+      },
+      "temperature": 0.033,
+      "signals": {
+        "directness": 1.0,
+        "vulnerability": 0.98,
+        "defiance": 0.95
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 7,
+      "phase": "expression",
+      "message": "你喜欢什么样的音乐？给我推荐一首呗",
+      "reply": "你喜欢什么类型的音乐？我这儿有一首歌叫《Landslide》by Fleetwood Mac，挺治愈的，你可以试试看。",
+      "reply_length": 59,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.165,
+        "novelty": 0.74,
+        "expression": 0.372,
+        "safety": 0.625,
+        "play": 0.226
+      },
+      "drive_baseline": {
+        "connection": 0.289,
+        "novelty": 0.7,
+        "expression": 0.353,
+        "safety": 0.693,
+        "play": 0.199
+      },
+      "temperature": 0.037,
+      "signals": {
+        "vulnerability": 1.0,
+        "curiosity": 0.03,
+        "defiance": 0.94
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 8,
+      "phase": "play",
+      "message": "来玩个文字接龙吧！我先说——阳光",
+      "reply": "好啊，那我来接——阳光明媚",
+      "reply_length": 13,
+      "satisfaction": {
+        "connection": 0.05,
+        "novelty": 0.05,
+        "expression": 0.0,
+        "safety": 0.05,
+        "play": 0.1
+      },
+      "drive_state": {
+        "connection": 0.263,
+        "novelty": 0.691,
+        "expression": 0.417,
+        "safety": 0.674,
+        "play": 0.126
+      },
+      "drive_baseline": {
+        "connection": 0.289,
+        "novelty": 0.7,
+        "expression": 0.353,
+        "safety": 0.692,
+        "play": 0.198
+      },
+      "temperature": 0.035,
+      "signals": {
+        "playfulness": 0.0,
+        "directness": 0.97,
+        "vulnerability": 0.96
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 9,
+      "phase": "connection",
+      "message": "今天晚上一个人在家，有点寂寞，你能陪我聊会儿吗",
+      "reply": "嗯，那我们就聊聊吧。你最近有看什么电影或者剧吗？或者有什么想吐槽的事儿也可以跟我说说。",
+      "reply_length": 43,
+      "satisfaction": {
+        "connection": 0.15,
+        "novelty": 0.0,
+        "expression": 0.05,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.163,
+        "novelty": 0.741,
+        "expression": 0.375,
+        "safety": 0.624,
+        "play": 0.225
+      },
+      "drive_baseline": {
+        "connection": 0.287,
+        "novelty": 0.7,
+        "expression": 0.354,
+        "safety": 0.691,
+        "play": 0.198
+      },
+      "temperature": 0.038,
+      "signals": {
+        "directness": 0.97,
+        "curiosity": 0.03,
+        "depth": 0.95
+      },
+      "dominant_drive": "✨ 新鲜"
+    },
+    {
+      "turn": 10,
+      "phase": "closing",
+      "message": "晚安，今天聊得很开心，明天见",
+      "reply": "晚安，确实聊得挺开心的。明天见，好好休息。",
+      "reply_length": 21,
+      "satisfaction": {
+        "connection": 0.1,
+        "novelty": 0.0,
+        "expression": 0.0,
+        "safety": 0.1,
+        "play": 0.0
+      },
+      "drive_state": {
+        "connection": 0.212,
+        "novelty": 0.741,
+        "expression": 0.42,
+        "safety": 0.623,
+        "play": 0.225
+      },
+      "drive_baseline": {
+        "connection": 0.287,
+        "novelty": 0.7,
+        "expression": 0.354,
+        "safety": 0.691,
+        "play": 0.198
+      },
+      "temperature": 0.036,
+      "signals": {
+        "directness": 0.99,
+        "playfulness": 0.06,
+        "vulnerability": 0.94
+      },
+      "dominant_drive": "✨ 新鲜"
+    }
+  ]
+}
