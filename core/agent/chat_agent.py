@@ -181,7 +181,7 @@ class ChatAgent:
         self._prev_signals: Optional[dict] = None  # Previous turn signals for trend injection
         self._last_reward: float = 0.0
         self._last_modality: str = ""
-
+        self._last_drive_satisfaction: dict = {}
         # ── Concurrency lock (R2: serialize chat/stream/proactive_tick) ──
         self._turn_lock = asyncio.Lock()
 
@@ -520,7 +520,7 @@ class ChatAgent:
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
         self.agent.step(context, reward=clamped_reward, drive_satisfaction=drive_satisfaction)
-
+        self._last_drive_satisfaction = drive_satisfaction
         # ── Update state ──
         self.history.append(ChatMessage(role="user", content=user_message))
         self.history.append(ChatMessage(role="assistant", content=reply))
@@ -675,7 +675,7 @@ class ChatAgent:
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
             self.agent.step(context, reward=clamped_reward, drive_satisfaction=drive_satisfaction)
-
+            self._last_drive_satisfaction = drive_satisfaction
             # Update history
             self.history.append(ChatMessage(role="user", content=user_message))
             self.history.append(ChatMessage(role="assistant", content=reply))
@@ -916,6 +916,8 @@ class ChatAgent:
             "persona": self.persona.name,
             "dominant_drive": DRIVE_LABELS.get(dominant_drive, dominant_drive),
             "drive_baseline": {d: round(self.agent.drive_baseline[d], 3) for d in DRIVES},
+            "drive_state": {d: round(self.agent.drive_state[d], 3) for d in DRIVES},
+            "drive_satisfaction": {d: round(v, 3) for d, v in self._last_drive_satisfaction.items()} if self._last_drive_satisfaction else {},
             "signals": signals_summary,
             "temperature": metabolism_status['temperature'],
             "frustration": metabolism_status['total'],
