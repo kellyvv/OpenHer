@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────
+# OpenHer — Memory Configuration
+# ─────────────────────────────────────────────
+# All EverMemOS integration toggles in one place.
+# Override any value with env var: OPENHER_MEMORY__<KEY>=value
+
+evermemos:
+  enabled: true                  # Master switch — false = local mode only
+
+  # Retrieval settings
+  retrieve_method: "rrf"         # rrf | hybrid | agentic
+  agentic_rollout_pct: 0         # 0-100: % of requests using agentic (A/B)
+  search_timeout_sec: 3.0        # Hard timeout per search call
+  load_timeout_sec: 5.0          # Hard timeout for session context load
+
+  # Budget limits (max items injected into Actor prompt)
+  foresight_max_items: 3         # Max foresight predictions to inject
+  foresight_max_chars: 200       # Max chars per foresight item (prevents prompt bloat)
+  profile_max_items: 5           # Max profile attrs from search
+  facts_max_items: 5             # Max event_log facts from RRF
+  episodes_max_items: 3          # Max episode summaries from RRF
+
+  # Circuit breaker
+  circuit_breaker_enabled: true
+  failure_threshold: 5           # Consecutive failures before disabling
+  recovery_timeout_sec: 60       # Seconds before retrying after disable
+
+  # Logging / metrics
+  log_hit_rates: true            # Log foresight/profile/fact hit rates per turn
+  log_latency: true              # Log retrieval latency (ms)
+
+  # Proactive tick (Drive-driven autonomous messaging)
+  impulse_threshold: 0.8         # Drive deviation score threshold (0~2, lower = more proactive)
+  proactive_cooldown_hours: 4    # Min hours between proactive messages per user
+  proactive_max_pending: 3       # Max pending outbox messages per user
+  proactive_lock_ttl_sec: 600    # Lease TTL for cross-instance lock

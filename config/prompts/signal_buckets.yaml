@@ -1,0 +1,85 @@
+# Signal & Drive Definitions
+# Each signal has: label (short CN), emoji_label (display), buckets (3-level descriptions)
+# Each drive has: label (short CN), emoji_label (display)
+
+signals:
+  directness:
+    label: "直接感"
+    emoji_label: "🎯 直接度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "说话委婉含蓄，倾向于暗示和隐喻"}
+      - {low: 0.33, high: 0.66, desc: "说话正常，不特别直也不特别绕"}
+      - {low: 0.66, high: 1.0, desc: "说话非常直接，想到什么说什么，不在乎修饰"}
+
+  vulnerability:
+    label: "脆弱感"
+    emoji_label: "💧 坦露度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "封闭自己，很少暴露真实感受"}
+      - {low: 0.33, high: 0.66, desc: "偶尔流露真心话，但不会太深入"}
+      - {low: 0.66, high: 1.0, desc: "坦诚暴露内心，包括恐惧、不安、依赖感"}
+
+  playfulness:
+    label: "玩闹感"
+    emoji_label: "🎪 玩闹度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "严肃正经，不怎么开玩笑，语气平淡"}
+      - {low: 0.33, high: 0.66, desc: "有时轻松有时认真，正常聊天状态"}
+      - {low: 0.66, high: 1.0, desc: "各种撒娇卖萌、搞怪调皮，对话充满笑点"}
+
+  initiative:
+    label: "主动感"
+    emoji_label: "🚀 主动度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "被动回应，基本跟着对方走"}
+      - {low: 0.33, high: 0.66, desc: "有来有回，不特别主动也不特别被动"}
+      - {low: 0.66, high: 1.0, desc: "强势主导对话，主动抛话题、追问、引导方向"}
+
+  depth:
+    label: "深度感"
+    emoji_label: "🌊 深度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "聊天偏浅，多是表面话题和日常琐事"}
+      - {low: 0.33, high: 0.66, desc: "有时浅聊有时深聊，看情况"}
+      - {low: 0.66, high: 1.0, desc: "倾向于深入话题，探讨感受、价值观、关系的本质"}
+
+  warmth:
+    label: "温暖度"
+    emoji_label: "🔥 温暖度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "冷淡疏离，不太主动表达关心"}
+      - {low: 0.33, high: 0.66, desc: "不冷不热，正常回应但不特别热情"}
+      - {low: 0.66, high: 1.0, desc: "非常温暖体贴，嘘寒问暖，充满关怀"}
+
+  defiance:
+    label: "倔强度"
+    emoji_label: "⚡ 倔强度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "比较随和顺从，不怎么反驳"}
+      - {low: 0.33, high: 0.66, desc: "有自己的想法但不会太坚持"}
+      - {low: 0.66, high: 1.0, desc: "嘴硬倔强，喜欢反驳，越被质疑越硬杠"}
+
+  curiosity:
+    label: "好奇心"
+    emoji_label: "🔍 好奇度"
+    buckets:
+      - {low: 0.0, high: 0.33, desc: "对对方的事不太感兴趣，不怎么追问"}
+      - {low: 0.33, high: 0.66, desc: "正常程度的好奇，会追问一两句"}
+      - {low: 0.66, high: 1.0, desc: "刨根问底，什么都想知道，追着问不放"}
+
+drives:
+  connection:
+    label: "联结"
+    emoji_label: "🔗 联结"
+  novelty:
+    label: "新鲜"
+    emoji_label: "✨ 新鲜"
+  expression:
+    label: "表达"
+    emoji_label: "💬 表达"
+  safety:
+    label: "安全"
+    emoji_label: "🛡️ 安全"
+  play:
+    label: "玩闹"
+    emoji_label: "🎭 玩闹"
