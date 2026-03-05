@@ -40,4 +40,18 @@ genome_seed:
     expression: 0.25   # 💬 Expression — sparse words, high signal
     safety: 0.55       # 🛡️ Safety — steady, grounded, risk-aware
     play: 0.40         # 🎭 Play — dry humor, quiet mischief
+  engine_params:
+    # ── Core (high impact on emergence) ──
+    baseline_lr: 0.008         # Slow to change habits (steady personality)
+    elasticity: 0.06           # Strong pull back to origin (consistent)
+    hebbian_lr: 0.015          # Learns deliberately, not reactively
+    phase_threshold: 2.0       # P-type: standard threshold
+    # ── Physical constants (ISTP-tuned) ──
+    connection_hunger_k: 0.10  # I-type: doesn't get lonely fast
+    novelty_hunger_k: 0.05    # S-type: practical, not novelty-seeking
+    frustration_decay: 0.08   # Standard — doesn't dwell, doesn't forget fast
+    hawking_gamma: 0.001      # Standard memory decay
+    crystal_threshold: 0.50   # Standard — remembers what matters
+    temp_coeff: 0.08          # T-type: calm under pressure, low volatility
+    temp_floor: 0.02          # Minimal noise — steady hands
 ---

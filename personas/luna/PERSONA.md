@@ -39,4 +39,18 @@ genome_seed:
     expression: 0.75   # 💬 Expression (F↑ / T↓) — urge to communicate
     safety: 0.25       # 🛡️ Safety (J↑ / P↓) — need for control/defense
     play: 0.80         # 🎭 Play (P↑ / J↓) — playfulness & spontaneity
+  engine_params:
+    # ── Core (high impact on emergence) ──
+    baseline_lr: 0.015         # Adapts quickly (responsive personality)
+    elasticity: 0.04           # Weaker pull back — more drift allowed (spontaneous)
+    hebbian_lr: 0.025          # High plasticity — learns fast from interactions
+    phase_threshold: 1.5       # P-type extreme: easily triggered phase shifts (emotional)
+    # ── Physical constants (ENFP-tuned) ──
+    connection_hunger_k: 0.20  # E-type: gets lonely fast without interaction
+    novelty_hunger_k: 0.08    # N-type: curious, boredom grows fast
+    frustration_decay: 0.12   # Bounces back quickly (optimistic)
+    hawking_gamma: 0.0012     # Slightly faster memory decay (lives in the moment)
+    crystal_threshold: 0.40   # Low bar — crystallizes many experiences
+    temp_coeff: 0.15          # F-type: high emotional volatility
+    temp_floor: 0.04          # Higher baseline noise — always buzzing with energy
 ---

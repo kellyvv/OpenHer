@@ -40,4 +40,18 @@ genome_seed:
     expression: 0.35   # 💬 Expression (F↑ / T↓) — urge to communicate
     safety: 0.70       # 🛡️ Safety (J↑ / P↓) — need for control/defense
     play: 0.20         # 🎭 Play (P↑ / J↓) — playfulness & spontaneity
+  engine_params:
+    # ── Core (high impact on emergence) ──
+    baseline_lr: 0.008         # Slow to change (principled, deliberate)
+    elasticity: 0.07           # Strong pull back (consistent worldview)
+    hebbian_lr: 0.018          # Moderate plasticity — learns but filters
+    phase_threshold: 3.0       # J-type extreme: very hard to destabilize
+    # ── Physical constants (INTJ-tuned) ──
+    connection_hunger_k: 0.08  # I-type extreme: comfortable alone
+    novelty_hunger_k: 0.07    # N-type: intellectual curiosity (not novelty for novelty)
+    frustration_decay: 0.06   # Slow decay — holds onto frustration (analytical)
+    hawking_gamma: 0.0006     # Lowest decay — remembers everything (記住你說的每件事)
+    crystal_threshold: 0.55   # High bar — only crystallizes truly worthy moments
+    temp_coeff: 0.06          # T-type extreme: ice cold under pressure
+    temp_floor: 0.015         # Lowest noise — precise, calculated
 ---
