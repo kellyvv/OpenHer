@@ -547,7 +547,9 @@ class ChatAgent:
                 importance=context.get('entropy', 0.5),
             )
 
-        print(f"  [genome] reward={reward:.2f} temp={total_frust*0.12+0.03:.3f} modality={modality[:30]}")
+        sat_str = ' '.join(f'{d[:3]}={v:.2f}' for d, v in drive_satisfaction.items() if v > 0)
+        print(f"  [genome] reward={reward:.2f} temp={self.metabolism.temperature():.3f} modality={modality[:30]}")
+        print(f"  [drive_sat] {sat_str or 'none'}")
 
         # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
         self._evermemos_store_bg(user_message, reply)
@@ -690,7 +692,9 @@ class ChatAgent:
             }
             self._last_modality = modality
 
-            print(f"  [genome] reward={reward:.2f} temp={total_frust*0.12+0.03:.3f} modality={modality[:30]}")
+            sat_str = ' '.join(f'{d[:3]}={v:.2f}' for d, v in drive_satisfaction.items() if v > 0)
+            print(f"  [genome] reward={reward:.2f} temp={self.metabolism.temperature():.3f} modality={modality[:30]}")
+            print(f"  [drive_sat] {sat_str or 'none'}")
 
             # ── Step 11: EverMemOS store_turn ──
             self._evermemos_store_bg(user_message, reply)
