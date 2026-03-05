@@ -45,7 +45,7 @@ genome_seed:
     baseline_lr: 0.008         # Slow to change habits (steady personality)
     elasticity: 0.06           # Strong pull back to origin (consistent)
     hebbian_lr: 0.015          # Learns deliberately, not reactively
-    phase_threshold: 2.0       # P-type: standard threshold
+    phase_threshold: 3.0       # Ti-dominant: extremely stable despite P-type (quiet, reliable)
     # ── Physical constants (ISTP-tuned) ──
     connection_hunger_k: 0.10  # I-type: doesn't get lonely fast
     novelty_hunger_k: 0.05    # S-type: practical, not novelty-seeking

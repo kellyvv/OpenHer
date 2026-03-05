@@ -46,7 +46,7 @@ genome_seed:
     hebbian_lr: 0.025          # High plasticity — learns fast from interactions
     phase_threshold: 1.5       # P-type extreme: easily triggered phase shifts (emotional)
     # ── Physical constants (ENFP-tuned) ──
-    connection_hunger_k: 0.20  # E-type: gets lonely fast without interaction
+    connection_hunger_k: 0.15  # E-type: gets lonely faster (highest among all personas)
     novelty_hunger_k: 0.08    # N-type: curious, boredom grows fast
     frustration_decay: 0.12   # Bounces back quickly (optimistic)
     hawking_gamma: 0.0012     # Slightly faster memory decay (lives in the moment)
