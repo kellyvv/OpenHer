@@ -425,10 +425,16 @@ class ChatAgent:
 
         # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+        # Build persona hint for persona-aware Critic
+        _p = self.persona
+        _mbti = getattr(_p, 'mbti', '') or '未知'
+        _tags = '、'.join(getattr(_p, 'tags', [])[:3])
+        _persona_hint = f"{_p.name} ({_mbti}) — {_tags}" if _tags else f"{_p.name} ({_mbti})"
         context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
+            persona_hint=_persona_hint,
         )
 
         # ── Step 2.5: Semi-emergent relationship update (prior + delta + clip + EMA) ──
@@ -586,10 +592,15 @@ class ChatAgent:
             delta_h = self.metabolism.time_metabolism(now)
             # ── Step 2: Critic perception (8D context + 5D delta + 3D relationship) ──
             frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+            _p = self.persona
+            _mbti = getattr(_p, 'mbti', '') or '未知'
+            _tags = '、'.join(getattr(_p, 'tags', [])[:3])
+            _persona_hint = f"{_p.name} ({_mbti}) — {_tags}" if _tags else f"{_p.name} ({_mbti})"
             context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
                 user_message, self.llm, frust_dict,
                 user_profile=self._user_profile,
                 episode_summary=self._episode_summary,
+                persona_hint=_persona_hint,
             )
 
             # ── Step 2.5: Semi-emergent relationship update ──
@@ -1050,10 +1061,15 @@ class ChatAgent:
 
         # ── Step 6: Critic perception (same pipeline, stimulus instead of user_message) ──
         frust_dict = {d: round(self.metabolism.frustration[d], 2) for d in DRIVES}
+        _p = self.persona
+        _mbti = getattr(_p, 'mbti', '') or '未知'
+        _tags = '、'.join(getattr(_p, 'tags', [])[:3])
+        _persona_hint = f"{_p.name} ({_mbti}) — {_tags}" if _tags else f"{_p.name} ({_mbti})"
         context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             stimulus, self.llm, frust_dict,
             user_profile=self._user_profile,
             episode_summary=self._episode_summary,
+            persona_hint=_persona_hint,
         )
 
         # ── R1: FROZEN — Do NOT update relationship EMA (no user feedback) ──
