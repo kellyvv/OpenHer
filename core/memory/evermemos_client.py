@@ -241,6 +241,7 @@ class EverMemOSClient:
                 base_url=self._base_url,
                 headers=headers,
                 timeout=10.0,
+                trust_env=False,  # Bypass system/mac proxy for localhost
             )
             self._initialized = True
             print(f"✓ EverMemOS client initialized (base_url={self._base_url}, retrieve_method={_CFG['retrieve_method']})")
