@@ -1,0 +1,3 @@
+[submodule "vendor/EverMemOS"]
+	path = vendor/EverMemOS
+	url = https://github.com/EverMind-AI/EverMemOS.git
