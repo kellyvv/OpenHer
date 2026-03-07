@@ -29,6 +29,16 @@ _FALLBACK_PROVIDERS: dict[str, dict] = {
         "api_key_env": "OPENAI_API_KEY",
         "default_model": "gpt-4o",
     },
+    "deepseek": {
+        "base_url": "https://api.deepseek.com/v1",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "default_model": "deepseek-chat",
+    },
+    "moonshot": {
+        "base_url": "https://api.moonshot.cn/v1",
+        "api_key_env": "MOONSHOT_API_KEY",
+        "default_model": "moonshot-v1-auto",
+    },
     "ollama": {
         "base_url": "http://localhost:11434/v1",
         "api_key_env": "",

@@ -125,7 +125,12 @@ async def startup():
 
     # 2. Create LLM client (config/api.yaml → env var override)
     llm_cfg = get_llm_config()
-    llm_client = LLMClient(provider=llm_cfg["provider"], model=llm_cfg["model"])
+    llm_client = LLMClient(
+        provider=llm_cfg["provider"],
+        model=llm_cfg["model"],
+        temperature=llm_cfg.get("temperature", 0.92),
+        max_tokens=llm_cfg.get("max_tokens", 1024),
+    )
 
     # 3. Create TTS engine (config/api.yaml → env var override)
     tts_cfg = get_tts_config()

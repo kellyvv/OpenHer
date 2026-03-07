@@ -8,7 +8,8 @@
 # ── LLM (对话引擎) ──
 llm:
   provider: "dashscope"          # Active provider name
-  model: "qwen-max"              # Active model name
+  # model is auto-resolved from providers.<name>.default_model
+  # Override globally: set DEFAULT_MODEL env var
   temperature: 0.92
   max_tokens: 1024
   providers:
@@ -48,10 +49,12 @@ tts:
       model: "speech-2.8-turbo"
 
 # ── Memory (长期记忆 — EverMemOS) ──
+# Enable ONLY if you have a running EverMemOS instance.
+# Fresh installs: leave disabled, uses local MemoryStore.
 memory:
-  enabled: true
-  base_url: "http://localhost:1995/api/v1"
-  api_key_env: "EVERMEMOS_API_KEY"   # 留空 = 本地无 auth
+  enabled: false                  # Set to true + base_url after starting EverMemOS
+  base_url: ""                    # e.g. "http://localhost:1995/api/v1"
+  api_key_env: "EVERMEMOS_API_KEY"   # For cloud/authenticated setups
 
 # ── 预留: 未来 API ──
 # vision:

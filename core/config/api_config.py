@@ -88,9 +88,8 @@ def get_llm_config() -> dict:
     cfg = _load()
     llm = cfg.get("llm", {})
 
-    # Provider & model: env var override
+    # Provider: env var > yaml > default
     provider = os.getenv("DEFAULT_PROVIDER") or llm.get("provider", "dashscope")
-    model = os.getenv("DEFAULT_MODEL") or llm.get("model", "qwen-max")
 
     # Provider presets
     providers = llm.get("providers", {})
@@ -100,6 +99,14 @@ def get_llm_config() -> dict:
     api_key_env = preset.get("api_key_env", "")
     api_key = os.getenv(api_key_env, "") if api_key_env else ""
     base_url = preset.get("base_url", "")
+
+    # Model: env var > yaml top-level > provider default_model > fallback
+    model = (
+        os.getenv("DEFAULT_MODEL")
+        or llm.get("model")
+        or preset.get("default_model")
+        or "qwen-max"
+    )
 
     return {
         "provider": provider,
@@ -145,6 +152,9 @@ def get_memory_config() -> dict:
     """
     Get EverMemOS memory configuration.
 
+    EverMemOS is opt-in: disabled by default in api.yaml.
+    Setting EVERMEMOS_BASE_URL env var will auto-enable it.
+
     Returns dict with keys:
         enabled, base_url, api_key
     """
@@ -152,12 +162,19 @@ def get_memory_config() -> dict:
     mem = cfg.get("memory", {})
 
     # Env var overrides
-    base_url = os.getenv("EVERMEMOS_BASE_URL") or mem.get("base_url", "")
+    env_base_url = os.getenv("EVERMEMOS_BASE_URL", "")
+    base_url = env_base_url or mem.get("base_url", "")
     api_key_env = mem.get("api_key_env", "EVERMEMOS_API_KEY")
     api_key = os.getenv(api_key_env, "") if api_key_env else ""
 
+    # Enabled: yaml setting, but auto-enable if env var explicitly provides a URL
+    enabled = mem.get("enabled", False)
+    if env_base_url:
+        enabled = True
+
     return {
-        "enabled": mem.get("enabled", True),
+        "enabled": enabled,
         "base_url": base_url,
         "api_key": api_key,
     }
+
