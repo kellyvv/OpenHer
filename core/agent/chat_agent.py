@@ -246,44 +246,34 @@ class ChatAgent:
             self.agent.drive_state[d] = self.agent.drive_baseline[d]
         self.agent._frustration = 0.0
 
-    def _build_actor_prompt(self, few_shot: str, signals: dict, retrieval_signals: dict = None) -> str:
-        """
-        Build the Actor system prompt.
 
-        Args:
-            few_shot: Pre-built few-shot prompt string.
-            signals: Noisy signals for V5 number display (behavioral diversity).
-            retrieval_signals: Clean pre-noise signals for KNN retrieval
-                               (accurate genesis matching). Falls back to signals.
+
+    def _build_feel_prompt(self, few_shot: str, signals: dict) -> str:
         """
-        import time as _time
+        Build Pass 1 (Feel) prompt — generates monologue only.
+
+        Builds identity anchor + signal injection, renders actor_feel template
+        (no reply output format — monologue only).
+        """
         import datetime as _dt
 
-        # ── Identity anchor (persona bio — "who am I") ──
+        # ── Identity anchor (only factual identity, no behavioral labels) ──
         persona = self.persona
-        bio_text = persona.bio.get('zh', '') or persona.bio.get('en', '')
-        identity = (
-            f"【人格锚点】\n"
-            f"你是{persona.name}"
-        )
+        identity = f"【角色】\n{persona.name}"
         if persona.age:
             identity += f"，{persona.age}岁"
         if persona.gender:
             identity += f"，{persona.gender}"
-        if persona.tags:
-            identity += f"，{'、'.join(persona.tags)}"
-        identity += "。\n"
-        if bio_text:
-            identity += bio_text.strip()[:200]
+        identity += "。"
 
-        # Use pre-computed signals (same as KNN retrieval) — no re-computation
+        # Signal injection
         signal_injection = self.agent.to_prompt_injection_from_signals(
             signals,
             signal_overrides=self.persona.signal_overrides,
             frustration=self.metabolism.frustration,
         )
 
-        # ── Signal change trend injection (compare to previous turn) ──
+        # Trend injection
         if self._prev_signals:
             trend_lines = []
             for sig in SIGNALS:
@@ -301,22 +291,64 @@ class ChatAgent:
             if trend_lines:
                 signal_injection += "\n【变化趋势】\n" + "\n".join(trend_lines[:3])
 
-        # Inject real wall-clock time so the LLM doesn't fabricate it
         now = _dt.datetime.now()
-        time_str = now.strftime("%H:%M")
-        date_str = now.strftime("%Y年%m月%d日")
-        signal_injection += f"\n\n【当前时间】{date_str} {time_str}"
+        signal_injection += f"\n\n【当前时间】{now.strftime('%Y年%m月%d日')} {now.strftime('%H:%M')}"
 
-        # Prepend identity anchor before signal injection
-        # Order: few_shot → identity ("who am I") → signals ("how I feel now")
         combined_injection = identity + "\n\n" + signal_injection
 
         return render_prompt(
-            "actor",
+            "actor_feel",
             fallback=_FALLBACK_ACTOR,
             few_shot=few_shot,
             signal_injection=combined_injection,
         )
+
+    def _build_express_prompt(self, monologue: str) -> str:
+        """
+        Build Pass 2 (Express) prompt — monologue → reply + modality.
+
+        Lightweight: only identity + monologue. No few-shot, no signals,
+        no memory injection. Control is entirely in the monologue.
+        """
+        persona = self.persona
+        identity = persona.name
+        if persona.age:
+            identity += f"，{persona.age}岁"
+        if persona.gender:
+            identity += f"，{persona.gender}"
+        identity += "。"
+
+        return render_prompt(
+            "actor_express",
+            fallback=(
+                "【角色】\n$identity\n\n"
+                "【角色此刻的内心】\n$monologue\n\n"
+                "[表达指令]\n你是这个角色的唯一作者。\n"
+                "角色内心正在经历以上感受。写出角色说出口的话和表达方式。\n\n"
+                "按以下格式输出：\n"
+                "【最终回复】\n角色实际说出口的话——从内心感受自然流出\n"
+                "【表达方式】\n角色选择用什么方式发这条消息。"
+                "可选：文字 / 语音 / 表情 / 多条拆分 / 照片 / 静默。可组合。理由一句话。\n"
+                '（当角色认为现在不应该说话时，选"静默"。）'
+            ),
+            identity=identity,
+            monologue=monologue,
+        )
+
+    @staticmethod
+    def _extract_monologue(raw: str) -> str:
+        """
+        Extract monologue from Pass 1 output.
+
+        Pass 1 template ends with 【内心独白】, so model continues directly.
+        Output likely does NOT contain the marker — use full text.
+        If marker is present, extract content after it.
+        """
+        marker = "【内心独白】"
+        idx = raw.find(marker)
+        if idx != -1:
+            return raw[idx + len(marker):].strip()
+        return raw.strip()
 
 
     def _should_crystallize(self, reward: float, context: dict) -> bool:
@@ -436,8 +468,7 @@ class ChatAgent:
         # Build persona hint for persona-aware Critic
         _p = self.persona
         _mbti = getattr(_p, 'mbti', '') or '未知'
-        _tags = '、'.join(getattr(_p, 'tags', [])[:3])
-        _persona_hint = f"{_p.name} ({_mbti}) — {_tags}" if _tags else f"{_p.name} ({_mbti})"
+        _persona_hint = f"{_p.name} ({_mbti})"
         context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,
@@ -474,7 +505,7 @@ class ChatAgent:
         if self._last_action and self._should_crystallize(reward, context):
             self.style_memory.set_clock(now)
             self.style_memory.crystallize(
-                self._last_action['signals'],
+                self._last_action['context'],
                 self._last_action['monologue'],
                 self._last_action['reply'],
                 self._last_action['user_input'],
@@ -489,19 +520,19 @@ class ChatAgent:
         self._prev_signals = self._last_signals  # Track for trend injection
         self._last_signals = noisy_signals
 
-        # ── Step 7: KNN retrieval ──
+        # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
         self.style_memory.set_clock(now)
-        few_shot = self.style_memory.build_few_shot_prompt(noisy_signals, top_k=3)
+        few_shot = self.style_memory.build_few_shot_prompt(
+            context, top_k=3, monologue_only=True,
+        )
 
-        # ── Step 8: Build Actor prompt ──
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals)
+        # ── Step 8: Build Feel prompt (Pass 1) ──
+        feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
 
-        # ── Step 8.5: Memory injection (profile + episode + foresight) ──
+        # ── Step 8.5: Memory injection into Feel prompt ──
         if self._session_ctx and self._session_ctx.has_history:
-            # Collect search results right before injection (not at turn start)
             await self._collect_search_results()
             profile_budget, episode_budget = self._memory_injection_budget(context)
-            # Phase 3: blend relevant (80%) + static (20%) for stability
             profile_text = self._blend_injection(
                 self._relevant_facts, self._user_profile, profile_budget
             )
@@ -510,24 +541,34 @@ class ChatAgent:
             )
             name = self.user_name or self.user_id
             if profile_text:
-                system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
             if episode_text:
-                system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
             if self._foresight_text:
-                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
             if self._relevant_profile:
-                system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
-            # Track if this turn used relevant content
+                feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                 self._search_relevant_used += 1
 
-        # ── Step 9: LLM Actor ──
-        messages = [ChatMessage(role="system", content=system_prompt)]
-        messages.extend(self.history)
-        messages.append(ChatMessage(role="user", content=user_message))
+        # ── Step 9a: Pass 1 — Feel (generate monologue only) ──
+        # NOTE: No history injection in Feel pass. Conversation context is already
+        # encoded in Critic context (conflict, emotion, etc.) and signal values.
+        # Raw history would trigger LLM alignment pressure in conflict scenarios.
+        feel_messages = [ChatMessage(role="system", content=feel_prompt)]
+        feel_messages.append(ChatMessage(role="user", content=user_message))
 
-        response = await self.llm.chat(messages)
-        monologue, reply, modality = extract_reply(response.content)
+        feel_response = await self.llm.chat(feel_messages)
+        monologue = self._extract_monologue(feel_response.content)
+
+        # ── Step 9b: Pass 2 — Express (monologue → reply + modality) ──
+        express_prompt = self._build_express_prompt(monologue)
+        express_messages = [ChatMessage(role="system", content=express_prompt)]
+        express_messages.extend(self.history[-4:])  # Light context
+        express_messages.append(ChatMessage(role="user", content=user_message))
+
+        express_response = await self.llm.chat(express_messages)
+        _, reply, modality = extract_reply(express_response.content)
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -541,7 +582,7 @@ class ChatAgent:
             self.history = self.history[-self.max_history:]
 
         self._last_action = {
-            'signals': noisy_signals,
+            'context': context,
             'monologue': monologue,
             'reply': reply,
             'modality': modality,
@@ -561,6 +602,7 @@ class ChatAgent:
 
         sat_str = ' '.join(f'{d[:3]}={v:.2f}' for d, v in drive_satisfaction.items() if v > 0)
         print(f"  [genome] reward={reward:.2f} temp={self.metabolism.temperature():.3f} modality={modality[:30]}")
+        print(f"  [feel] monologue={monologue[:60]}")
         print(f"  [drive_sat] {sat_str or 'none'}")
 
         # ── Step 11: EverMemOS store_turn (non-blocking background task) ──
@@ -635,7 +677,7 @@ class ChatAgent:
             if self._last_action and self._should_crystallize(reward, context):
                 self.style_memory.set_clock(now)
                 self.style_memory.crystallize(
-                    self._last_action['signals'],
+                    self._last_action['context'],
                     self._last_action['monologue'],
                     self._last_action['reply'],
                     self._last_action['user_input'],
@@ -648,12 +690,16 @@ class ChatAgent:
             self._prev_signals = self._last_signals  # Track for trend injection
             self._last_signals = noisy_signals
 
-            # ── Step 7-8: KNN + Actor prompt ──
+            # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
             self.style_memory.set_clock(now)
-            few_shot = self.style_memory.build_few_shot_prompt(base_signals, top_k=3)
-            system_prompt = self._build_actor_prompt(few_shot, noisy_signals, retrieval_signals=base_signals)
+            few_shot = self.style_memory.build_few_shot_prompt(
+                context, top_k=3, monologue_only=True,
+            )
 
-            # ── Step 8.5: Memory injection ──
+            # ── Step 8: Build Feel prompt (Pass 1) ──
+            feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
+
+            # ── Step 8.5: Memory injection into Feel prompt ──
             if self._session_ctx and self._session_ctx.has_history:
                 await self._collect_search_results()
                 profile_budget, episode_budget = self._memory_injection_budget(context)
@@ -665,29 +711,38 @@ class ChatAgent:
                 )
                 name = self.user_name or self.user_id
                 if profile_text:
-                    system_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                    feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
                 if episode_text:
-                    system_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                    feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
                 if self._foresight_text:
-                    system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                    feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
                 if self._relevant_profile:
-                    system_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
+                    feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
                 if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                     self._search_relevant_used += 1
 
-            # ── Step 9: Stream Actor ──
-            messages = [ChatMessage(role="system", content=system_prompt)]
-            messages.extend(self.history)
-            messages.append(ChatMessage(role="user", content=user_message))
+            # ── Step 9a: Pass 1 — Feel (non-stream, not pushed to frontend) ──
+            # NOTE: No history — context is in signals + Critic, not raw turns.
+            feel_messages = [ChatMessage(role="system", content=feel_prompt)]
+            feel_messages.append(ChatMessage(role="user", content=user_message))
+
+            feel_response = await self.llm.chat(feel_messages)
+            monologue = self._extract_monologue(feel_response.content)
+
+            # ── Step 9b: Pass 2 — Express (streamed to frontend) ──
+            express_prompt = self._build_express_prompt(monologue)
+            express_messages = [ChatMessage(role="system", content=express_prompt)]
+            express_messages.extend(self.history[-4:])
+            express_messages.append(ChatMessage(role="user", content=user_message))
 
             full_response = []
-            async for chunk in self.llm.chat_stream(messages):
+            async for chunk in self.llm.chat_stream(express_messages):
                 full_response.append(chunk)
                 yield chunk
 
             # ── Post-stream processing ──
             raw_text = "".join(full_response)
-            monologue, reply, modality = extract_reply(raw_text)
+            _, reply, modality = extract_reply(raw_text)
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
@@ -701,7 +756,7 @@ class ChatAgent:
                 self.history = self.history[-self.max_history:]
 
             self._last_action = {
-                'signals': noisy_signals,
+                'context': context,
                 'monologue': monologue,
                 'reply': reply,
                 'modality': modality,
@@ -711,6 +766,7 @@ class ChatAgent:
 
             sat_str = ' '.join(f'{d[:3]}={v:.2f}' for d, v in drive_satisfaction.items() if v > 0)
             print(f"  [genome] reward={reward:.2f} temp={self.metabolism.temperature():.3f} modality={modality[:30]}")
+            print(f"  [feel] monologue={monologue[:60]}")
             print(f"  [drive_sat] {sat_str or 'none'}")
 
             # ── Step 11: EverMemOS store_turn ──
@@ -1100,27 +1156,36 @@ class ChatAgent:
         total_frust = self.metabolism.total()
         noisy_signals = self.metabolism.apply_thermodynamic_noise(base_signals)
 
-        # ── Step 9: Build Actor prompt ──
+        # ── Step 9: Build Feel prompt (Pass 1) ──
         self.style_memory.set_clock(start)
-        few_shot = self.style_memory.build_few_shot_prompt(base_signals, top_k=3)
-        system_prompt = self._build_actor_prompt(few_shot, noisy_signals, retrieval_signals=base_signals)
+        few_shot = self.style_memory.build_few_shot_prompt(context, top_k=3, monologue_only=True)
+        feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
 
-        # ── Step 9.5: Memory injection (foresight is key driver here) ──
+        # ── Step 9.5: Memory injection into Feel prompt (foresight is key driver here) ──
         if self._session_ctx and self._session_ctx.has_history:
             if self._user_profile:
-                system_prompt += f"\n\n[关于{name}的偏好] {self._user_profile[:300]}"
+                feel_prompt += f"\n\n[关于{name}的偏好] {self._user_profile[:300]}"
             if self._episode_summary:
-                system_prompt += f"\n\n[与{name}过去发生的事] {self._episode_summary[:300]}"
+                feel_prompt += f"\n\n[与{name}过去发生的事] {self._episode_summary[:300]}"
             if self._foresight_text:
-                system_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
 
-        # ── Step 10: LLM Actor (no history, no fake user_message) ──
-        messages = [
-            ChatMessage(role="system", content=system_prompt),
+        # ── Step 10a: Pass 1 — Feel (generates monologue only, no reply instruction) ──
+        feel_messages = [
+            ChatMessage(role="system", content=feel_prompt),
             ChatMessage(role="user", content=stimulus),
         ]
-        response = await self.llm.chat(messages)
-        monologue, reply, modality = extract_reply(response.content)
+        feel_response = await self.llm.chat(feel_messages)
+        monologue = self._extract_monologue(feel_response.content)
+
+        # ── Step 10b: Pass 2 — Express (monologue → reply + modality) ──
+        express_prompt = self._build_express_prompt(monologue)
+        express_messages = [
+            ChatMessage(role="system", content=express_prompt),
+            ChatMessage(role="user", content=stimulus),
+        ]
+        express_response = await self.llm.chat(express_messages)
+        _, reply, modality = extract_reply(express_response.content)
 
         elapsed = start and (time.time() - start) or 0
         if elapsed > 300:

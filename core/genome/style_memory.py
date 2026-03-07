@@ -3,9 +3,9 @@ ContinuousStyleMemory — KNN-based style memory with time-aware retrieval.
 
 Adapted from prototypes/style_memory.py for server use.
 Features:
-  - 8D signal space KNN retrieval with gravitational mass weighting
+  - Context-space KNN retrieval with gravitational mass weighting
   - Hawking radiation: memory mass decays exponentially over time
-  - Crystallization: nearby signals merge (mass grows), distant create new memories
+  - Crystallization: nearby contexts merge (mass grows), distant create new memories
   - Few-shot prompt builder with mass-tagged examples
 """
 
@@ -14,13 +14,14 @@ from __future__ import annotations
 import json
 import math
 import os
+import sqlite3
 import time
 
 
-# Signal dimension order (consistent with genome_engine.py)
-SIGNAL_KEYS = [
-    'directness', 'vulnerability', 'playfulness', 'initiative',
-    'depth', 'warmth', 'defiance', 'curiosity',
+# Context dimension order (Critic output keys, used for KNN retrieval)
+CONTEXT_KEYS = [
+    'conflict_level', 'user_emotion', 'user_engagement', 'user_vulnerability',
+    'topic_intimacy', 'conversation_depth', 'novelty_level', 'time_of_day',
 ]
 
 # Physics constant
@@ -28,13 +29,13 @@ HAWKING_GAMMA = 0.001  # Decay rate (per hour): ~29 day half-life
 
 
 def _l2_distance(vec_a, vec_b):
-    """8D Euclidean distance (zero-dependency)."""
+    """Euclidean distance (zero-dependency)."""
     return math.sqrt(sum((a - b) ** 2 for a, b in zip(vec_a, vec_b)))
 
 
-def _signals_to_vec(signals):
-    """Convert signal dict to ordered vector."""
-    return [signals.get(k, 0.5) for k in SIGNAL_KEYS]
+def _context_to_vec(context):
+    """Convert Critic context dict to ordered vector for KNN retrieval."""
+    return [context.get(k, 0.0) for k in CONTEXT_KEYS]
 
 
 def _hawking_mass(mass_raw, last_used_at, now, gamma=HAWKING_GAMMA):
@@ -58,7 +59,8 @@ class ContinuousStyleMemory:
     Retrieval uses time-decayed effective mass (mass_eff).
     """
 
-    def __init__(self, agent_id, db_dir=None, now=None, persona_id=None, hawking_gamma=None):
+    def __init__(self, agent_id, db_dir=None, now=None, persona_id=None, hawking_gamma=None,
+                 state_db_path=None):
         self.agent_id = agent_id
         self.hawking_gamma = hawking_gamma if hawking_gamma is not None else HAWKING_GAMMA
         self.db_dir = db_dir or os.path.join(
@@ -68,6 +70,7 @@ class ContinuousStyleMemory:
         os.makedirs(self.db_dir, exist_ok=True)
 
         # Per-persona genesis file (genesis_kai.json) → fallback to shared bank
+        self._persona_id = persona_id or agent_id
         if persona_id:
             persona_genesis = os.path.join(self.db_dir, f"genesis_{persona_id}.json")
             if os.path.exists(persona_genesis):
@@ -76,7 +79,19 @@ class ContinuousStyleMemory:
                 self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
         else:
             self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
-        self.personal_file = os.path.join(self.db_dir, f"{agent_id}_memory.json")
+
+        # Derive user_id from agent_id (format: "{persona_id}_{user_id}")
+        if persona_id and agent_id.startswith(persona_id + "_"):
+            self._user_id = agent_id[len(persona_id) + 1:]
+        else:
+            self._user_id = agent_id
+
+        # SQLite for personal memories (fallback to JSON for backward compat)
+        self._state_db_path = state_db_path or os.path.join(
+            os.path.dirname(self.db_dir), "openher.db"
+        )
+        self._init_db()
+
         self._now = now or time.time()
 
         # Unified memory pool
@@ -89,10 +104,26 @@ class ContinuousStyleMemory:
         """Inject external clock (for testing)."""
         self._now = now
 
+    def _init_db(self):
+        """Create style_memory table if not exists."""
+        conn = sqlite3.connect(self._state_db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS style_memory (
+                persona_id TEXT NOT NULL,
+                user_id    TEXT NOT NULL,
+                memories   TEXT NOT NULL,
+                updated_at REAL NOT NULL,
+                PRIMARY KEY (persona_id, user_id)
+            )
+        """)
+        conn.commit()
+        conn.close()
+
     def _load(self):
         """Load innate genes + learned experience into unified pool."""
         self._pool = []
 
+        # Genesis from JSON file (seed data, stays as files)
         if os.path.exists(self.genesis_file):
             with open(self.genesis_file, 'r', encoding='utf-8') as f:
                 genesis = json.load(f)
@@ -103,9 +134,16 @@ class ContinuousStyleMemory:
                 self._pool.append(mem)
             self._genesis_count = len(genesis)
 
-        if os.path.exists(self.personal_file):
-            with open(self.personal_file, 'r', encoding='utf-8') as f:
-                personal = json.load(f)
+        # Personal memories from SQLite
+        conn = sqlite3.connect(self._state_db_path)
+        row = conn.execute(
+            "SELECT memories FROM style_memory WHERE persona_id = ? AND user_id = ?",
+            (self._persona_id, self._user_id)
+        ).fetchone()
+        conn.close()
+
+        if row:
+            personal = json.loads(row[0])
             for mem in personal:
                 mem.setdefault('mass', 1.0)
                 mem.setdefault('created_at', self._now)
@@ -121,12 +159,12 @@ class ContinuousStyleMemory:
     def personal_count(self):
         return self._personal_count
 
-    def retrieve(self, current_signals, top_k=3):
+    def retrieve(self, context, top_k=3):
         """
         Gravitational mass + Hawking radiation retrieval.
         effective_distance = physical_distance / √mass_eff
         """
-        target = _signals_to_vec(current_signals)
+        target = _context_to_vec(context)
         now = self._now
         scored = []
 
@@ -159,13 +197,13 @@ class ContinuousStyleMemory:
 
         return results
 
-    def crystallize(self, signals, monologue, reply, user_input=""):
+    def crystallize(self, context, monologue, reply, user_input=""):
         """
         Memory crystallization (time-aware).
-        Nearby signals → gravitational thickening + refresh timestamp.
-        New signals → create new memory with initial mass=2.0.
+        Nearby contexts → gravitational thickening + refresh timestamp.
+        New contexts → create new memory with initial mass=2.0.
         """
-        new_vec = [round(v, 4) for v in _signals_to_vec(signals)]
+        new_vec = [round(v, 4) for v in _context_to_vec(context)]
         now = self._now
 
         # Check if we can merge
@@ -200,21 +238,40 @@ class ContinuousStyleMemory:
             }
             self._pool.append(new_mem)
 
-        # Save personal memories
+        # Save personal memories to SQLite
         personal_mems = [m for m in self._pool if m.get('mass', 1.0) > 1.0]
         self._personal_count = len(personal_mems)
 
-        with open(self.personal_file, 'w', encoding='utf-8') as f:
-            json.dump(personal_mems, f, ensure_ascii=False, indent=2)
+        conn = sqlite3.connect(self._state_db_path)
+        conn.execute("""
+            INSERT INTO style_memory (persona_id, user_id, memories, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(persona_id, user_id) DO UPDATE SET
+                memories = excluded.memories,
+                updated_at = excluded.updated_at
+        """, (
+            self._persona_id,
+            self._user_id,
+            json.dumps(personal_mems, ensure_ascii=False),
+            self._now,
+        ))
+        conn.commit()
+        conn.close()
 
         return self._personal_count
 
-    def build_few_shot_prompt(self, current_signals, top_k=3):
-        """Build few-shot prompt from retrieval results (with mass tags)."""
-        memories = self.retrieve(current_signals, top_k=top_k)
+    def build_few_shot_prompt(self, context, top_k=3, monologue_only=False):
+        """Build few-shot prompt from retrieval results (with mass tags).
+
+        Args:
+            context: Critic context dict for KNN retrieval.
+            monologue_only: If True, only include monologue (no reply).
+                            Used by Pass 1 (Feel) of two-pass Actor.
+        """
+        memories = self.retrieve(context, top_k=top_k)
 
         if not memories:
-            return "（系统：无可用的潜意识切片）"
+            return "（系统：无可用的内心感受片段）" if monologue_only else "（系统：无可用的潜意识切片）"
 
         parts = []
         for i, mem in enumerate(memories):
@@ -224,11 +281,17 @@ class ContinuousStyleMemory:
                 mass_tag = f"质量={mass_eff:.1f}/{mass_raw:.0f}"
             else:
                 mass_tag = "基因"
-            parts.append(
-                f"--- 潜意识切片 {i+1} [{mass_tag}] ---\n"
-                f"【内心独白】{mem['monologue']}\n"
-                f"【最终回复】{mem['reply']}"
-            )
+            if monologue_only:
+                parts.append(
+                    f"--- 内心感受片段 {i+1} [{mass_tag}] ---\n"
+                    f"{mem['monologue']}"
+                )
+            else:
+                parts.append(
+                    f"--- 潜意识切片 {i+1} [{mass_tag}] ---\n"
+                    f"【内心独白】{mem['monologue']}\n"
+                    f"【最终回复】{mem['reply']}"
+                )
 
         return "\n\n".join(parts)
 

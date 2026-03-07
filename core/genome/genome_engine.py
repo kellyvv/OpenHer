@@ -98,48 +98,7 @@ _FB_SIG_CN = {
     'defiance': '倔强度', 'curiosity': '好奇心',
 }
 
-_FB_DESCRIPTIONS = {
-    'directness': [
-        (0.0, 0.33, '说话委婉含蓄，倾向于暗示和隐喻'),
-        (0.33, 0.66, '说话正常，不特别直也不特别绕'),
-        (0.66, 1.0, '说话非常直接，想到什么说什么，不在乎修饰'),
-    ],
-    'vulnerability': [
-        (0.0, 0.33, '封闭自己，很少暴露真实感受'),
-        (0.33, 0.66, '偶尔流露真心话，但不会太深入'),
-        (0.66, 1.0, '坦诚暴露内心，包括恐惧、不安、依赖感'),
-    ],
-    'playfulness': [
-        (0.0, 0.33, '严肃正经，不怎么开玩笑，语气平淡'),
-        (0.33, 0.66, '有时轻松有时认真，正常聊天状态'),
-        (0.66, 1.0, '各种撒娇卖萌、搞怪调皮，对话充满笑点'),
-    ],
-    'initiative': [
-        (0.0, 0.33, '被动回应，基本跟着对方走'),
-        (0.33, 0.66, '有来有回，不特别主动也不特别被动'),
-        (0.66, 1.0, '强势主导对话，主动抛话题、追问、引导方向'),
-    ],
-    'depth': [
-        (0.0, 0.33, '聊天偏浅，多是表面话题和日常琐事'),
-        (0.33, 0.66, '有时浅聊有时深聊，看情况'),
-        (0.66, 1.0, '倾向于深入话题，探讨感受、价值观、关系的本质'),
-    ],
-    'warmth': [
-        (0.0, 0.33, '冷淡疏离，不太主动表达关心'),
-        (0.33, 0.66, '不冷不热，正常回应但不特别热情'),
-        (0.66, 1.0, '非常温暖体贴，嘘寒问暖，充满关怀'),
-    ],
-    'defiance': [
-        (0.0, 0.33, '比较随和顺从，不怎么反驳'),
-        (0.33, 0.66, '有自己的想法但不会太坚持'),
-        (0.66, 1.0, '嘴硬倔强，喜欢反驳，越被质疑越硬杠'),
-    ],
-    'curiosity': [
-        (0.0, 0.33, '对对方的事不太感兴趣，不怎么追问'),
-        (0.33, 0.66, '正常程度的好奇，会追问一两句'),
-        (0.66, 1.0, '刨根问底，什么都想知道，追着问不放'),
-    ],
-}
+
 
 _FB_ANCHORS = {
     'directness': ('委婉', '直白'), 'vulnerability': ('封闭', '袒露'),
@@ -148,13 +107,13 @@ _FB_ANCHORS = {
     'defiance': ('随和', '硬杠'), 'curiosity': ('无感', '追问'),
 }
 
+
 _FB_SIGNAL_CONFIG = {
     sig: {
         'label': _FB_SIG_CN[sig],
         'emoji_label': SIGNAL_LABELS[sig],
         'low_anchor': _FB_ANCHORS[sig][0],
         'high_anchor': _FB_ANCHORS[sig][1],
-        'buckets': _FB_DESCRIPTIONS[sig],
     }
     for sig in SIGNALS
 }
@@ -513,8 +472,7 @@ class Agent:
 
         # ── Signal state: number + scale endpoints ──
         lines = [
-            "【你当前的状态】",
-            "（结合你的性格和当前对话，自然地体现这些状态，不要直接引用数字）",
+            "【舞台指令：角色当前状态】",
         ]
         for sig_name in SIGNALS:
             val = signals[sig_name]
@@ -526,7 +484,7 @@ class Agent:
 
         # ── All 5 drives + per-drive frustration ──
         lines.append("")
-        lines.append("【内在需求】")
+        lines.append("【舞台指令：角色内在需求】")
         frust = frustration or {}
         for d in DRIVES:
             d_label = drv_config.get(d, {}).get('emoji_label', d)

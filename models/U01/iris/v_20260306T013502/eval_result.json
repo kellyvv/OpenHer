@@ -1,6 +1,6 @@
 {
-  "evaluated_at": "2026-03-05T17:15:55.135915",
-  "candidate_dir": "models/U01/iris/v_20260305T171555",
+  "evaluated_at": "2026-03-06T01:35:02.960692",
+  "candidate_dir": "models/U01/iris/v_20260306T013502",
   "user_id": "U01",
   "days": 365,
   "n_eval_rows": 430,

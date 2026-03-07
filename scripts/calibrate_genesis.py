@@ -66,16 +66,27 @@ SCENARIO_CONTEXTS = {
         "relationship_depth": 0.5, "emotional_valence": 0.5,
         "trust_level": 0.6, "pending_foresight": 0.0,
     },
+    "confrontation": {
+        "user_emotion": -0.3, "topic_intimacy": 0.5, "time_of_day": 0.5,
+        "conversation_depth": 0.6, "user_engagement": 0.9,
+        "conflict_level": 0.5, "novelty_level": 0.4, "user_vulnerability": 0.1,
+        "relationship_depth": 0.3, "emotional_valence": -0.2,
+        "trust_level": 0.3, "pending_foresight": 0.0,
+    },
 }
 
 # Keywords → scenario type
 KEYWORD_MAP = {
-    "rejection": ["不想", "别烦", "没兴趣", "不需要", "不想理", "不分享", "怎么这样"],
+    "rejection": ["不想", "别烦", "没兴趣", "不需要", "不想理", "不分享", "怎么这样",
+                  "算了", "不聊", "对不起", "道歉", "说声"],
     "greeting": ["你好", "好啊", "在吗"],
-    "distress": ["压力", "失眠", "睡不着", "伤心", "难过", "累", "烦死"],
+    "distress": ["压力", "失眠", "睡不着", "伤心", "难过", "累", "烦死",
+                 "心情", "状态差", "烦", "沉默"],
     "playful": ["哈哈", "可爱", "逗", "皮"],
     "intimate": ["喜欢", "想念", "感觉", "心跳", "聊天"],
-    "casual": ["做什么", "吃什么", "运动", "平时", "爱好", "看书", "周末"],
+    "confrontation": ["错了", "错的", "不对", "明显", "杠精", "总是这样", "你就是"],
+    "casual": ["做什么", "吃什么", "运动", "平时", "爱好", "看书", "周末",
+               "聊点别的", "换个", "有意思的事"],
 }
 
 

@@ -38,6 +38,12 @@ PROVIDERS: dict[str, dict] = {
         "api_key_env": "MOONSHOT_API_KEY",
         "default_model": "moonshot-v1-auto",
     },
+    "ollama": {
+        "base_url": "http://localhost:11434/v1",
+        "api_key_env": "",
+        "default_model": "qwen3.5:9b",
+        "no_key_required": True,
+    },
 }
 
 
