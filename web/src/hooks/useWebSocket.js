@@ -56,7 +56,8 @@ export function useWebSocket() {
                             content: msg.reply,
                         }])
                     }
-                    setStatus({ dominantDrive: msg.dominant_drive, turnCount: msg.turn_count })
+                    console.log('[engine]', JSON.stringify(msg, null, 2))
+                    setStatus(msg)
                     break
                 case 'persona_switched':
                     setSessionId(msg.session_id)

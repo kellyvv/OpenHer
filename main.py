@@ -190,7 +190,7 @@ async def startup():
     print(f"✓ 主动消息心跳已启动 (cooldown={_proactive_cfg['cooldown_hours']}h, ttl={_proactive_cfg['lock_ttl']}s)")
 
     print("✓ OpenHer 服务启动完成 (v0.5.0 — Genome v10 Hybrid Engine)")
-    print("  → 演示页面: http://localhost:8800/app")
+    print("  → 演示页面: http://localhost:8800/discover")
 
 
 @app.on_event("shutdown")
@@ -625,7 +625,7 @@ async def list_personas():
             gender=p.gender,
             mbti=p.mbti,
             tags=p.tags,
-            description=p.personality[:100] + "..." if p.personality else "",
+            description=(p.bio.get("zh") or p.bio.get("en") or p.personality or "")[:120],
         ))
     return {"personas": [r.model_dump() for r in result]}
 
@@ -780,6 +780,9 @@ async def websocket_chat(ws: WebSocket):
                         "modality": status.get("modality", ""),
                         **status,
                     })
+                    # Log conversation for debugging
+                    print(f"  [chat] 👤 {text}")
+                    print(f"  [chat] 🤖 {_clean_reply_text[:120]}")
 
                 _persist_agent(agent)
 
