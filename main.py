@@ -35,6 +35,7 @@ from core.skills import SkillEngine
 from core.state_store import StateStore
 from core.memory.memory_store import MemoryStore
 from core.memory.evermemos_client import EverMemOSClient
+from core.config.api_config import get_llm_config, get_tts_config, get_memory_config
 from core.cron_scheduler import CronScheduler
 from core.output_router import stream_to_ws as _stream_to_ws
 from core.genome import DRIVE_LABELS
@@ -122,15 +123,19 @@ async def startup():
     personas = persona_loader.load_all()
     print(f"✓ 加载了 {len(personas)} 个角色: {list(personas.keys())}")
 
-    # 2. Create LLM client
-    provider = os.getenv("DEFAULT_PROVIDER", "dashscope")
-    model = os.getenv("DEFAULT_MODEL", "qwen3-max")
-    llm_client = LLMClient(provider=provider, model=model)
+    # 2. Create LLM client (config/api.yaml → env var override)
+    llm_cfg = get_llm_config()
+    llm_client = LLMClient(provider=llm_cfg["provider"], model=llm_cfg["model"])
 
-    # 3. Create TTS engine
+    # 3. Create TTS engine (config/api.yaml → env var override)
+    tts_cfg = get_tts_config()
     tts_engine = TTSEngine(
-        provider=TTSProvider.EDGE,
-        cache_dir=os.path.join(base_dir, ".cache", "tts"),
+        provider=TTSProvider(tts_cfg["provider"]),
+        cache_dir=os.path.join(base_dir, tts_cfg["cache_dir"]),
+        openai_api_key=tts_cfg["api_keys"].get("openai"),
+        dashscope_api_key=tts_cfg["api_keys"].get("dashscope"),
+        minimax_api_key=tts_cfg["api_keys"].get("minimax"),
+        minimax_model=tts_cfg.get("minimax_model", "speech-2.8-turbo"),
     )
 
     # 4. Load skills
@@ -151,14 +156,16 @@ async def startup():
     # 7. Memory store
     memory_store = MemoryStore(os.path.join(data_dir, "memory.db"))
 
-    # 7b. EverMemOS long-term memory (self-hosted or cloud)
-    evermemos_url = os.getenv("EVERMEMOS_BASE_URL", "")
-    evermemos_key = os.getenv("EVERMEMOS_API_KEY", "")
-    if evermemos_url or evermemos_key:
-        evermemos = EverMemOSClient(base_url=evermemos_url or None, api_key=evermemos_key or None)
+    # 7b. EverMemOS long-term memory (config/api.yaml → env var override)
+    mem_cfg = get_memory_config()
+    if mem_cfg["enabled"] and (mem_cfg["base_url"] or mem_cfg["api_key"]):
+        evermemos = EverMemOSClient(
+            base_url=mem_cfg["base_url"] or None,
+            api_key=mem_cfg["api_key"] or None,
+        )
     else:
         evermemos = None
-        print("ℹ EverMemOS: 未配置 EVERMEMOS_BASE_URL 或 EVERMEMOS_API_KEY，使用本地 MemoryStore")
+        print("ℹ EverMemOS: 未配置或已禁用，使用本地 MemoryStore")
 
     # 8. Cron scheduler
     if cron_skills:

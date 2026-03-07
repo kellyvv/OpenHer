@@ -14,10 +14,11 @@ from typing import AsyncIterator, Optional
 from openai import AsyncOpenAI
 
 # ──────────────────────────────────────────────────────────────
-# Provider presets — add new providers here
+# Provider presets — loaded from config/api.yaml
 # ──────────────────────────────────────────────────────────────
 
-PROVIDERS: dict[str, dict] = {
+# Fallback presets (used if config/api.yaml is missing)
+_FALLBACK_PROVIDERS: dict[str, dict] = {
     "dashscope": {
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "api_key_env": "DASHSCOPE_API_KEY",
@@ -28,16 +29,6 @@ PROVIDERS: dict[str, dict] = {
         "api_key_env": "OPENAI_API_KEY",
         "default_model": "gpt-4o",
     },
-    "deepseek": {
-        "base_url": "https://api.deepseek.com/v1",
-        "api_key_env": "DEEPSEEK_API_KEY",
-        "default_model": "deepseek-chat",
-    },
-    "moonshot": {
-        "base_url": "https://api.moonshot.cn/v1",
-        "api_key_env": "MOONSHOT_API_KEY",
-        "default_model": "moonshot-v1-auto",
-    },
     "ollama": {
         "base_url": "http://localhost:11434/v1",
         "api_key_env": "",
@@ -45,6 +36,19 @@ PROVIDERS: dict[str, dict] = {
         "no_key_required": True,
     },
 }
+
+
+def _get_providers() -> dict[str, dict]:
+    """Load provider presets from config/api.yaml, falling back to hardcoded defaults."""
+    try:
+        from core.config.api_config import get_llm_config
+        cfg = get_llm_config()
+        providers = cfg.get("providers", {})
+        if providers:
+            return providers
+    except Exception:
+        pass
+    return _FALLBACK_PROVIDERS
 
 
 @dataclass
@@ -87,7 +91,7 @@ class LLMClient:
         temperature: float = 0.92,
         max_tokens: int = 1024,
     ):
-        preset = PROVIDERS.get(provider, {})
+        preset = _get_providers().get(provider, {})
 
         self.provider = provider
         self.model = model or preset.get("default_model", "qwen-max")

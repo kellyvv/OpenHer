@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────
+# OpenHer — Unified API Configuration
+# ─────────────────────────────────────────────
+# All external API settings in one place.
+# ENV var overrides always take priority over this file.
+# Future APIs (vision, STT, etc.) add new sections here.
+
+# ── LLM (对话引擎) ──
+llm:
+  provider: "dashscope"          # Active provider name
+  model: "qwen-max"              # Active model name
+  temperature: 0.92
+  max_tokens: 1024
+  providers:
+    dashscope:
+      base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      api_key_env: "DASHSCOPE_API_KEY"
+      default_model: "qwen-max"
+    openai:
+      base_url: "https://api.openai.com/v1"
+      api_key_env: "OPENAI_API_KEY"
+      default_model: "gpt-4o"
+    deepseek:
+      base_url: "https://api.deepseek.com/v1"
+      api_key_env: "DEEPSEEK_API_KEY"
+      default_model: "deepseek-chat"
+    moonshot:
+      base_url: "https://api.moonshot.cn/v1"
+      api_key_env: "MOONSHOT_API_KEY"
+      default_model: "moonshot-v1-auto"
+    ollama:
+      base_url: "http://localhost:11434/v1"
+      api_key_env: ""
+      default_model: "qwen3.5:9b"
+      no_key_required: true
+
+# ── TTS (语音合成) ──
+tts:
+  provider: "edge"               # edge / openai / dashscope / minimax / qwen3
+  cache_dir: ".cache/tts"        # Relative to project root
+  providers:
+    openai:
+      api_key_env: "OPENAI_API_KEY"
+    dashscope:
+      api_key_env: "DASHSCOPE_API_KEY"
+    minimax:
+      api_key_env: "MINIMAX_API_KEY"
+      model: "speech-2.8-turbo"
+
+# ── Memory (长期记忆 — EverMemOS) ──
+memory:
+  enabled: true
+  base_url: "http://localhost:1995/api/v1"
+  api_key_env: "EVERMEMOS_API_KEY"   # 留空 = 本地无 auth
+
+# ── 预留: 未来 API ──
+# vision:
+#   provider: "dashscope"
+#   api_key_env: "DASHSCOPE_API_KEY"
+#   model: "qwen-vl-max"
+# stt:
+#   provider: "dashscope"
+#   api_key_env: "DASHSCOPE_API_KEY"
+#   model: "paraformer-v2"
