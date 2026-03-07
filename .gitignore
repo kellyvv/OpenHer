@@ -26,3 +26,4 @@ server/.data/
 server/__pycache__/
 web/node_modules/
 web/dist/
+vendor/

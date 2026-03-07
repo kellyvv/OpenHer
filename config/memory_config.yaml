@@ -6,6 +6,7 @@
 
 evermemos:
   enabled: true                  # Master switch — false = local mode only
+  base_url: "http://localhost:1995/api/v1"  # Self-hosted EverMemOS endpoint
 
   # Retrieval settings
   retrieve_method: "rrf"         # rrf | hybrid | agentic

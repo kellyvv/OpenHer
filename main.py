@@ -151,13 +151,14 @@ async def startup():
     # 7. Memory store
     memory_store = MemoryStore(os.path.join(data_dir, "memory.db"))
 
-    # 7b. EverMemOS long-term memory (cloud API)
+    # 7b. EverMemOS long-term memory (self-hosted or cloud)
+    evermemos_url = os.getenv("EVERMEMOS_BASE_URL", "")
     evermemos_key = os.getenv("EVERMEMOS_API_KEY", "")
-    if evermemos_key:
-        evermemos = EverMemOSClient(api_key=evermemos_key)
+    if evermemos_url or evermemos_key:
+        evermemos = EverMemOSClient(base_url=evermemos_url or None, api_key=evermemos_key or None)
     else:
         evermemos = None
-        print("ℹ EverMemOS: 未配置 EVERMEMOS_API_KEY，使用本地 MemoryStore")
+        print("ℹ EverMemOS: 未配置 EVERMEMOS_BASE_URL 或 EVERMEMOS_API_KEY，使用本地 MemoryStore")
 
     # 8. Cron scheduler
     if cron_skills:

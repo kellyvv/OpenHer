@@ -1,10 +1,10 @@
 """
-EverMemOS Client — 长期记忆适配器 (Async v3)
+EverMemOS Client — 长期记忆适配器 (Async v4 — Self-Hosted)
 
-v3 改进：
-  P0 — 控制面：config 集中管理、超时可配、失败熔断、命中率指标
-  P1 — Foresight 内容注入：从"有 foresight"升级为"注入预测文本"
-  P1 — Profile 加入 RRF 检索：按预算混合 facts + episodes + profile
+v4 改进：
+  P0 — 从 evermemos SDK (Cloud) 迁移到 httpx 直连 (Self-Hosted Open Source)
+  沿用 v3 全部功能：config 集中管理、超时可配、失败熔断、命中率指标
+  Foresight / Profile / RRF 检索逻辑不变
 
 记忆涌现架构：
   1. 每轮对话结束后 → asyncio.create_task(store_turn(...)) 后台存储
@@ -12,6 +12,12 @@ v3 改进：
   3. Session 开始时拉取 Profile + Foresight 文本 → 注入 Critic + Actor
   4. 每轮 RRF 检索：event_log + episodic_memory + profile → 注入 Actor
   5. Session 结束时 flush → 触发边界提取
+
+API 变化 (Cloud → Self-Hosted):
+  - Base URL:  api.evermind.ai/api/v0 → localhost:1995/api/v1
+  - Auth:      Bearer token → 无需 (local)
+  - SDK:       evermemos.AsyncEverMemOS → httpx.AsyncClient
+  - 接口字段完全兼容，仅 URL path 不同
 """
 
 from __future__ import annotations
@@ -32,9 +38,9 @@ except ImportError:
     _YAML = False
 
 try:
-    from evermemos import AsyncEverMemOS
+    import httpx
 except ImportError:
-    AsyncEverMemOS = None
+    httpx = None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -48,6 +54,7 @@ def _load_memory_config() -> dict:
     """
     defaults = {
         "enabled": True,
+        "base_url": "http://localhost:1995/api/v1",
         "retrieve_method": "rrf",
         "agentic_rollout_pct": 0,
         "search_timeout_sec": 3.0,
@@ -178,18 +185,36 @@ def _fmt_latency(elapsed_ms: float) -> str:
 
 class EverMemOSClient:
     """
-    Async EverMemOS adapter for OpenHer.
+    Async EverMemOS adapter for OpenHer (Self-Hosted — httpx).
 
     All public methods are async. Use asyncio.create_task() for fire-and-forget
     storage operations to avoid blocking the main conversation flow.
+
+    v4: Uses httpx.AsyncClient to call EverMemOS open-source REST API
+    directly (localhost:1995/api/v1) instead of evermemos SDK cloud calls.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None):
+        self._base_url = (
+            base_url
+            or os.environ.get("EVERMEMOS_BASE_URL")
+            or _CFG.get("base_url")
+            or "http://localhost:1995/api/v1"
+        )
+        # Normalize: strip trailing slash, ensure /api/v1 suffix
+        self._base_url = self._base_url.rstrip("/")
+        if not self._base_url.endswith("/api/v1"):
+            # If user provides "http://localhost:1995", auto-append
+            if "/api/" not in self._base_url:
+                self._base_url += "/api/v1"
+
+        # Optional API key (for cloud fallback or authenticated setups)
         self._api_key = api_key or os.environ.get("EVERMEMOS_API_KEY")
-        self._client = None
-        self._mem = None
+
+        self._client: Optional[httpx.AsyncClient] = None
         self._initialized = False
-        # Circuit breaker: true no-op when disabled
+
+        # Circuit breaker
         cb_enabled = _CFG.get("circuit_breaker_enabled", True)
         if cb_enabled:
             self._cb = _CircuitBreaker(
@@ -203,26 +228,28 @@ class EverMemOSClient:
             print("⚠ EverMemOS disabled via config")
             return
 
-        if AsyncEverMemOS and self._api_key:
-            try:
-                self._client = AsyncEverMemOS(
-                    api_key=self._api_key,
-                    timeout=10.0,
-                )
-                self._mem = self._client.v0.memories
-                self._initialized = True
-                print(f"✓ EverMemOS client initialized (retrieve_method={_CFG['retrieve_method']})")
-            except Exception as e:
-                print(f"⚠ EverMemOS init failed: {e}")
-        else:
-            if not AsyncEverMemOS:
-                print("⚠ EverMemOS not installed (pip install evermemos)")
-            else:
-                print("⚠ EVERMEMOS_API_KEY not set — long-term memory disabled")
+        if httpx is None:
+            print("⚠ httpx not installed (pip install httpx)")
+            return
+
+        try:
+            headers = {"Content-Type": "application/json"}
+            if self._api_key:
+                headers["Authorization"] = f"Bearer {self._api_key}"
+
+            self._client = httpx.AsyncClient(
+                base_url=self._base_url,
+                headers=headers,
+                timeout=10.0,
+            )
+            self._initialized = True
+            print(f"✓ EverMemOS client initialized (base_url={self._base_url}, retrieve_method={_CFG['retrieve_method']})")
+        except Exception as e:
+            print(f"⚠ EverMemOS init failed: {e}")
 
     @property
     def available(self) -> bool:
-        return self._initialized and self._mem is not None and not self._cb.is_open
+        return self._initialized and self._client is not None and not self._cb.is_open
 
     # ─────────────────────────────────────────────────────────────
     # Session Lifecycle
@@ -255,16 +282,18 @@ class EverMemOSClient:
 
         t0 = time.monotonic()
         try:
-            # EverMemOS v0 API only supports single memory_type per call.
-            # Fire 4 parallel queries for max throughput.
             timeout = _CFG["load_timeout_sec"]
 
             async def _get_type(mtype: str):
                 try:
-                    return await self._mem.get(
-                        extra_query={"user_id": user_id, "memory_type": mtype},
+                    resp = await self._client.get(
+                        "/memories",
+                        params={"user_id": user_id, "memory_type": mtype},
                         timeout=timeout,
                     )
+                    if resp.status_code == 200:
+                        return resp.json()
+                    return None
                 except Exception:
                     return None
 
@@ -276,13 +305,14 @@ class EverMemOSClient:
             )
 
             # Merge all memories from parallel responses
-            memories = []
-            for resp in results:
-                if resp and resp.result and resp.result.memories:
-                    memories.extend(resp.result.memories)
+            all_memories = []
+            for resp_data in results:
+                if resp_data and resp_data.get("result"):
+                    mems = resp_data["result"].get("memories", [])
+                    if isinstance(mems, list):
+                        all_memories.extend(mems)
 
-            if not memories:
-                # P1b: healthy request (0 results) — reset failure count
+            if not all_memories:
                 self._cb.record_success()
                 return empty
 
@@ -292,38 +322,40 @@ class EverMemOSClient:
             foresight_lines = []
             interaction_count = 0
 
-            for mem in memories:
-                mem_type = getattr(mem, '__class__', None)
-                type_name = mem_type.__name__ if mem_type else ""
-
-                if "Profile" in type_name:
-                    profile_data = getattr(mem, 'profile_data', None)
+            for mem in all_memories:
+                # Determine memory type from response structure
+                if "profile_data" in mem:
+                    # Profile type
+                    profile_data = mem.get("profile_data", {})
                     if profile_data:
                         for k, v in profile_data.items():
-                            if v:
+                            if v and k not in ("id", "memory_type", "user_id", "user_name"):
                                 profile_lines.append(f"{k}: {v}")
-                    interaction_count += getattr(mem, 'memcell_count', 0) or 0
+                    interaction_count += mem.get("memcell_count", 0) or 0
 
-                elif "EventLog" in type_name:
-                    fact = getattr(mem, 'atomic_fact', None)
+                elif "atomic_fact" in mem:
+                    # EventLog type
+                    fact = mem.get("atomic_fact", "")
                     if fact and fact.strip():
                         fact_lines.append(fact.strip())
 
-                elif "Episode" in type_name or "Episodic" in type_name:
+                elif "episode_id" in mem or "summary" in mem:
+                    # Episodic memory type
                     summary = (
-                        getattr(mem, 'summary', None)
-                        or getattr(mem, 'narrative', None)
-                        or getattr(mem, 'content', None)
+                        mem.get("summary")
+                        or mem.get("narrative")
+                        or mem.get("content")
                     )
                     if summary and summary.strip():
                         episode_lines.append(summary.strip())
 
-                elif "Foresight" in type_name:
-                    # P1: Extract foresight CONTENT (not just count)
+                elif "foresight" in mem:
+                    # Foresight type
                     content = (
-                        getattr(mem, 'content', None)
-                        or getattr(mem, 'prediction', None)
-                        or getattr(mem, 'summary', None)
+                        mem.get("content")
+                        or mem.get("foresight")
+                        or mem.get("prediction")
+                        or mem.get("summary")
                     )
                     if content and content.strip():
                         foresight_lines.append(content.strip())
@@ -371,7 +403,7 @@ class EverMemOSClient:
                 episode_summary=episode_summary,
                 foresight_text=foresight_text,
                 interaction_count=interaction_count,
-                has_history=bool(memories),
+                has_history=bool(all_memories),
                 relationship_depth=round(depth, 3),
                 pending_foresight=round(pending_fs, 3),
                 _fact_count=len(fact_lines),
@@ -420,24 +452,26 @@ class EverMemOSClient:
         now_iso = time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime())
 
         try:
-            await self._mem.add(
-                content=user_message,
-                create_time=now_iso,
-                message_id=str(uuid.uuid4()),
-                sender=user_id,
-                sender_name=user_name,
-                role="user",
-                group_id=group_id,
-            )
-            await self._mem.add(
-                content=agent_reply,
-                create_time=now_iso,
-                message_id=str(uuid.uuid4()),
-                sender=persona_id,
-                sender_name=persona_name,
-                role="assistant",
-                group_id=group_id,
-            )
+            # Store user message
+            await self._client.post("/memories", json={
+                "content": user_message,
+                "create_time": now_iso,
+                "message_id": str(uuid.uuid4()),
+                "sender": user_id,
+                "sender_name": user_name,
+                "role": "user",
+                "group_id": group_id,
+            })
+            # Store agent reply
+            await self._client.post("/memories", json={
+                "content": agent_reply,
+                "create_time": now_iso,
+                "message_id": str(uuid.uuid4()),
+                "sender": persona_id,
+                "sender_name": persona_name,
+                "role": "assistant",
+                "group_id": group_id,
+            })
             self._cb.record_success()
 
         except Exception as e:
@@ -455,7 +489,6 @@ class EverMemOSClient:
         """
         Store a proactive message (AI-initiated, no user_message).
         Uses message_id=tick_id for idempotent retry (R25).
-        Uses refer_list for metadata marking with fallback (R20).
         """
         if not self.available:
             return
@@ -463,23 +496,17 @@ class EverMemOSClient:
         now_iso = time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime())
         msg_id = f"proactive_{tick_id}"
 
-        kwargs = dict(
-            content=reply,
-            create_time=now_iso,
-            message_id=msg_id,
-            sender=persona_id,
-            sender_name=persona_name,
-            role="assistant",
-            group_id=group_id,
-        )
-
         try:
-            # Try with refer_list metadata marking (R16)
-            try:
-                await self._mem.add(**kwargs, refer_list=["proactive"])
-            except (TypeError, Exception):
-                # refer_list not supported in this SDK version → fallback
-                await self._mem.add(**kwargs)
+            await self._client.post("/memories", json={
+                "content": reply,
+                "create_time": now_iso,
+                "message_id": msg_id,
+                "sender": persona_id,
+                "sender_name": persona_name,
+                "role": "assistant",
+                "group_id": group_id,
+                "refer_list": ["proactive"],
+            })
             self._cb.record_success()
             print(f"  [evermemos] stored proactive turn (tick={tick_id[:8]})")
         except Exception as e:
@@ -500,16 +527,16 @@ class EverMemOSClient:
             return
 
         try:
-            await self._mem.add(
-                content="[session_end]",
-                create_time=time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime()),
-                message_id=str(uuid.uuid4()),
-                sender=persona_id,
-                sender_name="system",
-                role="assistant",
-                group_id=group_id,
-                flush=True,
-            )
+            await self._client.post("/memories", json={
+                "content": "[session_end]",
+                "create_time": time.strftime("%Y-%m-%dT%H:%M:%S+08:00", time.localtime()),
+                "message_id": str(uuid.uuid4()),
+                "sender": persona_id,
+                "sender_name": "system",
+                "role": "assistant",
+                "group_id": group_id,
+                "flush": True,
+            })
             print(f"  [evermemos] 🔚 session flushed for {user_id}")
         except Exception as e:
             print(f"  [evermemos] close_session error: {e}")
@@ -564,36 +591,35 @@ class EverMemOSClient:
             if random.randint(1, 100) <= agentic_pct:
                 retrieve_method = "agentic"
 
-        # Search doesn't need memory_type filter — EverMemOS returns
-        # relevant results across all types by default.
-
         try:
-            query_params = {
-                "query": query,
-                "user_id": user_id,
-                "retrieve_method": retrieve_method,
-            }
-            try:
-                response = await self._mem.search(
-                    extra_query=query_params,
-                    timeout=_CFG["search_timeout_sec"],
-                )
-            except Exception:
-                # SDK compat fallback: try search_method key
-                query_params["search_method"] = query_params.pop("retrieve_method")
-                response = await self._mem.search(
-                    extra_query=query_params,
-                    timeout=_CFG["search_timeout_sec"],
-                )
+            # Open-source API: GET /memories/search with JSON body
+            resp = await self._client.request(
+                "GET",
+                "/memories/search",
+                json={
+                    "query": query,
+                    "user_id": user_id,
+                    "retrieve_method": retrieve_method,
+                },
+                timeout=_CFG["search_timeout_sec"],
+            )
 
             elapsed_ms = (time.monotonic() - t0) * 1000
 
-            if not response or not response.result or not response.result.memories:
+            if resp.status_code != 200:
+                print(f"  [evermemos] 🔍 search: HTTP {resp.status_code}{_fmt_latency(elapsed_ms)}")
+                self._cb.record_success()
+                return "", "", ""
+
+            data = resp.json()
+            result = data.get("result", {})
+            memories = result.get("memories", [])
+
+            if not memories:
                 print(f"  [evermemos] 🔍 search: 0 results{_fmt_latency(elapsed_ms)} [{retrieve_method}]")
                 self._cb.record_success()
                 return "", "", ""
 
-            memories = response.result.memories
             facts = []
             episodes = []
             profile_attrs = []
@@ -603,29 +629,27 @@ class EverMemOSClient:
             max_profile = _CFG["profile_max_items"]
 
             for mem in memories:
-                mem_type = getattr(mem, '__class__', None)
-                type_name = mem_type.__name__ if mem_type else ""
-
-                if "EventLog" in type_name and len(facts) < max_facts:
-                    fact = getattr(mem, 'atomic_fact', None)
+                if "atomic_fact" in mem and len(facts) < max_facts:
+                    fact = mem.get("atomic_fact", "")
                     if fact and fact.strip():
                         facts.append(fact.strip())
 
-                elif ("Episode" in type_name or "Episodic" in type_name) and len(episodes) < max_eps:
+                elif ("episode_id" in mem or "summary" in mem) and len(episodes) < max_eps:
                     summary = (
-                        getattr(mem, 'summary', None)
-                        or getattr(mem, 'narrative', None)
-                        or getattr(mem, 'content', None)
+                        mem.get("summary")
+                        or mem.get("narrative")
+                        or mem.get("content")
                     )
                     if summary and summary.strip():
                         episodes.append(summary.strip())
 
-                elif "Profile" in type_name and len(profile_attrs) < max_profile:
-                    profile_data = getattr(mem, 'profile_data', None)
+                elif "profile_data" in mem and len(profile_attrs) < max_profile:
+                    profile_data = mem.get("profile_data", {})
                     if profile_data:
                         for k, v in profile_data.items():
                             if v and len(profile_attrs) < max_profile:
-                                profile_attrs.append(f"{k}: {v}")
+                                if k not in ("id", "memory_type", "user_id", "user_name"):
+                                    profile_attrs.append(f"{k}: {v}")
 
             relevant_facts = "；".join(facts) if facts else ""
             relevant_episodes = "；".join(episodes) if episodes else ""
