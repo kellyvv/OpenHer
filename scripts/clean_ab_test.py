@@ -37,9 +37,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 load_dotenv()
 
-from core.persona import PersonaLoader
-from core.llm import LLMClient
-from core.agent.chat_agent import ChatAgent, extract_reply
+from persona import PersonaLoader
+from providers.llm import LLMClient
+from agent.chat_agent import ChatAgent, extract_reply
 
 PERSONAS = ["iris", "kai", "vivian", "luna"]
 
@@ -115,7 +115,7 @@ async def main():
     print(f"{'═' * 80}")
 
     # Init services
-    persona_loader = PersonaLoader(os.path.join(base_dir, "personas"))
+    persona_loader = PersonaLoader(os.path.join(base_dir, "persona", "personas"))
     personas = persona_loader.load_all()
     print(f"✓ Loaded {len(personas)} personas: {list(personas.keys())}")
 

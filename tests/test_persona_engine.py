@@ -9,9 +9,9 @@ import os
 # Add the server directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.persona import PersonaLoader
-from core.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS
-from core.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
+from persona import PersonaLoader
+from engine.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS
+from engine.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
 
 
 def test_persona_loader():
@@ -19,7 +19,7 @@ def test_persona_loader():
     print("TEST: PersonaLoader")
     print("=" * 60)
 
-    loader = PersonaLoader(os.path.join(os.path.dirname(os.path.dirname(__file__)), "personas"))
+    loader = PersonaLoader(os.path.join(os.path.dirname(os.path.dirname(__file__)), "persona", "personas"))
     personas = loader.load_all()
 
     print(f"\n✅ Loaded {len(personas)} personas: {list(personas.keys())}")

@@ -24,8 +24,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import aiohttp
-from core.llm import LLMClient
-from core.llm.client import ChatMessage
+from providers.llm import LLMClient
+from providers.llm.client import ChatMessage
 
 SERVER = "http://localhost:8800"
 

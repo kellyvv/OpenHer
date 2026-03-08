@@ -10,8 +10,8 @@ import math
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS, DRIVES, N_SIGNALS, HIDDEN_SIZE, INPUT_SIZE
-from core.genome.drive_metabolism import DriveMetabolism
+from engine.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS, DRIVES, N_SIGNALS, HIDDEN_SIZE, INPUT_SIZE
+from engine.genome.drive_metabolism import DriveMetabolism
 
 
 PERSONA_SEEDS = [42, 137, 256, 999]
@@ -45,7 +45,7 @@ def simulate(seed, name, params, rng):
     agent = Agent(seed=seed)
 
     # Pre-warm (identical for both)
-    from core.genome.genome_engine import simulate_conversation
+    from engine.genome.genome_engine import simulate_conversation
     pre_rng_state = random.getstate()
     random.seed(seed + 7777)  # Deterministic pre-warm
     simulate_conversation(agent, ['分享喜悦', '吵架冲突', '深夜心事'], steps_per_scenario=20)

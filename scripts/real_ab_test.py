@@ -26,13 +26,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
-from core.llm.client import LLMClient, ChatMessage
-from core.genome.genome_engine import (
+from providers.llm.client import LLMClient, ChatMessage
+from engine.genome.genome_engine import (
     Agent, SIGNALS, SIGNAL_LABELS, DRIVES, DRIVE_LABELS,
     SCENARIOS, simulate_conversation, N_SIGNALS, HIDDEN_SIZE, INPUT_SIZE
 )
-from core.genome.drive_metabolism import DriveMetabolism
-from core.genome.critic import critic_sense
+from engine.genome.drive_metabolism import DriveMetabolism
+from engine.genome.critic import critic_sense
 
 
 # ═══════════════════════ Config ═══════════════════════

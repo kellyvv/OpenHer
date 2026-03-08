@@ -15,11 +15,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.genome.genome_engine import Agent, DRIVES, SIGNALS
-from core.genome.drive_metabolism import DriveMetabolism
-from core.genome.critic import critic_sense
-from core.persona.persona_loader import PersonaLoader
-from core.llm.client import LLMClient, ChatMessage
+from engine.genome.genome_engine import Agent, DRIVES, SIGNALS
+from engine.genome.drive_metabolism import DriveMetabolism
+from engine.genome.critic import critic_sense
+from persona.loader import PersonaLoader
+from providers.llm.client import LLMClient, ChatMessage
 
 
 # ══════════════ Mock LLM ══════════════
@@ -110,7 +110,7 @@ async def test_play_drive_satisfied():
 
 async def test_persona_params_loaded():
     """Test 4: All 4 personas load engine_params correctly."""
-    loader = PersonaLoader('personas')
+    loader = PersonaLoader(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'persona', 'personas'))
     loader.load_all()
 
     for pid in loader.list_ids():
@@ -125,7 +125,7 @@ async def test_persona_params_loaded():
 
 async def test_per_persona_temperature():
     """Test 5: Different personas produce different temperatures."""
-    loader = PersonaLoader('personas')
+    loader = PersonaLoader(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'persona', 'personas'))
     loader.load_all()
 
     temps = {}

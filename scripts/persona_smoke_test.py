@@ -26,11 +26,11 @@ from dataclasses import dataclass
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.genome.genome_engine import (
+from engine.genome.genome_engine import (
     Agent, SIGNALS, DRIVES, SCENARIOS, simulate_conversation,
     N_SIGNALS, HIDDEN_SIZE, INPUT_SIZE
 )
-from core.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
+from engine.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
 
 
 # ═══════════════════════ Thresholds ═══════════════════════
@@ -233,7 +233,7 @@ def check_health(metrics, bounds=BOUNDS):
 # ═══════════════════════ Main ═══════════════════════
 
 def main():
-    personas_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "personas")
+    personas_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "persona", "personas")
 
     # Parse args
     if len(sys.argv) > 1:

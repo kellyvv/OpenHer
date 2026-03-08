@@ -19,7 +19,7 @@ import uuid
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -27,18 +27,18 @@ from pydantic import BaseModel
 
 import uuid as _uuid
 
-from core.persona import PersonaLoader
-from core.llm import LLMClient
-from core.agent.chat_agent import ChatAgent
-from core.media.tts_engine import TTSEngine, TTSProvider
-from core.skills import SkillEngine
-from core.state_store import StateStore
-from core.memory.memory_store import MemoryStore
-from core.memory.evermemos_client import EverMemOSClient
-from core.config.api_config import get_llm_config, get_tts_config, get_memory_config
-from core.cron_scheduler import CronScheduler
-from core.output_router import stream_to_ws as _stream_to_ws
-from core.genome import DRIVE_LABELS
+from persona import PersonaLoader
+from providers.llm import LLMClient
+from agent.chat_agent import ChatAgent
+from providers.media.tts_engine import TTSEngine, TTSProvider
+from agent.skills import SkillEngine
+from engine.state_store import StateStore
+from memory.memory_store import MemoryStore
+from providers.memory.evermemos.evermemos_client import EverMemOSClient
+from providers.api_config import get_llm_config, get_tts_config, get_memory_config
+from cron_scheduler import CronScheduler
+from output_router import stream_to_ws as _stream_to_ws
+from engine.genome import DRIVE_LABELS
 
 # ──────────────────────────────────────────────────────────────
 # Load env
@@ -119,7 +119,7 @@ async def startup():
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
     # 1. Load personas
-    persona_loader = PersonaLoader(os.path.join(base_dir, "personas"))
+    persona_loader = PersonaLoader(os.path.join(base_dir, "persona", "personas"))
     personas = persona_loader.load_all()
     print(f"✓ 加载了 {len(personas)} 个角色: {list(personas.keys())}")
 
@@ -159,7 +159,7 @@ async def startup():
     state_store = StateStore(os.path.join(data_dir, "openher.db"))
 
     # 7. Memory store (config/api.yaml → memory.soulmem.db_path)
-    from core.providers.config import get_memory_provider_config
+    from providers.config import get_memory_provider_config
     _mem_prov_cfg = get_memory_provider_config()
     _soulmem_db = os.path.join(base_dir, _mem_prov_cfg["soulmem"]["db_path"])
     os.makedirs(os.path.dirname(_soulmem_db) or ".", exist_ok=True)
@@ -194,7 +194,7 @@ async def startup():
     try:
         import yaml as _yaml_cfg
         from pathlib import Path as _PathCfg
-        _cfg_path = _PathCfg(base_dir) / "core" / "providers" / "memory" / "memory_config.yaml"
+        _cfg_path = _PathCfg(base_dir) / "providers" / "memory" / "evermemos" / "memory_config.yaml"
         _cfg_raw = _yaml_cfg.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
     except Exception:
         _cfg_raw = {}
@@ -252,7 +252,7 @@ async def _cron_generate_message(skill_prompt: str, persona_id: str) -> str:
     persona = persona_loader.get(persona_id)
     if not persona:
         return ""
-    from core.llm.client import ChatMessage
+    from providers.llm.client import ChatMessage
     messages = [
         ChatMessage(role="system", content=f"你是{persona.name}。{skill_prompt}"),
         ChatMessage(role="user", content="请生成一条主动消息"),
@@ -637,7 +637,7 @@ async def list_personas():
     result = []
     avatar_svc = _get_avatar_service()
     for pid, p in personas.items():
-        avatar_path = avatar_svc.get_avatar_path(pid)
+        avatar_path = avatar_svc.repo.get_avatar_path(pid)
         result.append(PersonaInfo(
             persona_id=pid,
             name=p.name,
@@ -721,7 +721,7 @@ async def image_api(
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
 
-    from core.providers.registry import get_image_gen
+    from providers.registry import get_image_gen
 
     try:
         provider = get_image_gen(
@@ -757,38 +757,18 @@ async def image_api(
 
 def _get_avatar_service():
     """Lazy-create AvatarService."""
-    from core.providers.image.avatar_service import AvatarService
+    from persona.avatar.service import AvatarService
     return AvatarService(
-        personas_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "personas"),
+        personas_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas"),
+        persona_loader=persona_loader,
     )
-
-
-@app.post("/api/admin/avatar/{persona_id}")
-async def generate_avatar(persona_id: str, force: bool = Query(False)):
-    """[Admin] Generate avatar for a single persona."""
-    persona = persona_loader.get(persona_id)
-    if not persona:
-        raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found")
-
-    service = _get_avatar_service()
-    result = await service.generate_avatar(persona, force=force)
-
-    if result.success:
-        return {
-            "persona_id": persona_id,
-            "avatar_path": result.image_path,
-            "provider": result.provider,
-            "latency_ms": round(result.latency_ms, 1),
-        }
-    else:
-        raise HTTPException(status_code=500, detail=result.error or "Avatar generation failed")
 
 
 @app.post("/api/admin/avatar/all")
 async def generate_all_avatars(force: bool = Query(False)):
     """[Admin] Generate avatars for all personas."""
     service = _get_avatar_service()
-    results = await service.generate_all(persona_loader, force=force)
+    results = await service.generate_all(force=force)
 
     summary = []
     for pid, r in results.items():
@@ -802,11 +782,78 @@ async def generate_all_avatars(force: bool = Query(False)):
     return {"total": len(results), "success": ok, "details": summary}
 
 
+@app.post("/api/admin/avatar/{persona_id}")
+async def generate_avatar(persona_id: str, force: bool = Query(False)):
+    """[Admin] Generate avatar for a single persona."""
+    service = _get_avatar_service()
+    try:
+        result = await service.generate(persona_id, force=force)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    if result.success:
+        return {
+            "persona_id": persona_id,
+            "avatar_path": result.image_path,
+            "provider": result.provider,
+            "latency_ms": round(result.latency_ms, 1),
+        }
+    else:
+        raise HTTPException(status_code=500, detail=result.error or "Avatar generation failed")
+
+
+@app.get("/api/admin/avatar/{persona_id}/config")
+async def get_avatar_config(persona_id: str):
+    """[Admin] Get current avatar config for a persona."""
+    service = _get_avatar_service()
+    try:
+        status = service.get_config(persona_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {
+        "persona_id": status.persona_id,
+        "persona_name": status.persona_name,
+        "prompt_base": status.config.prompt_base,
+        "style": status.config.style,
+        "negative_prompt": status.config.negative_prompt,
+        "has_avatar": status.has_avatar,
+    }
+
+
+@app.put("/api/admin/avatar/{persona_id}/config")
+async def update_avatar_config(persona_id: str, request: dict = Body(...)):
+    """[Admin] Update avatar config → write back to PERSONA.md."""
+    service = _get_avatar_service()
+    try:
+        updated = service.update_config(
+            persona_id,
+            prompt_base=request.get("prompt_base"),
+            style=request.get("style"),
+            negative_prompt=request.get("negative_prompt"),
+        )
+    except (ValueError, FileNotFoundError) as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {
+        "persona_id": persona_id,
+        "prompt_base": updated.prompt_base,
+        "style": updated.style,
+        "negative_prompt": updated.negative_prompt,
+    }
+
+
+@app.delete("/api/admin/avatar/{persona_id}")
+async def delete_avatar(persona_id: str):
+    """[Admin] Delete avatar for a persona."""
+    service = _get_avatar_service()
+    deleted = service.delete(persona_id)
+    return {"persona_id": persona_id, "deleted": deleted}
+
+
 @app.get("/api/avatar/{persona_id}")
 async def get_avatar(persona_id: str):
     """Get avatar image for a persona."""
     service = _get_avatar_service()
-    path = service.get_avatar_path(persona_id)
+    path = service.repo.get_avatar_path(persona_id)
     if path:
         return FileResponse(path, media_type="image/png", filename=f"{persona_id}_avatar.png")
     raise HTTPException(status_code=404, detail="Avatar not found. Use POST /api/admin/avatar/{id} to generate.")

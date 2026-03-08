@@ -18,8 +18,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from core.genome.genome_engine import Agent, simulate_conversation
-from core.persona.persona_loader import PersonaLoader
+from engine.genome.genome_engine import Agent, simulate_conversation
+from persona.loader import PersonaLoader
 
 # ── Scenario → context mapping ──
 # Maps keywords in user_input to appropriate context dicts
@@ -139,7 +139,7 @@ def calibrate_persona(persona_id: str, personas: dict, data_dir: str):
 
         # Compute signals via engine (no noise)
         signals = agent.compute_signals(context)
-        from core.genome.genome_engine import SIGNALS
+        from engine.genome.genome_engine import SIGNALS
         new_vector = [round(signals[s], 4) for s in SIGNALS]
 
         old_vector = entry.get("vector", [])
@@ -159,7 +159,7 @@ def calibrate_persona(persona_id: str, personas: dict, data_dir: str):
 
 
 def main():
-    loader = PersonaLoader(os.path.join(ROOT, "personas"))
+    loader = PersonaLoader(os.path.join(ROOT, "persona", "personas"))
     loader.load_all()
     personas = {pid: loader.get(pid) for pid in loader.list_ids()}
     data_dir = os.path.join(ROOT, ".data", "genome")

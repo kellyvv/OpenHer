@@ -18,9 +18,9 @@ import random
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS, DRIVES
-from core.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
-from core.genome.style_memory import ContinuousStyleMemory
+from engine.genome.genome_engine import Agent, SIGNALS, SCENARIOS, SIGNAL_LABELS, DRIVES
+from engine.genome.drive_metabolism import DriveMetabolism, apply_thermodynamic_noise
+from engine.genome.style_memory import ContinuousStyleMemory
 
 
 PERSONA_SEEDS = [42, 137, 256, 999]
@@ -49,7 +49,7 @@ def simulate_persona(seed: int, name: str):
     agent = Agent(seed=seed)
 
     # Pre-warm (like real server does)
-    from core.genome.genome_engine import simulate_conversation
+    from engine.genome.genome_engine import simulate_conversation
     simulate_conversation(agent, SCENARIO_SEQ, steps_per_scenario=20)
     for d in DRIVES:
         agent.drive_state[d] = agent.drive_baseline[d]
