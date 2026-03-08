@@ -44,6 +44,7 @@ class Persona:
     persona_id: str                       # Directory name, used as unique ID
     age: Optional[int] = None
     gender: str = "female"
+    lang: str = "zh"                          # Prompt label language: 'zh' or 'en'
     mbti: Optional[str] = None
     tags: list[str] = field(default_factory=list)
 
@@ -221,6 +222,7 @@ class PersonaLoader:
             persona_id=persona_id,
             age=meta.get("age"),
             gender=meta.get("gender", "female"),
+            lang=meta.get("lang", "zh"),
             mbti=meta.get("mbti"),
             tags=meta.get("tags", []),
             voice=voice,

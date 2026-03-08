@@ -33,6 +33,7 @@ from agent.chat_agent import ChatAgent
 from providers.media.tts_engine import TTSEngine, TTSProvider
 from agent.skills import SkillEngine
 from engine.state_store import StateStore
+from engine.chat_log_store import ChatLogStore
 from memory.memory_store import MemoryStore
 from providers.memory.evermemos.evermemos_client import EverMemOSClient
 from providers.api_config import get_llm_config, get_tts_config, get_memory_config
@@ -74,6 +75,7 @@ tts_engine: TTSEngine = None
 skill_engine: SkillEngine = None
 skills_prompt: str = ""
 state_store: StateStore = None
+chat_log_store: ChatLogStore = None
 memory_store: MemoryStore = None
 evermemos: EverMemOSClient = None
 cron_scheduler: CronScheduler = None
@@ -114,7 +116,7 @@ _proactive_metrics = {
 async def startup():
     """Initialize all services on server start."""
     global persona_loader, llm_client, tts_engine, skill_engine, skills_prompt
-    global state_store, memory_store, evermemos, cron_scheduler, genome_data_dir
+    global state_store, chat_log_store, memory_store, evermemos, cron_scheduler, genome_data_dir
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -157,6 +159,9 @@ async def startup():
 
     # 6. State persistence
     state_store = StateStore(os.path.join(data_dir, "openher.db"))
+
+    # 6b. Chat log persistence (display-only, independent from engine state)
+    chat_log_store = ChatLogStore(os.path.join(data_dir, "chat.db"))
 
     # 7. Memory store (config/api.yaml → memory.soulmem.db_path)
     from providers.config import get_memory_provider_config
@@ -228,6 +233,8 @@ async def shutdown():
         state_store.close()
     if memory_store:
         memory_store.close()
+    if chat_log_store:
+        chat_log_store.close()
     # Flush EverMemOS for all active sessions
     if evermemos and evermemos.available:
         tasks = [
@@ -451,6 +458,7 @@ class ChatRequest(BaseModel):
     persona_id: str  # required, no default
     session_id: Optional[str] = None
     user_name: Optional[str] = None
+    client_id: Optional[str] = None  # display-layer identity for chat log
 
 
 class PersonaInfo(BaseModel):
@@ -665,6 +673,19 @@ async def chat_api(req: ChatRequest):
 
     _persist_agent(agent)
 
+    # Chat log: display-layer persistence (no engine impact)
+    if chat_log_store and req.client_id:
+        try:
+            chat_log_store.save_turn(
+                client_id=req.client_id,
+                persona_id=req.persona_id,
+                user_msg=req.message,
+                agent_reply=result['reply'],
+                modality=result.get('modality', '文字'),
+            )
+        except Exception as e:
+            print(f"  [chat_log] save error: {e}")
+
     return {
         "session_id": session_id,
         "response": result['reply'],
@@ -680,6 +701,21 @@ async def session_status(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
     agent, _ = entry
     return agent.get_status()
+
+
+@app.get("/api/chat/history/{persona_id}")
+async def get_chat_history(
+    persona_id: str,
+    client_id: str = Query(..., description="Frontend client identity (localStorage UUID)"),
+    limit: int = Query(50, ge=1, le=500),
+    before_id: int = Query(None, description="Pagination cursor — return messages before this id"),
+):
+    """Load chat history for display. Does not affect engine state."""
+    if not chat_log_store:
+        return {"messages": [], "total": 0}
+    messages = chat_log_store.load_messages(client_id, persona_id, limit, before_id)
+    total = chat_log_store.count_messages(client_id, persona_id)
+    return {"messages": messages, "total": total}
 
 
 @app.get("/api/tts")
@@ -900,6 +936,7 @@ async def websocket_chat(ws: WebSocket):
                     await ws.send_json({"type": "error", "content": "persona_id is required"})
                     continue
                 user_name = msg.get("user_name")
+                ws_client_id = msg.get("client_id")  # display-layer identity
 
                 try:
                     session_id, agent = get_or_create_session(
@@ -958,6 +995,19 @@ async def websocket_chat(ws: WebSocket):
                     print(f"  [chat] 🤖 {_clean_reply_text[:120]}")
 
                 _persist_agent(agent)
+
+                # Chat log: display-layer persistence (no engine impact)
+                if chat_log_store and ws_client_id and not stream_error:
+                    try:
+                        chat_log_store.save_turn(
+                            client_id=ws_client_id,
+                            persona_id=persona_id,
+                            user_msg=text,
+                            agent_reply=_clean_reply_text,
+                            modality=status.get("modality", "文字") if not stream_error else "文字",
+                        )
+                    except Exception as e:
+                        print(f"  [chat_log] save error: {e}")
 
             # ── TTS request ──
             elif msg_type == "tts_request":

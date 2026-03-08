@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getWsUrl, USE_MOCK, getMockReply } from '../services/api'
+import { getWsUrl, USE_MOCK, getMockReply, getClientId } from '../services/api'
 
 export function useWebSocket() {
     const wsRef = useRef(null)
@@ -10,6 +10,7 @@ export function useWebSocket() {
     const [status, setStatus] = useState({})
     const streamContentRef = useRef('')
     const typingTimerRef = useRef(null)
+    const clientId = useRef(getClientId())
 
     const connect = useCallback(() => {
         if (USE_MOCK) {
@@ -112,7 +113,8 @@ export function useWebSocket() {
         // Real WebSocket
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
         wsRef.current.send(JSON.stringify({
-            type: 'chat', content: text, persona_id: personaId, user_name: userName,
+            type: 'chat', content: text, persona_id: personaId,
+            user_name: userName, client_id: clientId.current,
         }))
     }, [status.turnCount])
 
@@ -122,10 +124,14 @@ export function useWebSocket() {
         setStatus({})
     }, [])
 
+    const setInitialMessages = useCallback((msgsOrFn) => {
+        setMessages(msgsOrFn)
+    }, [])
+
     useEffect(() => {
         connect()
         return () => wsRef.current?.close()
     }, [connect])
 
-    return { connected, messages, streaming, sessionId, status, sendMessage, clearMessages }
+    return { connected, messages, streaming, sessionId, status, sendMessage, clearMessages, setInitialMessages, clientId: clientId.current }
 }

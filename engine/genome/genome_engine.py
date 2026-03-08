@@ -437,6 +437,7 @@ class Agent:
         self, signals: dict,
         signal_overrides: dict = None,
         frustration: dict = None,
+        lang: str = 'zh',
     ) -> str:
         """
         Convert pre-computed behavioral signals into text for LLM system prompt.
@@ -449,8 +450,11 @@ class Agent:
             signals: 8D behavioral signals (0~1).
             signal_overrides: Per-persona overrides for emoji_label / anchors.
             frustration: Per-drive frustration dict from DriveMetabolism (0~5).
+            lang: Label language ('zh' or 'en').
         """
         from engine.prompt_registry import load_signal_config
+
+        is_en = lang == 'en'
 
         # ── Load from YAML (or use module-level fallbacks) ──
         config = load_signal_config(
@@ -471,26 +475,28 @@ class Agent:
                             sig_config[sig_name][key] = override[key]
 
         # ── Signal state: number + scale endpoints ──
-        lines = [
-            "【舞台指令：角色当前状态】",
-        ]
+        header = "【Stage direction: character current state】" if is_en else "【舞台指令：角色当前状态】"
+        lines = [header]
         for sig_name in SIGNALS:
             val = signals[sig_name]
             info = sig_config.get(sig_name, {})
-            emoji_label = info.get('emoji_label', sig_name)
-            lo = info.get('low_anchor', '低')
-            hi = info.get('high_anchor', '高')
+            emoji_label = info.get('emoji_label_en', sig_name) if is_en else info.get('emoji_label', sig_name)
+            lo = info.get('low_anchor_en', info.get('low_anchor', 'low')) if is_en else info.get('low_anchor', '低')
+            hi = info.get('high_anchor_en', info.get('high_anchor', 'high')) if is_en else info.get('high_anchor', '高')
             lines.append(f"{emoji_label}: {val:.2f} (0{lo}→1{hi})")
 
         # ── All 5 drives + per-drive frustration ──
         lines.append("")
-        lines.append("【舞台指令：角色内在需求】")
+        drive_header = "【Stage direction: character inner needs】" if is_en else "【舞台指令：角色内在需求】"
+        lines.append(drive_header)
         frust = frustration or {}
+        craving_label = "craving" if is_en else "渴望"
         for d in DRIVES:
-            d_label = drv_config.get(d, {}).get('emoji_label', d)
+            d_info = drv_config.get(d, {})
+            d_label = d_info.get('emoji_label_en', d) if is_en else d_info.get('emoji_label', d)
             d_val = self.drive_state[d]
             d_frust = frust.get(d, 0.0)
-            lines.append(f"{d_label}: {d_val:.2f} (渴望: {d_frust:.1f})")
+            lines.append(f"{d_label}: {d_val:.2f} ({craving_label}: {d_frust:.1f})")
 
         return '\n'.join(lines)
 

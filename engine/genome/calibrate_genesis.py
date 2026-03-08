@@ -15,7 +15,7 @@ import os
 import sys
 
 # Add project root to path
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
 from engine.genome.genome_engine import Agent, simulate_conversation
@@ -75,18 +75,50 @@ SCENARIO_CONTEXTS = {
     },
 }
 
-# Keywords → scenario type
+# Keywords → scenario type (Chinese + English)
+# Order matters: first match wins. Put specific/strong signals first.
 KEYWORD_MAP = {
     "rejection": ["不想", "别烦", "没兴趣", "不需要", "不想理", "不分享", "怎么这样",
-                  "算了", "不聊", "对不起", "道歉", "说声"],
-    "greeting": ["你好", "好啊", "在吗"],
+                  "算了", "不聊", "对不起", "道歉", "说声",
+                  "don't need", "don't want", "leave me", "go away", "not interested",
+                  "forget it", "done talking", "I'm done", "don't care",
+                  "shut up", "get lost", "whatever", "bye"],
+    "confrontation": ["错了", "错的", "不对", "明显", "杠精", "总是这样", "你就是",
+                      "烦不烦", "烦人", "太敏感",
+                      "wrong", "stupid", "dumb", "annoying", "sensitive",
+                      "you always", "you never", "ridiculous", "pathetic",
+                      "makes no sense", "worst", "terrible", "hate"],
     "distress": ["压力", "失眠", "睡不着", "伤心", "难过", "累", "烦死",
-                 "心情", "状态差", "烦", "沉默"],
-    "playful": ["哈哈", "可爱", "逗", "皮"],
-    "intimate": ["喜欢", "想念", "感觉", "心跳", "聊天"],
-    "confrontation": ["错了", "错的", "不对", "明显", "杠精", "总是这样", "你就是"],
+                 "心情", "状态差", "烦", "沉默", "孤独", "寂寞",
+                 "stress", "can't sleep", "sad", "tired", "depressed",
+                 "down lately", "lonely", "anxious", "worried",
+                 "nobody understands", "overwhelm", "exhausted", "hurt",
+                 "struggling", "falling apart", "empty", "broken", "cry",
+                 "pointless", "scared", "afraid", "hopeless", "numb"],
+    "intimate": ["喜欢", "想念", "感觉", "心跳", "聊天", "了解",
+                 "在意", "信任", "依赖", "陪伴", "暗恋", "告白",
+                 "like you", "miss you", "heart", "talking to you",
+                 "might like", "feelings for", "mean a lot", "close to",
+                 "trust you", "special to me", "different from other",
+                 "what should I do", "think I should", "what do you think",
+                 "nobody knows", "secret", "something about me",
+                 "understand me", "know me", "open up",
+                 "been through", "vulnerable", "confide"],
+    "playful": ["哈哈", "可爱", "逗", "皮", "笑", "撒娇", "调皮",
+                "haha", "cute", "funny", "lol", "lmao",
+                "smile", "pretty", "beautiful", "handsome", "sweet",
+                "flirt", "tease", "blush", "wink",
+                "cool", "awesome", "amazing", "exciting", "found something",
+                "really cool", "super interesting", "guess what"],
     "casual": ["做什么", "吃什么", "运动", "平时", "爱好", "看书", "周末",
-               "聊点别的", "换个", "有意思的事"],
+               "聊点别的", "换个", "有意思的事", "最近怎么样",
+               "what do you", "hobby", "movie", "book", "weekend",
+               "seen any", "how have you been", "how are you",
+               "what's up", "anything new", "watch", "listen",
+               "read", "eat", "cook", "travel", "weather",
+               "music", "game", "sport", "work", "school"],
+    "greeting": ["你好", "好啊", "在吗",
+                 "hi", "hey", "hello", "good morning", "good night"],
 }
 
 
@@ -137,10 +169,10 @@ def calibrate_persona(persona_id: str, personas: dict, data_dir: str):
         scenario = classify_input(user_input)
         context = SCENARIO_CONTEXTS[scenario]
 
-        # Compute signals via engine (no noise)
-        signals = agent.compute_signals(context)
-        from engine.genome.genome_engine import SIGNALS
-        new_vector = [round(signals[s], 4) for s in SIGNALS]
+        # Use Critic context vector — same space as _context_to_vec() in
+        # style_memory.py, so KNN retrieval queries can match these vectors.
+        from engine.genome.style_memory import CONTEXT_KEYS
+        new_vector = [round(context.get(k, 0.0), 4) for k in CONTEXT_KEYS]
 
         old_vector = entry.get("vector", [])
         entry["vector"] = new_vector

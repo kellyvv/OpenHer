@@ -260,35 +260,41 @@ class ContinuousStyleMemory:
 
         return self._personal_count
 
-    def build_few_shot_prompt(self, context, top_k=3, monologue_only=False):
+    def build_few_shot_prompt(self, context, top_k=3, monologue_only=False, lang='zh'):
         """Build few-shot prompt from retrieval results (with mass tags).
 
         Args:
             context: Critic context dict for KNN retrieval.
             monologue_only: If True, only include monologue (no reply).
                             Used by Pass 1 (Feel) of two-pass Actor.
+            lang: Label language ('zh' or 'en').
         """
         memories = self.retrieve(context, top_k=top_k)
 
+        is_en = lang == 'en'
         if not memories:
-            return "（系统：无可用的内心感受片段）" if monologue_only else "（系统：无可用的潜意识切片）"
+            if monologue_only:
+                return "（System: no inner feeling fragments available）" if is_en else "（系统：无可用的内心感受片段）"
+            return "（System: no subconscious slices available）" if is_en else "（系统：无可用的潜意识切片）"
 
         parts = []
         for i, mem in enumerate(memories):
             mass_eff = mem.get('mass_eff', 1.0)
             mass_raw = mem.get('mass_raw', 1.0)
             if mass_raw > 1.0:
-                mass_tag = f"质量={mass_eff:.1f}/{mass_raw:.0f}"
+                mass_tag = f"mass={mass_eff:.1f}/{mass_raw:.0f}" if is_en else f"质量={mass_eff:.1f}/{mass_raw:.0f}"
             else:
-                mass_tag = "基因"
+                mass_tag = "genesis" if is_en else "基因"
             if monologue_only:
+                frag_label = "Inner feeling fragment" if is_en else "内心感受片段"
                 parts.append(
-                    f"--- 内心感受片段 {i+1} [{mass_tag}] ---\n"
+                    f"--- {frag_label} {i+1} [{mass_tag}] ---\n"
                     f"{mem['monologue']}"
                 )
             else:
+                slice_label = "Subconscious slice" if is_en else "潜意识切片"
                 parts.append(
-                    f"--- 潜意识切片 {i+1} [{mass_tag}] ---\n"
+                    f"--- {slice_label} {i+1} [{mass_tag}] ---\n"
                     f"【内心独白】{mem['monologue']}\n"
                     f"【最终回复】{mem['reply']}"
                 )

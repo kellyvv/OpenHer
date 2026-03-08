@@ -1,69 +1,99 @@
 # Signal & Drive Definitions
 # Each signal has: label, emoji_label, low_anchor/high_anchor (scale endpoints)
+# English variants: emoji_label_en, low_anchor_en, high_anchor_en
 # Each drive has: label (short CN), emoji_label (display)
 
 signals:
   directness:
     label: "直接感"
     emoji_label: "🎯 直接度"
+    emoji_label_en: "🎯 Directness"
     low_anchor: "委婉"
     high_anchor: "直白"
+    low_anchor_en: "indirect"
+    high_anchor_en: "blunt"
 
   vulnerability:
     label: "脆弱感"
     emoji_label: "💧 坦露度"
+    emoji_label_en: "💧 Vulnerability"
     low_anchor: "封闭"
     high_anchor: "袒露"
+    low_anchor_en: "guarded"
+    high_anchor_en: "exposed"
 
   playfulness:
     label: "玩闹感"
     emoji_label: "🎪 玩闹度"
+    emoji_label_en: "🎪 Playfulness"
     low_anchor: "正经"
     high_anchor: "调皮"
+    low_anchor_en: "serious"
+    high_anchor_en: "playful"
 
   initiative:
     label: "主动感"
     emoji_label: "🚀 主动度"
+    emoji_label_en: "🚀 Initiative"
     low_anchor: "被动"
     high_anchor: "主导"
+    low_anchor_en: "passive"
+    high_anchor_en: "leading"
 
   depth:
     label: "深度感"
     emoji_label: "🌊 深度"
+    emoji_label_en: "🌊 Depth"
     low_anchor: "闲聊"
     high_anchor: "探底"
+    low_anchor_en: "small talk"
+    high_anchor_en: "deep dive"
 
   warmth:
     label: "温暖度"
     emoji_label: "🔥 温暖度"
+    emoji_label_en: "🔥 Warmth"
     low_anchor: "疏离"
     high_anchor: "热切"
+    low_anchor_en: "distant"
+    high_anchor_en: "warm"
 
   defiance:
     label: "倔强度"
     emoji_label: "⚡ 倔强度"
+    emoji_label_en: "⚡ Defiance"
     low_anchor: "随和"
     high_anchor: "硬杠"
+    low_anchor_en: "agreeable"
+    high_anchor_en: "defiant"
 
   curiosity:
     label: "好奇心"
     emoji_label: "🔍 好奇度"
+    emoji_label_en: "🔍 Curiosity"
     low_anchor: "无感"
     high_anchor: "追问"
+    low_anchor_en: "indifferent"
+    high_anchor_en: "probing"
 
 drives:
   connection:
     label: "联结"
     emoji_label: "🔗 联结"
+    emoji_label_en: "🔗 Connection"
   novelty:
     label: "新鲜"
     emoji_label: "✨ 新鲜"
+    emoji_label_en: "✨ Novelty"
   expression:
     label: "表达"
     emoji_label: "💬 表达"
+    emoji_label_en: "💬 Expression"
   safety:
     label: "安全"
     emoji_label: "🛡️ 安全"
+    emoji_label_en: "🛡️ Safety"
   play:
     label: "玩闹"
     emoji_label: "🎭 玩闹"
+    emoji_label_en: "🎭 Play"

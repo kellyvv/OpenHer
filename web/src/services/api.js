@@ -51,3 +51,34 @@ export function getMockReply(personaId) {
 }
 
 export { USE_MOCK }
+
+/**
+ * Stable client identity for chat log persistence (display-only).
+ * Stored in localStorage, survives page refreshes and tab closures.
+ * Completely separate from engine's stable_user_id.
+ */
+export function getClientId() {
+    let id = localStorage.getItem('openher_client_id')
+    if (!id) {
+        id = crypto.randomUUID()
+        localStorage.setItem('openher_client_id', id)
+    }
+    return id
+}
+
+/**
+ * Fetch chat history from backend for display.
+ */
+export async function fetchChatHistory(personaId, clientId, limit = 50) {
+    if (USE_MOCK) return []
+
+    try {
+        const params = new URLSearchParams({ client_id: clientId, limit: String(limit) })
+        const res = await fetch(`/api/chat/history/${personaId}?${params}`)
+        const data = await res.json()
+        return data.messages || []
+    } catch (err) {
+        console.warn('Failed to load chat history:', err.message)
+        return []
+    }
+}

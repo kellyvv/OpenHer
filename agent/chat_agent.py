@@ -69,35 +69,56 @@ $signal_injection
 （当你认为现在不应该说话时，选“静默”。）"""
 
 # -- Modality Parsing --
-MODALITY_ENUM = ("静默", "文字", "语音", "表情", "多条拆分", "照片")
+MODALITY_MAP = {
+    "静默": "静默", "silence": "静默",
+    "文字": "文字", "text": "文字",
+    "语音": "语音", "voice": "语音",
+    "表情": "表情", "emoji": "表情",
+    "多条拆分": "多条拆分", "split": "多条拆分",
+    "照片": "照片", "photo": "照片",
+}
 
 def _parse_modality(raw: str) -> str:
-    """Extract primary modality from Actor output. Ordered enum, first-token match."""
-    cleaned = raw.strip().lstrip("\uff1a: \n")
-    candidate = cleaned[:4]
-    for m in MODALITY_ENUM:
-        if candidate.startswith(m):
-            return m
+    """Extract primary modality from Actor output. Supports Chinese and English tokens."""
+    cleaned = raw.strip().lstrip("\uff1a: \n").lower()
+    for token, canonical in MODALITY_MAP.items():
+        if cleaned.startswith(token):
+            return canonical
     return "文字"
 
 
+# -- Section header regex: Chinese 【】 and English [] formats --
+_SECTION_RE = re.compile(
+    r'(?:【(?P<zh>内心独白|最终回复|表达方式)】'
+    r'|\[(?P<en>Inner Monologue|Final Reply|Expression Mode)\])'
+)
+_TAG_MAP = {
+    '内心独白': 'monologue', 'Inner Monologue': 'monologue',
+    '最终回复': 'reply',     'Final Reply': 'reply',
+    '表达方式': 'modality',  'Expression Mode': 'modality',
+}
+
+
 def extract_reply(raw: str) -> tuple[str, str, str]:
-    """Extract monologue, reply, and modality from Actor output."""
-    monologue = ""
-    reply = ""
-    modality_raw = ""
+    """Extract monologue, reply, and modality from Actor output.
 
-    # Parse structured sections
-    parts = re.split(r'【(内心独白|最终回复|表达方式)】', raw)
-    for j in range(len(parts)):
-        if parts[j] == '内心独白' and j+1 < len(parts):
-            monologue = parts[j+1].strip()
-        elif parts[j] == '最终回复' and j+1 < len(parts):
-            reply = parts[j+1].strip()
-        elif parts[j] == '表达方式' and j+1 < len(parts):
-            modality_raw = parts[j+1].strip()
+    Supports both Chinese (【最终回复】) and English ([Final Reply]) section headers.
+    Returns canonical Chinese modality key for internal consistency.
+    """
+    sections: dict[str, str] = {}
+    matches = list(_SECTION_RE.finditer(raw))
+    for i, m in enumerate(matches):
+        tag = m.group('zh') or m.group('en')
+        key = _TAG_MAP[tag]
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
+        sections[key] = raw[start:end].strip()
 
-    # Parse modality with strict enum (R11/R22)
+    monologue = sections.get('monologue', '')
+    reply = sections.get('reply', '')
+    modality_raw = sections.get('modality', '')
+
+    # Parse modality with bilingual map
     modality = _parse_modality(modality_raw) if modality_raw else "文字"
 
     # Silence short-circuit: Actor chose not to speak
@@ -111,7 +132,7 @@ def extract_reply(raw: str) -> tuple[str, str, str]:
         if not reply:
             reply = "..."
 
-    return monologue, reply, modality_raw or modality
+    return monologue, reply, modality
 
 
 class ChatAgent:
@@ -259,18 +280,28 @@ class ChatAgent:
 
         # ── Identity anchor (only factual identity, no behavioral labels) ──
         persona = self.persona
-        identity = f"【角色】\n{persona.name}"
-        if persona.age:
-            identity += f"，{persona.age}岁"
-        if persona.gender:
-            identity += f"，{persona.gender}"
-        identity += "。"
+        is_en = persona.lang == 'en'
+        if is_en:
+            identity = f"[Character]\n{persona.name}"
+            if persona.age:
+                identity += f", {persona.age} years old"
+            if persona.gender:
+                identity += f", {persona.gender}"
+            identity += "."
+        else:
+            identity = f"【角色】\n{persona.name}"
+            if persona.age:
+                identity += f"，{persona.age}岁"
+            if persona.gender:
+                identity += f"，{persona.gender}"
+            identity += "。"
 
         # Signal injection
         signal_injection = self.agent.to_prompt_injection_from_signals(
             signals,
             signal_overrides=self.persona.signal_overrides,
             frustration=self.metabolism.frustration,
+            lang=self.persona.lang,
         )
 
         # Trend injection
@@ -279,25 +310,31 @@ class ChatAgent:
             for sig in SIGNALS:
                 delta = signals[sig] - self._prev_signals.get(sig, 0.5)
                 if abs(delta) > self.trend_delta:
-                    direction = "上升" if delta > 0 else "下降"
+                    direction = ("trending up" if delta > 0 else "trending down") if is_en else ("上升" if delta > 0 else "下降")
                     from engine.genome.genome_engine import SIGNAL_LABELS as _FB_LABELS
                     sig_config = load_signal_config()
                     sig_info = sig_config.get('signals', {}).get(sig, {})
                     label = sig_info.get('emoji_label', _FB_LABELS.get(sig, sig))
+                    trend_word = "noticeably" if is_en else "明显"
                     trend_lines.append(
-                        f"- {label}明显{direction} "
+                        f"- {label}{trend_word} {direction} "
                         f"({self._prev_signals[sig]:.2f} → {signals[sig]:.2f})"
                     )
             if trend_lines:
-                signal_injection += "\n【变化趋势】\n" + "\n".join(trend_lines[:3])
+                trend_header = "【Trend】" if is_en else "【变化趋势】"
+                signal_injection += f"\n{trend_header}\n" + "\n".join(trend_lines[:3])
 
         now = _dt.datetime.now()
-        signal_injection += f"\n\n【当前时间】{now.strftime('%Y年%m月%d日')} {now.strftime('%H:%M')}"
+        if is_en:
+            signal_injection += f"\n\n【Time】{now.strftime('%Y-%m-%d')} {now.strftime('%H:%M')}"
+        else:
+            signal_injection += f"\n\n【当前时间】{now.strftime('%Y年%m月%d日')} {now.strftime('%H:%M')}"
 
         combined_injection = identity + "\n\n" + signal_injection
 
+        template_name = "actor_feel_en" if is_en else "actor_feel"
         return render_prompt(
-            "actor_feel",
+            template_name,
             fallback=_FALLBACK_ACTOR,
             few_shot=few_shot,
             signal_injection=combined_injection,
@@ -311,15 +348,25 @@ class ChatAgent:
         no memory injection. Control is entirely in the monologue.
         """
         persona = self.persona
-        identity = persona.name
-        if persona.age:
-            identity += f"，{persona.age}岁"
-        if persona.gender:
-            identity += f"，{persona.gender}"
-        identity += "。"
+        is_en = persona.lang == 'en'
+        if is_en:
+            identity = persona.name
+            if persona.age:
+                identity += f", {persona.age} years old"
+            if persona.gender:
+                identity += f", {persona.gender}"
+            identity += "."
+        else:
+            identity = persona.name
+            if persona.age:
+                identity += f"，{persona.age}岁"
+            if persona.gender:
+                identity += f"，{persona.gender}"
+            identity += "。"
 
+        template_name = "actor_express_en" if is_en else "actor_express"
         return render_prompt(
-            "actor_express",
+            template_name,
             fallback=(
                 "【角色】\n$identity\n\n"
                 "【角色此刻的内心】\n$monologue\n\n"
@@ -342,12 +389,12 @@ class ChatAgent:
 
         Pass 1 template ends with 【内心独白】, so model continues directly.
         Output likely does NOT contain the marker — use full text.
-        If marker is present, extract content after it.
+        If marker is present (Chinese or English fallback), extract content after it.
         """
-        marker = "【内心独白】"
-        idx = raw.find(marker)
-        if idx != -1:
-            return raw[idx + len(marker):].strip()
+        for marker in ("【内心独白】", "[Inner Monologue]"):
+            idx = raw.find(marker)
+            if idx != -1:
+                return raw[idx + len(marker):].strip()
         return raw.strip()
 
 
@@ -523,7 +570,7 @@ class ChatAgent:
         # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
         self.style_memory.set_clock(now)
         few_shot = self.style_memory.build_few_shot_prompt(
-            context, top_k=3, monologue_only=True,
+            context, top_k=3, monologue_only=True, lang=self.persona.lang,
         )
 
         # ── Step 8: Build Feel prompt (Pass 1) ──
@@ -540,14 +587,24 @@ class ChatAgent:
                 self._relevant_episodes, self._episode_summary, episode_budget
             )
             name = self.user_name or self.user_id
-            if profile_text:
-                feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
-            if episode_text:
-                feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
-            if self._foresight_text:
-                feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
-            if self._relevant_profile:
-                feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
+            if self.persona.lang == 'en':
+                if profile_text:
+                    feel_prompt += f"\n\n[{name}'s preferences] {profile_text}"
+                if episode_text:
+                    feel_prompt += f"\n\n[Past interactions with {name}] {episode_text}"
+                if self._foresight_text:
+                    feel_prompt += f"\n\n[Worth noting] {self._foresight_text}"
+                if self._relevant_profile:
+                    feel_prompt += f"\n\n[{name}'s profile] {self._relevant_profile}"
+            else:
+                if profile_text:
+                    feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                if episode_text:
+                    feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                if self._foresight_text:
+                    feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                if self._relevant_profile:
+                    feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                 self._search_relevant_used += 1
 
@@ -693,7 +750,7 @@ class ChatAgent:
             # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
             self.style_memory.set_clock(now)
             few_shot = self.style_memory.build_few_shot_prompt(
-                context, top_k=3, monologue_only=True,
+                context, top_k=3, monologue_only=True, lang=self.persona.lang,
             )
 
             # ── Step 8: Build Feel prompt (Pass 1) ──
@@ -1158,17 +1215,25 @@ class ChatAgent:
 
         # ── Step 9: Build Feel prompt (Pass 1) ──
         self.style_memory.set_clock(start)
-        few_shot = self.style_memory.build_few_shot_prompt(context, top_k=3, monologue_only=True)
+        few_shot = self.style_memory.build_few_shot_prompt(context, top_k=3, monologue_only=True, lang=self.persona.lang)
         feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
 
         # ── Step 9.5: Memory injection into Feel prompt (foresight is key driver here) ──
         if self._session_ctx and self._session_ctx.has_history:
-            if self._user_profile:
-                feel_prompt += f"\n\n[关于{name}的偏好] {self._user_profile[:300]}"
-            if self._episode_summary:
-                feel_prompt += f"\n\n[与{name}过去发生的事] {self._episode_summary[:300]}"
-            if self._foresight_text:
-                feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+            if self.persona.lang == 'en':
+                if self._user_profile:
+                    feel_prompt += f"\n\n[{name}'s preferences] {self._user_profile[:300]}"
+                if self._episode_summary:
+                    feel_prompt += f"\n\n[Past interactions with {name}] {self._episode_summary[:300]}"
+                if self._foresight_text:
+                    feel_prompt += f"\n\n[Worth noting] {self._foresight_text}"
+            else:
+                if self._user_profile:
+                    feel_prompt += f"\n\n[关于{name}的偏好] {self._user_profile[:300]}"
+                if self._episode_summary:
+                    feel_prompt += f"\n\n[与{name}过去发生的事] {self._episode_summary[:300]}"
+                if self._foresight_text:
+                    feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
 
         # ── Step 10a: Pass 1 — Feel (generates monologue only, no reply instruction) ──
         feel_messages = [

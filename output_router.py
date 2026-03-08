@@ -2,7 +2,7 @@
 OutputRouter — API layer between ChatAgent and WebSocket/REST transport.
 
 Responsibilities:
-  1. Parse raw LLM output (【内心独白】/【最终回复】/【表达方式】)
+  1. Parse raw LLM output (【内心独白】/【最终回复】/【表达方式】 or [Inner Monologue]/[Final Reply]/[Expression Mode])
   2. Clean reply text (strip parenthetical action descriptions)
   3. Route by modality: text → chat_chunk, voice → tts, sticker/photo → media
   4. Stream clean chunks to WebSocket caller
@@ -16,41 +16,67 @@ from __future__ import annotations
 import re
 from typing import AsyncIterator, Callable, Awaitable, Any
 
-# ── Parser constants ──
-_REPLY_START = "【最终回复】"
-_REPLY_END   = "【表达方式】"
-_MODALITY_START = "【表达方式】"
+# ── Parser constants (bilingual: Chinese primary, English fallback) ──
+_REPLY_STARTS = ("【最终回复】", "[Final Reply]")
+_REPLY_ENDS   = ("【表达方式】", "[Expression Mode]")
+_MAX_MARKER_LEN = max(
+    max(len(m) for m in _REPLY_STARTS),
+    max(len(m) for m in _REPLY_ENDS),
+)
 
 # Strip parenthetical action descriptions: （偷偷松了口气） or (sighs quietly)
 _PAREN_RE = re.compile(r'[（(][^（(）)]{1,40}[）)]')
+
+# Section header regex (shared with chat_agent.py)
+_SECTION_RE = re.compile(
+    r'(?:【(?P<zh>内心独白|最终回复|表达方式)】'
+    r'|\[(?P<en>Inner Monologue|Final Reply|Expression Mode)\])'
+)
+_TAG_MAP = {
+    '内心独白': 'monologue', 'Inner Monologue': 'monologue',
+    '最终回复': 'reply',     'Final Reply': 'reply',
+    '表达方式': 'modality',  'Expression Mode': 'modality',
+}
+
+# Bilingual modality normalization (canonical = Chinese key)
+_MODALITY_MAP = {
+    "静默": "静默", "silence": "静默",
+    "文字": "文字", "text": "文字",
+    "语音": "语音", "voice": "语音",
+    "表情": "表情", "emoji": "表情",
+    "多条拆分": "多条拆分", "split": "多条拆分",
+    "照片": "照片", "photo": "照片",
+}
 
 
 def parse_raw_output(raw: str) -> dict:
     """
     Parse a complete raw LLM output string into structured fields.
 
+    Supports both Chinese (【最终回复】) and English ([Final Reply]) section headers.
+
     Returns:
         {
-            "monologue": str,   # 内心独白
-            "reply":    str,    # 最终回复 (cleaned)
-            "modality": str,    # 表达方式 raw text
+            "monologue": str,
+            "reply":    str,    (cleaned)
+            "modality": str,    (canonical Chinese key)
         }
     """
-    monologue = ""
-    reply = ""
-    modality = ""
+    sections: dict[str, str] = {}
+    matches = list(_SECTION_RE.finditer(raw))
+    for i, m in enumerate(matches):
+        tag = m.group('zh') or m.group('en')
+        key = _TAG_MAP[tag]
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(raw)
+        sections[key] = raw[start:end].strip()
 
-    parts = re.split(r'【(内心独白|最终回复|表达方式)】', raw)
-    for i, part in enumerate(parts):
-        if part == "内心独白" and i + 1 < len(parts):
-            monologue = parts[i + 1].strip()
-        elif part == "最终回复" and i + 1 < len(parts):
-            reply = parts[i + 1].strip()
-        elif part == "表达方式" and i + 1 < len(parts):
-            modality = parts[i + 1].strip()
-
-    reply = _clean_reply(reply)
-    return {"monologue": monologue, "reply": reply, "modality": modality}
+    reply = _clean_reply(sections.get('reply', ''))
+    return {
+        "monologue": sections.get('monologue', ''),
+        "reply": reply,
+        "modality": sections.get('modality', ''),
+    }
 
 
 def _clean_reply(text: str) -> str:
@@ -60,14 +86,15 @@ def _clean_reply(text: str) -> str:
 
 def _extract_primary_modality(modality_text: str) -> str:
     """
-    Determine primary modality from 【表达方式】text.
+    Determine primary modality from 表达方式 text.
 
-    Priority order matches MODALITY_ENUM in chat_agent.py:
-      静默 > 语音 > 表情 > 多条拆分 > 照片 > 文字 (default)
+    Supports both Chinese and English modality tokens.
+    Priority order: 静默 > 语音 > 表情 > 多条拆分 > 照片 > 文字 (default)
     """
-    for modality in ("静默", "语音", "表情", "多条拆分", "照片"):
-        if modality in modality_text:
-            return modality
+    lowered = modality_text.strip().lower()
+    for token, canonical in _MODALITY_MAP.items():
+        if token in lowered and canonical != "文字":
+            return canonical
     return "文字"
 
 
@@ -84,8 +111,8 @@ async def stream_to_ws(
     """
     Stream raw LLM output through the output router to a WebSocket.
 
-    Streaming only extracts the 【最终回复】section (no per-chunk cleaning —
-    unreliable when parentheticals span chunk boundaries).
+    Streaming extracts the 【最终回复】 / [Final Reply] section.
+    No per-chunk cleaning — unreliable when parentheticals span chunk boundaries.
 
     Full cleaning (strip action descriptions) is applied once on the complete
     text via on_reply_complete → parse_raw_output → _clean_reply.
@@ -108,21 +135,25 @@ async def stream_to_ws(
         buf += chunk
 
         if not in_reply:
-            idx = buf.find(_REPLY_START)
-            if idx != -1:
-                in_reply = True
-                buf = buf[idx + len(_REPLY_START):]
+            for marker in _REPLY_STARTS:
+                idx = buf.find(marker)
+                if idx != -1:
+                    in_reply = True
+                    buf = buf[idx + len(marker):]
+                    break
             else:
-                if len(buf) > len(_REPLY_START) * 2:
-                    buf = buf[-len(_REPLY_START):]
+                # Keep tail to catch markers split across chunks
+                if len(buf) > _MAX_MARKER_LEN * 2:
+                    buf = buf[-_MAX_MARKER_LEN:]
                 continue
 
-        # in_reply: don't yield to frontend during streaming
-        # Just extract to know when 【表达方式】arrives
-        end_idx = buf.find(_REPLY_END)
-        if end_idx != -1:
-            done_reply = True
-            buf = ""
+        # in_reply: check for end marker
+        for marker in _REPLY_ENDS:
+            end_idx = buf.find(marker)
+            if end_idx != -1:
+                done_reply = True
+                buf = ""
+                break
 
     # ── Post-stream: parse full output, clean once, fire callback ──
     if on_reply_complete:

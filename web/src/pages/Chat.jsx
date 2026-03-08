@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, SendHorizontal, User } from 'lucide-react'
-import { fetchPersonas } from '../services/api'
+import { fetchPersonas, fetchChatHistory } from '../services/api'
 import { useWebSocket } from '../hooks/useWebSocket'
 import './Chat.css'
 
@@ -12,7 +12,7 @@ export default function Chat() {
     const [input, setInput] = useState('')
     const messagesRef = useRef(null)
     const inputRef = useRef(null)
-    const { connected, messages, streaming, status, sendMessage, clearMessages } = useWebSocket()
+    const { connected, messages, streaming, status, sendMessage, clearMessages, setInitialMessages, clientId } = useWebSocket()
 
     useEffect(() => {
         fetchPersonas().then(list => {
@@ -21,6 +21,24 @@ export default function Chat() {
         })
         clearMessages()
     }, [personaId, clearMessages])
+
+    // Load chat history on mount (display-only, does not affect engine)
+    useEffect(() => {
+        if (!personaId || !clientId) return
+        let cancelled = false
+        fetchChatHistory(personaId, clientId, 50).then(msgs => {
+            // Guard 1: stale fetch (persona switched before response arrived)
+            if (cancelled) return
+            // Guard 2: user already sent a message before fetch resolved
+            if (msgs && msgs.length > 0) {
+                setInitialMessages(prev => {
+                    if (prev.length > 0) return prev  // don't clobber live state
+                    return msgs.map(m => ({ role: m.role, content: m.content }))
+                })
+            }
+        })
+        return () => { cancelled = true }
+    }, [personaId, clientId, setInitialMessages])
 
     useEffect(() => {
         if (messagesRef.current) {

@@ -73,8 +73,11 @@ def load_signal_config(fallback_signals: dict = None, fallback_drives: dict = No
             result['signals'][sig_name] = {
                 'label': sig_data.get('label', sig_name),
                 'emoji_label': sig_data.get('emoji_label', sig_name),
+                'emoji_label_en': sig_data.get('emoji_label_en', sig_name),
                 'low_anchor': sig_data.get('low_anchor', '低'),
                 'high_anchor': sig_data.get('high_anchor', '高'),
+                'low_anchor_en': sig_data.get('low_anchor_en', 'low'),
+                'high_anchor_en': sig_data.get('high_anchor_en', 'high'),
                 'buckets': [
                     (b['low'], b['high'], b['desc'])
                     for b in sig_data.get('buckets', [])
@@ -86,6 +89,7 @@ def load_signal_config(fallback_signals: dict = None, fallback_drives: dict = No
             result['drives'][drv_name] = {
                 'label': drv_data.get('label', drv_name),
                 'emoji_label': drv_data.get('emoji_label', drv_name),
+                'emoji_label_en': drv_data.get('emoji_label_en', drv_name),
             }
 
         _signal_cache = result
