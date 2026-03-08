@@ -158,8 +158,12 @@ async def startup():
     # 6. State persistence
     state_store = StateStore(os.path.join(data_dir, "openher.db"))
 
-    # 7. Memory store
-    memory_store = MemoryStore(os.path.join(data_dir, "memory.db"))
+    # 7. Memory store (config/api.yaml → memory.soulmem.db_path)
+    from core.providers.config import get_memory_provider_config
+    _mem_prov_cfg = get_memory_provider_config()
+    _soulmem_db = os.path.join(base_dir, _mem_prov_cfg["soulmem"]["db_path"])
+    os.makedirs(os.path.dirname(_soulmem_db) or ".", exist_ok=True)
+    memory_store = MemoryStore(_soulmem_db)
 
     # 7b. EverMemOS long-term memory (config/api.yaml → env var override)
     mem_cfg = get_memory_config()
@@ -190,7 +194,7 @@ async def startup():
     try:
         import yaml as _yaml_cfg
         from pathlib import Path as _PathCfg
-        _cfg_path = _PathCfg(base_dir) / "config" / "memory_config.yaml"
+        _cfg_path = _PathCfg(base_dir) / "core" / "providers" / "memory" / "memory_config.yaml"
         _cfg_raw = _yaml_cfg.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
     except Exception:
         _cfg_raw = {}
@@ -458,6 +462,7 @@ class PersonaInfo(BaseModel):
     mbti: Optional[str]
     tags: list[str]
     description: str
+    avatar_url: Optional[str] = None
 
 
 # ──────────────────────────────────────────────────────────────
@@ -630,7 +635,9 @@ async def api_status():
 async def list_personas():
     personas = persona_loader.load_all()
     result = []
+    avatar_svc = _get_avatar_service()
     for pid, p in personas.items():
+        avatar_path = avatar_svc.get_avatar_path(pid)
         result.append(PersonaInfo(
             persona_id=pid,
             name=p.name,
@@ -639,6 +646,7 @@ async def list_personas():
             mbti=p.mbti,
             tags=p.tags,
             description=(p.bio.get("zh") or p.bio.get("en") or p.personality or "")[:120],
+            avatar_url=f"/api/avatar/{pid}" if avatar_path else None,
         ))
     return {"personas": [r.model_dump() for r in result]}
 
@@ -697,6 +705,111 @@ async def tts_api(
         )
     else:
         raise HTTPException(status_code=500, detail=result.error or "TTS failed")
+
+
+# ──────────────────────────────────────────────────────────────
+# Image Generation API
+# ──────────────────────────────────────────────────────────────
+
+@app.post("/api/image")
+async def image_api(
+    prompt: str = Query(..., description="Text prompt for image generation"),
+    aspect_ratio: str = Query("", description="Aspect ratio (e.g. 16:9, 1:1)"),
+    image_size: str = Query("1K", description="Image size (1K, 2K)"),
+):
+    """Generate an image from a text prompt."""
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Prompt is required")
+
+    from core.providers.registry import get_image_gen
+
+    try:
+        provider = get_image_gen(
+            cache_dir=os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), ".cache", "image"
+            ),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    result = await provider.generate(
+        prompt=prompt,
+        aspect_ratio=aspect_ratio,
+        image_size=image_size,
+    )
+
+    if result.success and result.image_path:
+        # Determine media type
+        media_type = result.mime_type or "image/png"
+        ext = os.path.splitext(result.image_path)[1] or ".png"
+        return FileResponse(
+            result.image_path,
+            media_type=media_type,
+            filename=f"generated{ext}",
+        )
+    else:
+        raise HTTPException(status_code=500, detail=result.error or "Image generation failed")
+
+
+# ──────────────────────────────────────────────────────────────
+# Avatar API (后台管理 + 前端获取)
+# ──────────────────────────────────────────────────────────────
+
+def _get_avatar_service():
+    """Lazy-create AvatarService."""
+    from core.providers.image.avatar_service import AvatarService
+    return AvatarService(
+        personas_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "personas"),
+    )
+
+
+@app.post("/api/admin/avatar/{persona_id}")
+async def generate_avatar(persona_id: str, force: bool = Query(False)):
+    """[Admin] Generate avatar for a single persona."""
+    persona = persona_loader.get(persona_id)
+    if not persona:
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found")
+
+    service = _get_avatar_service()
+    result = await service.generate_avatar(persona, force=force)
+
+    if result.success:
+        return {
+            "persona_id": persona_id,
+            "avatar_path": result.image_path,
+            "provider": result.provider,
+            "latency_ms": round(result.latency_ms, 1),
+        }
+    else:
+        raise HTTPException(status_code=500, detail=result.error or "Avatar generation failed")
+
+
+@app.post("/api/admin/avatar/all")
+async def generate_all_avatars(force: bool = Query(False)):
+    """[Admin] Generate avatars for all personas."""
+    service = _get_avatar_service()
+    results = await service.generate_all(persona_loader, force=force)
+
+    summary = []
+    for pid, r in results.items():
+        summary.append({
+            "persona_id": pid,
+            "success": r.success,
+            "error": r.error,
+        })
+
+    ok = sum(1 for r in results.values() if r.success)
+    return {"total": len(results), "success": ok, "details": summary}
+
+
+@app.get("/api/avatar/{persona_id}")
+async def get_avatar(persona_id: str):
+    """Get avatar image for a persona."""
+    service = _get_avatar_service()
+    path = service.get_avatar_path(persona_id)
+    if path:
+        return FileResponse(path, media_type="image/png", filename=f"{persona_id}_avatar.png")
+    raise HTTPException(status_code=404, detail="Avatar not found. Use POST /api/admin/avatar/{id} to generate.")
 
 
 # ──────────────────────────────────────────────────────────────

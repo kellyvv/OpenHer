@@ -48,20 +48,34 @@ tts:
       api_key_env: "MINIMAX_API_KEY"
       model: "speech-2.8-turbo"
 
-# ── Memory (长期记忆 — EverMemOS) ──
-# Enable ONLY if you have a running EverMemOS instance.
-# Fresh installs: leave disabled, uses local MemoryStore.
+# ── Memory (双层记忆) ──
+# SoulMem: 行为记忆 — 指导怎么做 (常驻，SQLite FTS5)
+# EverMemOS: 陈述记忆 — 记住做了什么 (可选增强，HTTP)
 memory:
-  enabled: false                  # Set to true + base_url after starting EverMemOS
-  base_url: ""                    # e.g. "http://localhost:1995/api/v1"
-  api_key_env: "EVERMEMOS_API_KEY"   # For cloud/authenticated setups
+  soulmem:
+    db_path: ".data/memory.db"     # 常驻，总是启用
+
+  evermemos:
+    enabled: false                  # Set to true + base_url after starting EverMemOS
+    base_url: ""                    # e.g. "http://localhost:1995/api/v1"
+    api_key_env: "EVERMEMOS_API_KEY"
+
+# ── Image (图片生成) ──
+image:
+  provider: "gemini"
+  cache_dir: ".cache/image"
+  providers:
+    gemini:
+      api_key_env: "GEMINI_API_KEY"
+      model: "gemini-3.1-flash-image-preview"
+
+# ── Speech (语音能力) ──
+# 注: providers/config.py 同时支持 "tts" 和 "speech" key
+# 当前保持 "tts" 不改，后续迁移到 "speech"
 
 # ── 预留: 未来 API ──
-# vision:
-#   provider: "dashscope"
-#   api_key_env: "DASHSCOPE_API_KEY"
-#   model: "qwen-vl-max"
-# stt:
-#   provider: "dashscope"
-#   api_key_env: "DASHSCOPE_API_KEY"
-#   model: "paraformer-v2"
+# speech:
+#   asr:
+#     provider: "paraformer"
+#   live:
+#     provider: "realtime"

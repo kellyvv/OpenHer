@@ -37,7 +37,7 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────
 
 _config: Optional[dict] = None
-_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "api.yaml"
+_CONFIG_PATH = Path(__file__).parent.parent / "providers" / "api.yaml"
 
 
 def _load() -> dict:
@@ -88,8 +88,13 @@ def get_llm_config() -> dict:
     cfg = _load()
     llm = cfg.get("llm", {})
 
-    # Provider: env var > yaml > default
-    provider = os.getenv("DEFAULT_PROVIDER") or llm.get("provider", "dashscope")
+    # Provider: env var > yaml "provider" > yaml "active_provider" > default
+    provider = (
+        os.getenv("DEFAULT_PROVIDER")
+        or llm.get("provider")
+        or llm.get("active_provider")
+        or "dashscope"
+    )
 
     # Provider presets
     providers = llm.get("providers", {})
@@ -100,12 +105,20 @@ def get_llm_config() -> dict:
     api_key = os.getenv(api_key_env, "") if api_key_env else ""
     base_url = preset.get("base_url", "")
 
-    # Model: env var > yaml top-level > provider default_model > fallback
+    # Model: env var > yaml top-level > provider default_model > per-provider fallback
+    # Per-provider fallback ensures correct model even when api.yaml is missing
+    _PROVIDER_DEFAULT_MODELS = {
+        "dashscope": "qwen-max",
+        "openai": "gpt-4o",
+        "deepseek": "deepseek-chat",
+        "moonshot": "moonshot-v1-auto",
+        "ollama": "qwen3.5:9b",
+    }
     model = (
         os.getenv("DEFAULT_MODEL")
         or llm.get("model")
         or preset.get("default_model")
-        or "qwen-max"
+        or _PROVIDER_DEFAULT_MODELS.get(provider, "qwen-max")
     )
 
     return {
@@ -152,7 +165,10 @@ def get_memory_config() -> dict:
     """
     Get EverMemOS memory configuration.
 
-    EverMemOS is opt-in: disabled by default in api.yaml.
+    Supports both old flat format and new nested format:
+      Old: memory.enabled / memory.base_url / memory.api_key_env
+      New: memory.evermemos.enabled / memory.evermemos.base_url / memory.evermemos.api_key_env
+
     Setting EVERMEMOS_BASE_URL env var will auto-enable it.
 
     Returns dict with keys:
@@ -161,14 +177,19 @@ def get_memory_config() -> dict:
     cfg = _load()
     mem = cfg.get("memory", {})
 
+    # Support new nested format (memory.evermemos.*)
+    ever_cfg = mem.get("evermemos", {})
+
     # Env var overrides
     env_base_url = os.getenv("EVERMEMOS_BASE_URL", "")
-    base_url = env_base_url or mem.get("base_url", "")
-    api_key_env = mem.get("api_key_env", "EVERMEMOS_API_KEY")
+
+    # Try new format first, fall back to old flat format
+    base_url = env_base_url or ever_cfg.get("base_url", "") or mem.get("base_url", "")
+    api_key_env = ever_cfg.get("api_key_env", "") or mem.get("api_key_env", "EVERMEMOS_API_KEY")
     api_key = os.getenv(api_key_env, "") if api_key_env else ""
 
-    # Enabled: yaml setting, but auto-enable if env var explicitly provides a URL
-    enabled = mem.get("enabled", False)
+    # Enabled: new format > old format, but auto-enable if env var provides URL
+    enabled = ever_cfg.get("enabled", mem.get("enabled", False))
     if env_base_url:
         enabled = True
 

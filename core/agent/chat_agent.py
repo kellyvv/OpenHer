@@ -1025,7 +1025,7 @@ class ChatAgent:
     try:
         import yaml as _yaml
         from pathlib import Path as _Path
-        _cfg_path = _Path(__file__).parent.parent.parent / "config" / "memory_config.yaml"
+        _cfg_path = _Path(__file__).parent.parent / "providers" / "memory" / "memory_config.yaml"
         _cfg_data = _yaml.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
     except Exception:
         _cfg_data = {}

@@ -70,7 +70,7 @@ def _load_memory_config() -> dict:
         "log_hit_rates": True,
         "log_latency": True,
     }
-    config_path = Path(__file__).parent.parent.parent / "config" / "memory_config.yaml"
+    config_path = Path(__file__).parent.parent / "providers" / "memory" / "memory_config.yaml"
     if _YAML and config_path.exists():
         try:
             data = yaml.safe_load(config_path.read_text()) or {}
