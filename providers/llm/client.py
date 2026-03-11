@@ -62,9 +62,11 @@ class LLMClient:
         messages: list[ChatMessage],
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        tools: Optional[list[dict]] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResponse:
         """Send a chat request and get a response (async)."""
-        return await self._impl.chat(messages, temperature, max_tokens)
+        return await self._impl.chat(messages, temperature, max_tokens, tools, tool_choice)
 
     async def chat_stream(
         self,

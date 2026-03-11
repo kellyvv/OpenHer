@@ -197,3 +197,82 @@ class SkillEngine:
             if skill.description:
                 parts.append(f"\n## {skill.name}\n{skill.description}")
         return "\n".join(parts)
+
+    # -- Stage 2: Task skill declarations & execution ----------------------
+
+    def build_skill_declarations(self) -> list[dict]:
+        """Convert tool_skills to OpenAI function calling format (for routing).
+
+        Only uses name + description, no parameters schema (OpenClaw SKILL model).
+        """
+        if not self._skills:
+            self.load_all()  # defensive auto-load, consistent with get()
+        return [{
+            "type": "function",
+            "function": {
+                "name": skill.skill_id,
+                "description": skill.description,
+                "parameters": {"type": "object", "properties": {}},
+            }
+        } for skill in self.tool_skills]
+
+    async def execute(self, skill_id: str, user_intent: str, llm) -> SkillExecutionResult:
+        """OpenClaw SKILL execution: body → LLM generates command → sandbox runs.
+
+        Args:
+            skill_id: ID of the skill to execute.
+            user_intent: Original user message (used as context for command generation).
+            llm: LLMClient instance for command generation.
+        """
+        import re
+        from providers.llm.base import ChatMessage
+
+        skill_id = skill_id.lower()  # normalize case (LLM may return "Weather" vs "weather")
+        skill = self._skills.get(skill_id)
+        if not skill:
+            return SkillExecutionResult(
+                skill_id=skill_id, success=False,
+                status=ExecutionStatus.FAILED,
+                output={"error": f"Unknown skill: {skill_id}"},
+            )
+        if not skill.is_activated:
+            self.activate(skill_id)
+
+        if not skill.body:
+            return SkillExecutionResult(
+                skill_id=skill_id, success=False,
+                status=ExecutionStatus.FAILED,
+                output={"error": "Skill body is empty", "stdout": "", "stderr": "", "returncode": -1},
+            )
+
+        # LLM generates shell command from body + user intent
+        system_msg = ChatMessage("system",
+            f"根据以下技能文档，为用户请求生成一条可执行的 shell 命令。\n"
+            f"只输出命令本身，不要解释，不要 markdown 格式。\n\n"
+            f"## 技能文档\n{skill.body}"
+        )
+        user_msg = ChatMessage("user", user_intent)
+        resp = await llm.chat([system_msg, user_msg], temperature=0.1)
+
+        # Clean markdown code block wrapping
+        content = resp.content.strip()
+        content = re.sub(r'^```\w*\n?', '', content)
+        content = re.sub(r'\n?```$', '', content)
+        command = content.strip()
+
+        if not command:
+            return SkillExecutionResult(
+                skill_id=skill_id, success=False,
+                status=ExecutionStatus.FAILED,
+                output={"error": "LLM generated empty command", "stdout": "", "stderr": "", "returncode": -1},
+            )
+
+        from agent.skills.sandbox_executor import execute_shell
+        result = await execute_shell(command)
+
+        return SkillExecutionResult(
+            skill_id=skill_id,
+            success=result["success"],
+            status=ExecutionStatus.COMPLETED if result["success"] else ExecutionStatus.FAILED,
+            output={**result, "command": command},
+        )

@@ -157,6 +157,7 @@ class ChatAgent:
         genome_data_dir: Optional[str] = None,
         max_history: int = 40,
         evermemos=None,
+        task_log_store=None,
     ):
         self.persona = persona
         self.llm = llm
@@ -164,6 +165,7 @@ class ChatAgent:
         self.user_name = user_name
         self.skills_prompt = skills_prompt or ""
         self.skill_engine = skill_engine
+        self.task_log_store = task_log_store
 
         self.memory_store = memory_store
         self.max_history = max_history
@@ -502,7 +504,7 @@ class ChatAgent:
         blended += "；" + static[:sta_budget]
         return blended
 
-    async def chat(self, user_message: str) -> str:
+    async def chat(self, user_message: str) -> dict:
         """
         Process a user message through the full Genome v10 lifecycle.
         Returns only the reply (monologue is stored internally).
@@ -510,8 +512,44 @@ class ChatAgent:
         async with self._turn_lock:
             return await self._chat_inner(user_message)
 
-    async def _chat_inner(self, user_message: str) -> str:
+    async def _chat_inner(self, user_message: str) -> dict:
         """Inner chat implementation (called under lock)."""
+        # ── Step -1: Task skill routing (before persona engine) ──
+        if self.skill_engine:
+            skill_defs = self.skill_engine.build_skill_declarations()
+            if skill_defs:
+                routing_resp = None
+                try:
+                    routing_resp = await self.llm.chat(
+                        [ChatMessage(role="user", content=user_message)],
+                        tools=skill_defs,
+                        tool_choice="auto",
+                    )
+                except Exception as e:
+                    print(f"  [skill] ⚠ Tool routing failed ({e}), fallback to persona engine")
+                if routing_resp and routing_resp.tool_calls:
+                    tool_name = routing_resp.tool_calls[0]["name"]
+                    print(f"  [skill] 🔧 Tool call: {tool_name}")
+                    try:
+                        result = await self.skill_engine.execute(tool_name, user_message, self.llm)
+                    except Exception as e:
+                        print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
+                        result = None
+                    if result is not None:
+                        try:
+                            reply = await self._express_wrap(result, user_message)
+                        except Exception as e:
+                            print(f"  [skill] ❌ express_wrap() failed ({e})")
+                            reply = result.output.get("stdout") or "出了点问题"
+                        self.history.append(ChatMessage(role="user", content=user_message))
+                        self.history.append(ChatMessage(role="assistant", content=reply))
+                        if len(self.history) > self.max_history:
+                            self.history = self.history[-self.max_history:]
+                        self._log_task(tool_name, user_message, result.output, reply)
+                        return {"reply": reply, "modality": "文字"}
+                    # execute() failed → result is None → fall through to persona engine
+
+        # ── Step 0: persona engine (zero changes below this line) ──
         self._turn_count += 1
         self._turn_used_fallback = False  # Reset per-turn fallback flag
         now = time.time()
@@ -703,6 +741,42 @@ class ChatAgent:
         if image_path:
             result['image_path'] = image_path
         return result
+
+    async def _express_wrap(self, result, user_msg: str) -> str:
+        """Wrap tool execution result in persona voice. Runs outside persona engine."""
+        stdout = result.output.get("stdout", "")
+        error = result.output.get("stderr", "")
+        output_text = stdout if result.success else f"执行失败: {error}"
+
+        system_msg = ChatMessage(
+            role="system",
+            content=self.persona.build_system_prompt_section()[:500],
+        )
+        user_msg_obj = ChatMessage(
+            role="user",
+            content=f"工具输出：{output_text[:500]}\n用户原话：{user_msg}\n\n"
+                    "用你的语气把工具结果包装成一句自然回复，简短自然，不要机械报告数据。",
+        )
+        resp = await self.llm.chat([system_msg, user_msg_obj])
+        return resp.content or result.output.get("stdout", "") or "（查询完成）"
+
+    def _log_task(self, skill_id: str, user_input: str, output: dict, reply: str) -> None:
+        """Log task execution to task.db (isolated from persona memory)."""
+        if not self.task_log_store:
+            return
+        try:
+            self.task_log_store.log_execution(
+                persona_id=self.persona.persona_id,
+                skill_id=skill_id,
+                user_input=user_input,
+                command=output.get("command", ""),
+                stdout=output.get("stdout", ""),
+                stderr=output.get("stderr", ""),
+                success=output.get("success", False),
+                reply=reply,
+            )
+        except Exception as e:
+            print(f"  [task_log] save error: {e}")
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
         """

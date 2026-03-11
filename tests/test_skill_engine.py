@@ -194,3 +194,133 @@ class TestExecutionStatus:
         )
         assert not result.success
         assert result.status == ExecutionStatus.FAILED
+
+
+# ---------------------------------------------------------------------------
+# Stage 2: Task skill declarations & execution
+# ---------------------------------------------------------------------------
+
+from unittest.mock import AsyncMock
+from providers.llm.base import ChatResponse
+
+
+@pytest.fixture
+def tool_skill_dir(tmp_path):
+    """Create a trigger:tool skill with body (for declarations + execute tests)."""
+    skill_dir = tmp_path / "weather"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text(textwrap.dedent("""\
+        ---
+        name: weather
+        description: Get current weather and forecasts (no API key required).
+        trigger: tool
+        executor: sandbox
+        ---
+
+        Quick command: curl -s "wttr.in/{city}?format=3"
+    """))
+    return tmp_path
+
+
+class TestBuildSkillDeclarations:
+    """build_skill_declarations() — OpenAI function calling format."""
+
+    def test_returns_openai_format(self, tool_skill_dir):
+        engine = SkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        defs = engine.build_skill_declarations()
+        assert len(defs) == 1
+        assert defs[0]["type"] == "function"
+        assert defs[0]["function"]["name"] == "weather"
+        assert defs[0]["function"]["description"]  # non-empty
+        assert defs[0]["function"]["parameters"] == {"type": "object", "properties": {}}
+
+    def test_auto_load_if_not_loaded(self, tool_skill_dir):
+        engine = SkillEngine(str(tool_skill_dir))
+        # Not calling load_all() — should auto-load
+        defs = engine.build_skill_declarations()
+        assert len(defs) == 1
+
+    def test_empty_when_no_tool_skills(self, skills_dir):
+        """modality-only skills return empty declarations."""
+        engine = SkillEngine(str(skills_dir))
+        engine.load_all()
+        assert engine.build_skill_declarations() == []
+
+
+class TestExecute:
+    """execute() — OpenClaw SKILL model execution."""
+
+    async def test_execute_success(self, tool_skill_dir):
+        """LLM generates valid command → sandbox executes → success."""
+        class MockLLM:
+            async def chat(self, msgs, **kw):
+                return ChatResponse(content="echo hello_weather")
+        engine = SkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.execute("weather", "北京天气", MockLLM())
+        assert result.success
+        assert result.output["stdout"] == "hello_weather"
+        assert result.output["command"] == "echo hello_weather"
+        assert result.status == ExecutionStatus.COMPLETED
+
+    async def test_execute_empty_command(self, tool_skill_dir):
+        """LLM returns empty content → FAILED, sandbox never called."""
+        class MockLLM:
+            async def chat(self, msgs, **kw):
+                return ChatResponse(content="")
+        engine = SkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.execute("weather", "北京天气", MockLLM())
+        assert not result.success
+        assert "empty command" in result.output["error"]
+
+    async def test_execute_unknown_skill(self, tool_skill_dir):
+        """Unknown skill_id → FAILED immediately."""
+        engine = SkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.execute("nonexistent", "whatever", AsyncMock())
+        assert not result.success
+        assert "Unknown skill" in result.output["error"]
+
+
+class TestExecuteShell:
+    """execute_shell() — sandbox command execution."""
+
+    async def test_basic_command(self):
+        from agent.skills.sandbox_executor import execute_shell
+        result = await execute_shell("echo hello")
+        assert result["success"]
+        assert result["stdout"] == "hello"
+        assert result["returncode"] == 0
+
+    async def test_timeout_kill(self):
+        from agent.skills.sandbox_executor import execute_shell
+        result = await execute_shell("sleep 10", timeout=1)
+        assert not result["success"]
+        assert "timed out" in result["stderr"]
+        assert result["returncode"] == -1
+
+
+class TestTaskLogStore:
+    """TaskLogStore — isolated persistence for task executions."""
+
+    def test_log_and_retrieve(self, tmp_path):
+        from agent.skills.task_log_store import TaskLogStore
+        store = TaskLogStore(str(tmp_path / "task.db"))
+        store.log_execution(
+            persona_id="luna",
+            skill_id="weather",
+            user_input="北京天气",
+            command='curl -s "wttr.in/Beijing?format=3"',
+            stdout="Beijing: ☀️ +22°C",
+            stderr="",
+            success=True,
+            reply="北京今天22度晴天哦～",
+        )
+        rows = store.get_recent("luna", limit=5)
+        assert len(rows) == 1
+        assert rows[0]["skill_id"] == "weather"
+        assert rows[0]["stdout"] == "Beijing: ☀️ +22°C"
+        assert rows[0]["success"] == 1
+        store.close()

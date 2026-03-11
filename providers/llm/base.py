@@ -35,6 +35,7 @@ class ChatResponse:
     finish_reason: str = "stop"
     model: str = ""
     usage: Optional[dict] = None
+    tool_calls: Optional[list[dict]] = None  # [{name, arguments}]
 
 
 # ─────────────────────────────────────────────────────────────
@@ -50,6 +51,8 @@ class BaseLLMProvider(ABC):
         messages: list[ChatMessage],
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        tools: Optional[list[dict]] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResponse:
         """Send a chat request and get a response."""
         ...
@@ -125,18 +128,29 @@ class OpenAICompatProvider(BaseLLMProvider):
         messages: list[ChatMessage],
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        tools: Optional[list[dict]] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResponse:
         """Send a chat request and get a response (async)."""
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=api_messages,
-            temperature=temperature if temperature is not None else self.temperature,
-            max_tokens=max_tokens if max_tokens is not None else self.max_tokens,
-        )
+        kwargs = {
+            "model": self.model,
+            "messages": api_messages,
+            "temperature": temperature if temperature is not None else self.temperature,
+            "max_tokens": max_tokens if max_tokens is not None else self.max_tokens,
+        }
+        if tools:
+            kwargs["tools"] = tools
+            if tool_choice:
+                kwargs["tool_choice"] = tool_choice
+
+        response = await self.client.chat.completions.create(**kwargs)
 
         choice = response.choices[0]
+        tc = choice.message.tool_calls
+        parsed_tc = [{"name": t.function.name, "arguments": t.function.arguments}
+                     for t in tc] if tc else None
         return ChatResponse(
             content=choice.message.content or "",
             finish_reason=choice.finish_reason or "stop",
@@ -146,6 +160,7 @@ class OpenAICompatProvider(BaseLLMProvider):
                 "completion_tokens": response.usage.completion_tokens,
                 "total_tokens": response.usage.total_tokens,
             } if response.usage else None,
+            tool_calls=parsed_tc,
         )
 
     async def chat_stream(
