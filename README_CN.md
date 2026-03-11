@@ -10,7 +10,7 @@
 
 ### *如果《Her》里的 AI 是真的呢？*
 
-**开源 AI 伴侣引擎，人格自涌现——不是写了 prompt 的聊天机器人。**
+**开源人格涌现引擎——不是写了 prompt 的聊天机器人。**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/记忆引擎-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
