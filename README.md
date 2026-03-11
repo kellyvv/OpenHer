@@ -10,7 +10,7 @@
 
 ### *What if the AI from Her was real?*
 
-**Open-source personality emergence engine — not chatbots with a prompt.**
+**The first open-source AI with emergent personality — not chatbots with a prompt.**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/Memory-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
