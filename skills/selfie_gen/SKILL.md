@@ -1,21 +1,14 @@
 ---
 name: 角色照片生成
-description: 当角色需要发送自拍、旅游照、生活照等照片时使用此技能。根据角色的参考图资源生成保持角色一致性的真实感照片。
+description: 以自拍照片表达自我，在情感涌现时作为视觉表达方式。根据角色参考图生成保持一致性的真实感照片。
 version: "1.0.0"
 icon: camera
-trigger: auto
+trigger: modality
+modality: 照片
+executor: handler
+handler_fn: skills.selfie_gen.handler.generate_selfie
 disabled: false
 hidden: false
-
-triggers:
-  - 发张照片
-  - 自拍
-  - 拍一张
-  - 看看你
-  - 发个照片
-  - 给我看看
-  - 照片
-  - 来张自拍
 
 requires:
   - scene_description: 场景描述（第三人称描述照片内容）
@@ -25,13 +18,8 @@ outputs:
   - image_path: 生成的照片路径
   - aspect_ratio: 使用的比例
 
-allowed-tools:
-  - generate_selfie
-
 resources:
-  - idimage/face.png: 面部特写参考（用于面部一致性）
-  - idimage/fullbody.png: 全身参考（用于身形/穿搭一致性）
-  - idimage/multi_view.png: 多视图参考（用于多角度一致性）
+  - idimage/
 
 examples:
   - query: "发张自拍给我看看"

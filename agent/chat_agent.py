@@ -151,6 +151,7 @@ class ChatAgent:
         user_id: str = "default_user",
         user_name: Optional[str] = None,
         skills_prompt: Optional[str] = None,
+        skill_engine=None,
         memory_store: Optional[MemoryStore] = None,
         genome_seed: int = 42,
         genome_data_dir: Optional[str] = None,
@@ -162,9 +163,8 @@ class ChatAgent:
         self.user_id = user_id
         self.user_name = user_name
         self.skills_prompt = skills_prompt or ""
+        self.skill_engine = skill_engine
 
-        # Augment skills_prompt with persona-specific reference images
-        self._augment_skills_with_idimage()
         self.memory_store = memory_store
         self.max_history = max_history
 
@@ -242,22 +242,6 @@ class ChatAgent:
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
 
-    def _augment_skills_with_idimage(self) -> None:
-        """Append persona-specific reference image listing to skills_prompt.
-
-        Scans the persona's idimage/ directory and appends available
-        reference image names so the LLM knows what it has to work with.
-        """
-        try:
-            from skills.selfie_gen.handler import list_reference_images
-            refs = list_reference_images(self.persona.persona_id)
-            if refs:
-                lines = ["\n\n[你的参考图资源]"]
-                for name, path in refs.items():
-                    lines.append(f"- {name}")
-                self.skills_prompt += "\n".join(lines)
-        except ImportError:
-            pass  # selfie_gen skill not installed
 
     def pre_warm(self, scenarios: list | None = None, steps_per_scenario: int = 20) -> None:
         """
@@ -668,10 +652,11 @@ class ChatAgent:
         express_response = await self.llm.chat(express_messages)
         _, reply, modality = extract_reply(express_response.content)
 
-        # ── Step 9c: Photo generation (when Actor chooses 照片 modality) ──
+        # ── Step 9c: Photo generation (when modality matches a persona skill) ──
         image_path = None
-        if modality == "照片":
-            image_path = await self._generate_selfie(express_response.content)
+        if self.skill_engine and modality in self.skill_engine.modality_skills:
+            result = await self._execute_skill(modality, express_response.content)
+            image_path = result.output.get("image_path") if result else None
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -854,9 +839,10 @@ class ChatAgent:
             raw_text = "".join(full_response)
             _, reply, modality = extract_reply(raw_text)
 
-            # ── Photo generation (when Actor chooses 照片 modality) ──
-            if modality == "照片":
-                image_path = await self._generate_selfie(raw_text)
+            # ── Photo generation (when modality matches a persona skill) ──
+            if self.skill_engine and modality in self.skill_engine.modality_skills:
+                result = await self._execute_skill(modality, raw_text)
+                image_path = result.output.get("image_path") if result else None
                 if image_path:
                     # Yield a special marker for the frontend to pick up
                     yield f"\n[__IMAGE__:{image_path}]"
@@ -894,15 +880,23 @@ class ChatAgent:
         finally:
             self._turn_lock.release()
 
-    async def _generate_selfie(self, raw_express_output: str) -> Optional[str]:
-        """Generate a selfie image when Actor chooses 照片 modality.
+    async def _execute_skill(self, modality: str, raw_output: str):
+        """Execute a persona skill matched by modality.
 
-        Parses scene description + aspect ratio from Express output,
-        calls selfie_gen handler with reference image.
+        Stage 1: directly calls selfie_gen with parse_photo_output.
+        Stage 2: will use generic handler dispatch via SkillEngine.execute().
 
         Returns:
-            Image file path if successful, None otherwise.
+            Optional[SkillExecutionResult] or None if no skill matched.
         """
+        from agent.skills.skill_engine import SkillExecutionResult, ExecutionStatus
+
+        skill = self.skill_engine.get_by_modality(modality)
+        if not skill:
+            return None
+        if not skill.is_activated:
+            self.skill_engine.activate(skill.skill_id)
+
         try:
             from skills.selfie_gen.handler import (
                 parse_photo_output,
@@ -910,15 +904,15 @@ class ChatAgent:
             )
 
             # Parse structured output: description + aspect_ratio
-            parsed = parse_photo_output(raw_express_output)
+            parsed = parse_photo_output(raw_output)
             scene = parsed['description']
             aspect_ratio = parsed['aspect_ratio']
 
             if not scene:
-                print("  [selfie] ⚠ No scene description found in modality output")
+                print("  [skill] ⚠ No scene description found in modality output")
                 return None
 
-            print(f"  [selfie] 📸 Generating photo: {scene[:60]}...")
+            print(f"  [skill] 📸 Generating photo: {scene[:60]}...")
             result = await generate_selfie(
                 persona_id=self.persona.persona_id,
                 scene_description=scene,
@@ -926,15 +920,21 @@ class ChatAgent:
                 aspect_ratio=aspect_ratio,
             )
 
-            if result.get("success") and result.get("image_path"):
-                print(f"  [selfie] ✅ Photo generated: {result['image_path']}")
-                return result["image_path"]
+            success = result.get("success", True)
+            if success and result.get("image_path"):
+                print(f"  [skill] ✅ Photo generated: {result['image_path']}")
             else:
-                print(f"  [selfie] ❌ Photo generation failed: {result.get('error')}")
-                return None
+                print(f"  [skill] ❌ Photo generation failed: {result.get('error')}")
+
+            return SkillExecutionResult(
+                skill_id=skill.skill_id,
+                success=success,
+                status=ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED,
+                output=result,
+            )
 
         except Exception as e:
-            print(f"  [selfie] ❌ Exception: {e}")
+            print(f"  [skill] ❌ Exception: {e}")
             return None
 
     async def _evermemos_gather(self) -> dict:

@@ -579,6 +579,7 @@ def get_or_create_session(
         user_id=stable_user_id,
         user_name=user_name,
         skills_prompt=skills_prompt or None,
+        skill_engine=skill_engine,
         memory_store=memory_store,
         genome_seed=genome_seed,
         genome_data_dir=genome_data_dir,
