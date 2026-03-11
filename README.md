@@ -242,7 +242,7 @@ genome_seed:
 
 ## 🗺️ Roadmap
 
-### Phase 1 · Personality Awakening ✅
+### Phase 1 · Personality Emergence Engine ✅
 
 - [x] Personality Emergence Engine (Genome v10)
 - [x] Two-pass Feel → Express architecture
@@ -251,9 +251,9 @@ genome_seed:
 - [x] Multi-LLM provider support (6 providers)
 - [x] Selfie generation via modality routing
 
-### Phase 2 · Sensory Expansion 🔧
+### Phase 2 · Task & Skill Engine 🔧
 
-- [ ] Skill Engine (extensible tool-use framework)
+- [ ] Extensible skill framework — let her learn to use tools and complete real tasks
 - [ ] Voice conversation mode — let her actually *speak*, not just type
 - [ ] Voice messages — when she's busy, she sends you a voice note, like a real friend
 - [ ] Video calls — face-to-face chats where you can see her expressions change
