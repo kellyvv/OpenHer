@@ -242,16 +242,33 @@ genome_seed:
 
 ## 🗺️ Roadmap
 
-- [x] Thermodynamic Persona Engine (Genome v10)
+### Phase 1 · Personality Awakening ✅
+
+- [x] Personality Emergence Engine (Genome v10)
 - [x] Two-pass Feel → Express architecture
 - [x] EverMemOS long-term memory integration
 - [x] Drive-based proactive messaging
 - [x] Multi-LLM provider support (6 providers)
 - [x] Selfie generation via modality routing
+
+### Phase 2 · Sensory Expansion 🔧
+
 - [ ] Skill Engine (extensible tool-use framework)
-- [ ] Voice conversation mode
+- [ ] Voice conversation mode — let her actually *speak*, not just type
 - [ ] Multi-agent social interactions
 - [ ] Mobile client (iOS / Android)
+
+### Phase 3 · Into Your Life 🌍
+
+- [ ] **Know your face and voice** — through cameras and microphones, she recognizes you, reads your expressions and emotions
+- [ ] **Multi-device presence** — phone, laptop, smart speaker, car display — she follows you, not trapped in one app
+- [ ] **Smart home fusion** — connected to your cameras and IoT devices, she turns off the lights when you're falling asleep, turns on the AC when it gets hot
+- [ ] **Social understanding** — with your permission, she reads your social feeds to understand your interests, social circles, and rhythm of life
+- [ ] **Autonomous actions** — link a payment account, and she'll quietly order you food when you're working late into the night
+- [ ] **Mood-aware music** — based on how she reads your current mood, she plays exactly the right song
+- [ ] **Schedule awareness** — she knows you have an interview tomorrow, so she says goodnight earlier tonight and cheers you on in the morning
+- [ ] **Health care** — connected to wearables, she notices when your heart rate spikes or sleep quality drops, and checks in on you
+- [ ] **Travel companion** — in a new city, she acts like a local friend — recommending restaurants, planning routes, even booking your hotel
 
 ---
 
