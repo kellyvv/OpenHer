@@ -10,7 +10,7 @@
 
 ### *What if the AI from Her was real?*
 
-**Personality isn't written. It's grown. The first open-source AI with emergent personality.**
+**Emergent personality starts here.**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/Memory-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)

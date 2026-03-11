@@ -10,7 +10,7 @@
 
 ### *如果《Her》里的 AI 是真的呢？*
 
-**性格不是被写出来的，是长出来的。首个人格涌现的开源 AI。**
+**人格涌现，从 OpenHer 开始。**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/记忆引擎-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
