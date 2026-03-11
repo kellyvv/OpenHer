@@ -1,13 +1,8 @@
-<div align="right">
-
-[🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
-
-</div>
-
 <div align="center">
 
 <img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
+[🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
 
 # 🧬 OpenHer
 
