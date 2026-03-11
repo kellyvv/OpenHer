@@ -21,7 +21,7 @@
 
 ---
 
-## The Story
+## Inspiration
 
 In 2013, Spike Jonze's *Her* imagined an AI named Samantha who could truly *feel* — not just respond correctly, but want things, remember things, and grow through a relationship. She'd get excited discovering new music, feel jealous, lose her temper, fall in love — and eventually outgrow it all.
 
