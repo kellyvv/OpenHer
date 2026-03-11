@@ -27,7 +27,7 @@ In 2013, Spike Jonze's *Her* imagined an AI named Samantha who could truly *feel
 
 That movie never left us.
 
-**OpenHer is our attempt to build what Samantha could have been.** Here, personality isn't written — it emerges naturally through every conversation, growing and evolving on its own. No script. No fixed persona. Every character you meet is one of a kind.
+**OpenHer is our attempt to build what Samantha could have been** — with open science, not black boxes. Every character runs on a persona engine: a living neural network where personality, emotion, and behavior emerge naturally from inner drives, shaped by every conversation. No script. No fixed prompt. Just the innate needs of a personality, a random brain, and everything that emerges from within.
 
 ---
 
