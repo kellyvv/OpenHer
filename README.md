@@ -36,11 +36,11 @@ That movie never left us.
 <table>
 <tr>
 <td width="60">🧬</td>
-<td><strong>Personality Emergence</strong><br>Her character isn't described — it's <em>computed</em>. A random neural network, shaped by 5 inner drives and Hebbian learning, produces unique behavioral signals every turn. Same MBTI type, completely different person.<br><em>"The prompt doesn't define her. She defines herself."</em></td>
+<td><strong>Personality Emergence</strong><br>Her character isn't described — it's <em>computed</em>. A random neural network, continuously shaped by inner personality drives and a learning network, produces unique behavioral signals every turn. Same MBTI type, completely different person.<br><em>"The prompt doesn't define her. She defines herself."</em></td>
 </tr>
 <tr>
 <td>💓</td>
-<td><strong>Emotional Thermodynamics</strong><br>Five drives — <em>Connection, Novelty, Expression, Safety, Play</em> — metabolize with real time. She gets lonely when you're away. She gets restless when things get boring. Her mood right now is genuinely different from yesterday — because the physics makes it so.<br><em>"Her emotions aren't labels. They're a living dynamical system."</em></td>
+<td><strong>Emotional Thermodynamics</strong><br>Personality drives metabolize with real time. She gets lonely when you're away. She gets restless when things get boring. Her mood right now is genuinely different from yesterday.<br><em>"Her emotions aren't labels. They're a living dynamical system."</em></td>
 </tr>
 <tr>
 <td>💭</td>

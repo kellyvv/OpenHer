@@ -36,11 +36,11 @@
 <table>
 <tr>
 <td width="60">🧬</td>
-<td><strong>人格涌现 · Personality Emergence</strong><br>性格不是被描述出来的——是被<em>计算</em>出来的。一个随机初始化的神经网络，被 5 种内在驱力和 Hebbian 学习不断塑造，每一轮都产生独特的行为信号。同一种 MBTI 类型，完全不同的人。<br><em>「不是 prompt 定义了她，是她定义了自己。」</em></td>
+<td><strong>人格涌现 · Personality Emergence</strong><br>性格不是被描述出来的——是被<em>计算</em>出来的。一个随机初始化的神经网络，被人格内在驱力和学习网络不断塑造，每一轮都产生独特的行为信号。同一种 MBTI 类型，完全不同的人。<br><em>「不是 prompt 定义了她，是她定义了自己。」</em></td>
 </tr>
 <tr>
 <td>💓</td>
-<td><strong>情绪热力学 · Emotional Thermodynamics</strong><br>五种驱力——<em>联结、新鲜、表达、安全、玩闹</em>——随真实时间代谢。你不在时她会寂寞。对话停滞时她会烦躁。她<em>此刻</em>的心情和昨天真的不一样——因为物理规律使然。<br><em>「她的情绪不是标签，是一个持续运转的动力系统。」</em></td>
+<td><strong>情绪热力学 · Emotional Thermodynamics</strong><br>人格驱力随真实时间代谢。你不在时她会寂寞。对话停滞时她会烦躁。她<em>此刻</em>的心情和昨天真的不一样。<br><em>「她的情绪不是标签，是一个持续运转的动力系统。」</em></td>
 </tr>
 <tr>
 <td>💭</td>
