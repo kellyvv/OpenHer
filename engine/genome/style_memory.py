@@ -159,16 +159,24 @@ class ContinuousStyleMemory:
     def personal_count(self):
         return self._personal_count
 
-    def retrieve(self, context, top_k=3):
+    def retrieve(self, context, top_k=3, lang_preference=None):
         """
         Gravitational mass + Hawking radiation retrieval.
         effective_distance = physical_distance / √mass_eff
+
+        lang_preference: 'zh' or 'en'. When set, same-language seeds get
+        a soft distance bonus (cross-language seeds penalized 25%).
+        Language is auto-detected from monologue text.
         """
         target = _context_to_vec(context)
         now = self._now
         scored = []
 
         for mem in self._pool:
+            # Hard language filter: skip cross-language seeds
+            if lang_preference and mem.get('lang') and mem['lang'] != lang_preference:
+                continue
+
             physical_dist = _l2_distance(target, mem['vector'])
             mass_raw = mem.get('mass', 1.0)
             last_used = mem.get('last_used_at', 0.0)
@@ -193,6 +201,7 @@ class ContinuousStyleMemory:
                 'mass_raw': mass_raw,
                 'mass_eff': round(mass_eff, 2),
                 'user_input': mem.get('user_input', ''),
+                'lang': mem.get('lang', ''),
             })
 
         return results
@@ -269,7 +278,7 @@ class ContinuousStyleMemory:
                             Used by Pass 1 (Feel) of two-pass Actor.
             lang: Label language ('zh' or 'en').
         """
-        memories = self.retrieve(context, top_k=top_k)
+        memories = self.retrieve(context, top_k=top_k, lang_preference=lang)
 
         is_en = lang == 'en'
         if not memories:
@@ -286,7 +295,7 @@ class ContinuousStyleMemory:
             else:
                 mass_tag = "genesis" if is_en else "基因"
             if monologue_only:
-                frag_label = "Inner feeling fragment" if is_en else "内心感受片段"
+                frag_label = "Inner thought fragment" if is_en else "内心念头片段"
                 parts.append(
                     f"--- {frag_label} {i+1} [{mass_tag}] ---\n"
                     f"{mem['monologue']}"

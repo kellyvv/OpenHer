@@ -101,6 +101,6 @@ class SkillEngine:
             requires=meta.get("requires", []),
             tags=meta.get("tags", []),
             prompt_injection=post.content.strip(),
-            handler=meta.get("handler"),
+            handler=meta.get("handler_module") or meta.get("handler"),
             base_dir=str(skill_dir),
         )

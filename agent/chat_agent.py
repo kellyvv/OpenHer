@@ -161,7 +161,10 @@ class ChatAgent:
         self.llm = llm
         self.user_id = user_id
         self.user_name = user_name
-        self.skills_prompt = skills_prompt
+        self.skills_prompt = skills_prompt or ""
+
+        # Augment skills_prompt with persona-specific reference images
+        self._augment_skills_with_idimage()
         self.memory_store = memory_store
         self.max_history = max_history
 
@@ -238,6 +241,23 @@ class ChatAgent:
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
+
+    def _augment_skills_with_idimage(self) -> None:
+        """Append persona-specific reference image listing to skills_prompt.
+
+        Scans the persona's idimage/ directory and appends available
+        reference image names so the LLM knows what it has to work with.
+        """
+        try:
+            from skills.selfie_gen.handler import list_reference_images
+            refs = list_reference_images(self.persona.persona_id)
+            if refs:
+                lines = ["\n\n[你的参考图资源]"]
+                for name, path in refs.items():
+                    lines.append(f"- {name}")
+                self.skills_prompt += "\n".join(lines)
+        except ImportError:
+            pass  # selfie_gen skill not installed
 
     def pre_warm(self, scenarios: list | None = None, steps_per_scenario: int = 20) -> None:
         """
@@ -332,6 +352,10 @@ class ChatAgent:
 
         combined_injection = identity + "\n\n" + signal_injection
 
+        # Inject skills (including photo capability + reference images)
+        if self.skills_prompt:
+            combined_injection += "\n\n" + self.skills_prompt
+
         template_name = "actor_feel_en" if is_en else "actor_feel"
         return render_prompt(
             template_name,
@@ -340,12 +364,13 @@ class ChatAgent:
             signal_injection=combined_injection,
         )
 
-    def _build_express_prompt(self, monologue: str) -> str:
+    def _build_express_prompt(self, monologue: str, few_shot: str = "") -> str:
         """
         Build Pass 2 (Express) prompt — monologue → reply + modality.
 
-        Lightweight: only identity + monologue. No few-shot, no signals,
-        no memory injection. Control is entirely in the monologue.
+        Identity + monologue + optional reply few-shot from genesis seeds.
+        When few_shot is provided, it's prepended so LLM sees how the
+        character speaks before seeing the current monologue.
         """
         persona = self.persona
         is_en = persona.lang == 'en'
@@ -365,7 +390,7 @@ class ChatAgent:
             identity += "。"
 
         template_name = "actor_express_en" if is_en else "actor_express"
-        return render_prompt(
+        rendered = render_prompt(
             template_name,
             fallback=(
                 "【角色】\n$identity\n\n"
@@ -381,6 +406,18 @@ class ChatAgent:
             identity=identity,
             monologue=monologue,
         )
+
+        # Prepend reply few-shot when available (LLM sees speech examples first)
+        if few_shot:
+            header = "[Character speech reference]" if is_en else "[角色说话参考]"
+            rendered = f"{header}\n{few_shot}\n\n{rendered}"
+
+        return rendered
+
+    @staticmethod
+    def _detect_turn_lang(text: str) -> str:
+        """Detect language from user input: 'zh' if CJK chars present, else 'en'."""
+        return 'zh' if any('\u4e00' <= c <= '\u9fff' for c in text[:30]) else 'en'
 
     @staticmethod
     def _extract_monologue(raw: str) -> str:
@@ -619,13 +656,22 @@ class ChatAgent:
         monologue = self._extract_monologue(feel_response.content)
 
         # ── Step 9b: Pass 2 — Express (monologue → reply + modality) ──
-        express_prompt = self._build_express_prompt(monologue)
+        turn_lang = self._detect_turn_lang(user_message)
+        express_few_shot = self.style_memory.build_few_shot_prompt(
+            context, top_k=2, monologue_only=False, lang=turn_lang,
+        )
+        express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
         express_messages = [ChatMessage(role="system", content=express_prompt)]
         express_messages.extend(self.history[-4:])  # Light context
         express_messages.append(ChatMessage(role="user", content=user_message))
 
         express_response = await self.llm.chat(express_messages)
         _, reply, modality = extract_reply(express_response.content)
+
+        # ── Step 9c: Photo generation (when Actor chooses 照片 modality) ──
+        image_path = None
+        if modality == "照片":
+            image_path = await self._generate_selfie(express_response.content)
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -668,7 +714,10 @@ class ChatAgent:
         # ── Step 12: Fire async search for NEXT turn's injection ──
         self._evermemos_search_bg(user_message)
 
-        return {'reply': reply, 'modality': modality}
+        result = {'reply': reply, 'modality': modality}
+        if image_path:
+            result['image_path'] = image_path
+        return result
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
         """
@@ -787,7 +836,11 @@ class ChatAgent:
             monologue = self._extract_monologue(feel_response.content)
 
             # ── Step 9b: Pass 2 — Express (streamed to frontend) ──
-            express_prompt = self._build_express_prompt(monologue)
+            turn_lang = self._detect_turn_lang(user_message)
+            express_few_shot = self.style_memory.build_few_shot_prompt(
+                context, top_k=2, monologue_only=False, lang=turn_lang,
+            )
+            express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
             express_messages = [ChatMessage(role="system", content=express_prompt)]
             express_messages.extend(self.history[-4:])
             express_messages.append(ChatMessage(role="user", content=user_message))
@@ -800,6 +853,13 @@ class ChatAgent:
             # ── Post-stream processing ──
             raw_text = "".join(full_response)
             _, reply, modality = extract_reply(raw_text)
+
+            # ── Photo generation (when Actor chooses 照片 modality) ──
+            if modality == "照片":
+                image_path = await self._generate_selfie(raw_text)
+                if image_path:
+                    # Yield a special marker for the frontend to pick up
+                    yield f"\n[__IMAGE__:{image_path}]"
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
@@ -833,6 +893,49 @@ class ChatAgent:
             self._evermemos_search_bg(user_message)
         finally:
             self._turn_lock.release()
+
+    async def _generate_selfie(self, raw_express_output: str) -> Optional[str]:
+        """Generate a selfie image when Actor chooses 照片 modality.
+
+        Parses scene description + aspect ratio from Express output,
+        calls selfie_gen handler with reference image.
+
+        Returns:
+            Image file path if successful, None otherwise.
+        """
+        try:
+            from skills.selfie_gen.handler import (
+                parse_photo_output,
+                generate_selfie,
+            )
+
+            # Parse structured output: description + aspect_ratio
+            parsed = parse_photo_output(raw_express_output)
+            scene = parsed['description']
+            aspect_ratio = parsed['aspect_ratio']
+
+            if not scene:
+                print("  [selfie] ⚠ No scene description found in modality output")
+                return None
+
+            print(f"  [selfie] 📸 Generating photo: {scene[:60]}...")
+            result = await generate_selfie(
+                persona_id=self.persona.persona_id,
+                scene_description=scene,
+                persona_name=self.persona.name,
+                aspect_ratio=aspect_ratio,
+            )
+
+            if result.get("success") and result.get("image_path"):
+                print(f"  [selfie] ✅ Photo generated: {result['image_path']}")
+                return result["image_path"]
+            else:
+                print(f"  [selfie] ❌ Photo generation failed: {result.get('error')}")
+                return None
+
+        except Exception as e:
+            print(f"  [selfie] ❌ Exception: {e}")
+            return None
 
     async def _evermemos_gather(self) -> dict:
         """
@@ -1244,7 +1347,11 @@ class ChatAgent:
         monologue = self._extract_monologue(feel_response.content)
 
         # ── Step 10b: Pass 2 — Express (monologue → reply + modality) ──
-        express_prompt = self._build_express_prompt(monologue)
+        turn_lang = self._detect_turn_lang(stimulus)
+        express_few_shot = self.style_memory.build_few_shot_prompt(
+            context, top_k=2, monologue_only=False, lang=turn_lang,
+        )
+        express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
         express_messages = [
             ChatMessage(role="system", content=express_prompt),
             ChatMessage(role="user", content=stimulus),

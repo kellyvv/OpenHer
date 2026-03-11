@@ -465,6 +465,7 @@ class PersonaInfo(BaseModel):
     """Persona info response."""
     persona_id: str
     name: str
+    name_zh: Optional[str] = None
     age: Optional[int]
     gender: str
     mbti: Optional[str]
@@ -649,6 +650,7 @@ async def list_personas():
         result.append(PersonaInfo(
             persona_id=pid,
             name=p.name,
+            name_zh=p.name_zh,
             age=p.age,
             gender=p.gender,
             mbti=p.mbti,
@@ -690,6 +692,7 @@ async def chat_api(req: ChatRequest):
         "session_id": session_id,
         "response": result['reply'],
         "modality": result['modality'],
+        "image_url": f"/api/selfie/{os.path.basename(result['image_path'])}" if result.get('image_path') else None,
         **status,
     }
 
@@ -787,9 +790,26 @@ async def image_api(
         raise HTTPException(status_code=500, detail=result.error or "Image generation failed")
 
 
+@app.get("/api/selfie/{filename:path}")
+async def serve_selfie(filename: str):
+    """Serve a generated selfie image from the cache."""
+    selfie_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache", "selfie")
+    file_path = os.path.join(selfie_dir, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    media_type = "image/png"
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext in (".jpg", ".jpeg"):
+        media_type = "image/jpeg"
+    elif ext == ".webp":
+        media_type = "image/webp"
+    return FileResponse(file_path, media_type=media_type)
+
+
 # ──────────────────────────────────────────────────────────────
 # Avatar API (后台管理 + 前端获取)
 # ──────────────────────────────────────────────────────────────
+
 
 def _get_avatar_service():
     """Lazy-create AvatarService."""
@@ -947,6 +967,23 @@ async def websocket_chat(ws: WebSocket):
                 except ValueError as e:
                     await ws.send_json({"type": "error", "content": str(e)})
                     continue
+
+                # Display-only greeting: store in chat_log for frontend history reload,
+                # but do NOT inject into agent.history (preserves emergence purity).
+                # Greeting in history[-4:] would seed Express positive-feedback drift from turn 0.
+                greeting = msg.get("greeting")
+                if greeting and agent and len(agent.history) == 0:
+                    print(f"  [greeting] display-only (not in model state): {greeting[:40]}")
+                    # Persist to display-layer chat log
+                    if chat_log_store and ws_client_id:
+                        try:
+                            chat_log_store._conn.execute(
+                                "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                                (ws_client_id, persona_id, "assistant", greeting, "文字", time.time()),
+                            )
+                            chat_log_store._conn.commit()
+                        except Exception as e:
+                            print(f"  [greeting] chat_log save error: {e}")
 
                 # Register WS connection for proactive push (Bug 1)
                 _ws_connections[session_id] = ws

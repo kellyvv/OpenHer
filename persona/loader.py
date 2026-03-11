@@ -42,6 +42,7 @@ class Persona:
     # Identity
     name: str
     persona_id: str                       # Directory name, used as unique ID
+    name_zh: Optional[str] = None             # Chinese display name (for Chinese personas)
     age: Optional[int] = None
     gender: str = "female"
     lang: str = "zh"                          # Prompt label language: 'zh' or 'en'
@@ -220,6 +221,7 @@ class PersonaLoader:
         persona = Persona(
             name=meta.get("name", persona_id),
             persona_id=persona_id,
+            name_zh=meta.get("name_zh"),
             age=meta.get("age"),
             gender=meta.get("gender", "female"),
             lang=meta.get("lang", "zh"),

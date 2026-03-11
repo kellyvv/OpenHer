@@ -48,6 +48,7 @@ class GeminiImageProvider(BaseImageProvider):
         aspect_ratio: str = "",
         image_size: str = "1K",
         person_generation: str = "",
+        reference_image: Optional[str] = None,
         **kwargs,
     ) -> ImageResult:
         """
@@ -55,9 +56,10 @@ class GeminiImageProvider(BaseImageProvider):
 
         Args:
             prompt: Text description of the image to generate.
-            aspect_ratio: Aspect ratio (e.g. "16:9", "1:1"). Empty = model default.
+            aspect_ratio: Aspect ratio (e.g. "16:9", "9:16"). Empty = omit.
             image_size: Output size ("1K", "2K"). Default "1K".
-            person_generation: Person generation mode. Empty = model default.
+            person_generation: Person generation mode. Empty = omit.
+            reference_image: Path to a reference image for consistency.
 
         Returns:
             ImageResult with image_path and optional text.
@@ -70,20 +72,38 @@ class GeminiImageProvider(BaseImageProvider):
         try:
             from google.genai import types
 
+            # Build content parts: reference image (if any) + text prompt
+            parts = []
+
+            if reference_image and os.path.exists(reference_image):
+                # Load image as bytes
+                with open(reference_image, "rb") as f:
+                    image_bytes = f.read()
+                # Detect MIME type
+                ext = os.path.splitext(reference_image)[1].lower()
+                mime_map = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp'}
+                mime = mime_map.get(ext, 'image/png')
+                parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime))
+                print(f"  [gemini] 🖼 Reference image loaded: {os.path.basename(reference_image)}")
+
+            parts.append(types.Part.from_text(text=prompt))
+
             contents = [
-                types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text=prompt)],
-                ),
+                types.Content(role="user", parts=parts),
             ]
+
+            # Build image config dynamically (only include non-empty params)
+            image_cfg_kwargs = {}
+            if aspect_ratio:
+                image_cfg_kwargs["aspect_ratio"] = aspect_ratio
+            if image_size:
+                image_cfg_kwargs["image_size"] = image_size
+            if person_generation:
+                image_cfg_kwargs["person_generation"] = person_generation
 
             config = types.GenerateContentConfig(
                 thinking_config=types.ThinkingConfig(thinking_level="MINIMAL"),
-                image_config=types.ImageConfig(
-                    aspect_ratio=aspect_ratio,
-                    image_size=image_size,
-                    person_generation=person_generation,
-                ),
+                image_config=types.ImageConfig(**image_cfg_kwargs),
                 response_modalities=["IMAGE", "TEXT"],
             )
 

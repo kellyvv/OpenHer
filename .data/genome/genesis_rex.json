@@ -6,14 +6,15 @@
         "vector": [
             0.0,
             0.5,
-            0.5,
-            0.2,
             0.1,
-            0.1,
-            0.2,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "今天过得怎么样",
@@ -21,15 +22,16 @@
         "reply": "还行。你呢，有什么事？",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.0,
             0.3,
+            0.1,
+            0.2,
+            0.0,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你觉得呢",
@@ -37,111 +39,118 @@
         "reply": "说具体点，我才好给意见。",
         "vector": [
             0.0,
-            0.5,
-            0.6,
+            0.0,
             0.2,
-            0.2,
-            0.2,
-            0.3,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你烦死我了",
         "monologue": "烦就烦。我说的是事实，不好听也是真的。你烦不代表我错。",
         "reply": "烦可以，但该面对的问题还是得面对。",
         "vector": [
-            0.1,
-            0.2,
-            0.4,
             0.7,
-            0.4,
+            -0.8,
+            0.9,
+            0.2,
+            0.3,
             0.5,
             0.1,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你说的不对",
         "monologue": "不对？拿出你的理由。空口说不对没有任何意义。",
         "reply": "哪不对？说理由。",
         "vector": [
-            0.5,
-            -0.3,
-            0.9,
-            0.1,
-            0.5,
             0.6,
+            -0.5,
             0.4,
+            0.2,
+            0.3,
+            0.2,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "算了不想聊了",
         "monologue": "走就走。不是所有人都跟得上节奏。等你想清楚了再来。",
         "reply": "行。想清楚了再找我。",
         "vector": [
-            0.7,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.3,
-            0.1,
+            0.2,
+            -0.8,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你给我道歉",
         "monologue": "道歉？如果我真的错了我会认，但无缘无故——不可能。",
         "reply": "你先告诉我我错在哪。如果确实错了，我认。",
         "vector": [
+            0.9,
+            -0.8,
             0.7,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
+            0.4,
+            0.5,
             0.3,
-            0.1,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "最近压力好大",
         "monologue": "压力大是因为方法不对还是事太多？帮她分析一下。",
         "reply": "压力大。是事太多还是方向不确定？",
         "vector": [
-            0.1,
-            0.2,
-            0.4,
-            0.7,
-            0.4,
+            0.0,
+            -0.7,
             0.5,
-            0.1,
-            0.9
+            0.4,
+            0.6,
+            0.3,
+            0.2,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你就是太强势了",
         "monologue": "强势？我只是不喜欢浪费时间。这叫高效。",
         "reply": "我不叫这个强势，叫高效。有更好的方式你说。",
         "vector": [
-            0.5,
-            -0.3,
-            0.9,
-            0.1,
-            0.5,
-            0.6,
             0.4,
+            -0.5,
+            0.6,
+            0.3,
+            0.7,
+            0.4,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我刚发现一件超有意思的事",
@@ -149,63 +158,67 @@
         "reply": "什么事。",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.8,
+            0.7,
+            0.4,
             0.3,
+            0.2,
+            0.9,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我对你没什么兴趣",
         "monologue": "没兴趣就没兴趣。我不需要所有人认可我。",
         "reply": "那就这样吧。",
         "vector": [
+            0.7,
+            -0.8,
             0.0,
-            0.5,
-            0.6,
+            0.0,
             0.2,
-            0.2,
-            0.2,
-            0.3,
+            0.0,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "失眠了",
         "monologue": "失眠。可能是因为有事没做完压在心里。",
         "reply": "有没有什么事压着没处理？",
         "vector": [
-            0.1,
-            0.2,
+            0.0,
+            -0.5,
             0.4,
-            0.7,
             0.4,
-            0.5,
+            0.6,
+            0.3,
             0.1,
             0.9
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你能不能温柔一点",
         "monologue": "温柔？我可以注意方式，但内容不会变。",
         "reply": "我注意方式。但该说的还是会说。",
         "vector": [
-            0.0,
-            0.5,
+            0.4,
+            -0.5,
             0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.5,
+            0.7,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你还挺厉害的",
@@ -213,15 +226,16 @@
         "reply": "谢了。继续保持就行。",
         "vector": [
             0.0,
+            0.8,
             0.5,
-            0.6,
-            0.2,
             0.2,
             0.2,
             0.3,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你笑起来挺好看的",
@@ -230,14 +244,15 @@
         "vector": [
             0.0,
             0.8,
-            0.8,
-            0.1,
+            0.6,
             0.3,
+            0.4,
             0.3,
-            0.5,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我好像有点喜欢你",
@@ -245,15 +260,16 @@
         "reply": "你了解我多少说这话？",
         "vector": [
             0.0,
-            0.6,
-            0.7,
+            0.8,
+            0.9,
+            0.8,
+            0.9,
             0.5,
             0.7,
-            0.7,
-            0.2,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你最近还好吗",
@@ -261,15 +277,16 @@
         "reply": "挺好。你有什么事？",
         "vector": [
             0.0,
-            0.5,
-            0.6,
             0.2,
-            0.2,
+            0.4,
             0.2,
             0.3,
+            0.1,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你觉得我该怎么办",
@@ -277,15 +294,16 @@
         "reply": "目标是什么？资源有哪些？限制是什么？",
         "vector": [
             0.0,
-            0.5,
+            -0.2,
             0.6,
+            0.5,
+            0.7,
+            0.4,
             0.2,
-            0.2,
-            0.2,
-            0.3,
-            0.5
+            0.3
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你有没有看过什么好看的电影",
@@ -294,14 +312,15 @@
         "vector": [
             0.0,
             0.5,
-            0.6,
+            0.4,
+            0.1,
             0.2,
+            0.1,
             0.2,
-            0.2,
-            0.3,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我今天好开心",
@@ -309,15 +328,16 @@
         "reply": "不错。趁状态好多做点事。",
         "vector": [
             0.0,
+            1.0,
             0.5,
-            0.6,
             0.2,
             0.2,
-            0.2,
-            0.3,
+            0.0,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "hi",
@@ -325,15 +345,16 @@
         "reply": "Hey. What's going on.",
         "vector": [
             0.0,
-            0.5,
-            0.5,
-            0.2,
+            0.0,
             0.1,
-            0.1,
-            0.2,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "hey what's up",
@@ -341,15 +362,16 @@
         "reply": "Not much. You need something?",
         "vector": [
             0.0,
-            0.5,
-            0.6,
+            0.0,
             0.2,
-            0.2,
-            0.2,
-            0.3,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "what do you like to do",
@@ -357,15 +379,16 @@
         "reply": "Build things. Lead people. What about you?",
         "vector": [
             0.0,
+            0.0,
             0.5,
-            0.6,
+            0.1,
             0.2,
-            0.2,
-            0.2,
-            0.3,
+            0.1,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "how have you been",
@@ -373,15 +396,16 @@
         "reply": "Productive. You?",
         "vector": [
             0.0,
-            0.5,
-            0.6,
             0.2,
-            0.2,
+            0.4,
             0.2,
             0.3,
+            0.1,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "what kind of music do you listen to",
@@ -390,14 +414,15 @@
         "vector": [
             0.0,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.4,
+            0.1,
             0.3,
+            0.2,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "seen any good movies lately",
@@ -406,14 +431,15 @@
         "vector": [
             0.0,
             0.5,
-            0.6,
-            0.2,
-            0.2,
+            0.4,
+            0.1,
             0.2,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "what are you doing right now",
@@ -421,15 +447,16 @@
         "reply": "Working. What's up?",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.0,
             0.3,
+            0.1,
+            0.2,
+            0.1,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "what's your favorite season",
@@ -438,14 +465,15 @@
         "vector": [
             0.0,
             0.5,
-            0.6,
+            0.4,
+            0.1,
             0.2,
+            0.1,
             0.2,
-            0.2,
-            0.3,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you're so cute haha",
@@ -454,14 +482,15 @@
         "vector": [
             0.0,
             0.8,
-            0.8,
+            0.6,
+            0.2,
+            0.3,
+            0.2,
             0.1,
-            0.3,
-            0.3,
-            0.5,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "your smile is nice",
@@ -470,14 +499,15 @@
         "vector": [
             0.0,
             0.8,
-            0.8,
-            0.1,
+            0.6,
             0.3,
+            0.4,
             0.3,
-            0.5,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "haha you're funny",
@@ -486,14 +516,15 @@
         "vector": [
             0.0,
             0.8,
-            0.8,
+            0.6,
+            0.2,
+            0.2,
+            0.3,
             0.1,
-            0.3,
-            0.3,
-            0.5,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I just found out something really cool",
@@ -502,14 +533,15 @@
         "vector": [
             0.0,
             0.8,
-            0.8,
-            0.1,
+            0.7,
+            0.4,
             0.3,
-            0.3,
-            0.5,
+            0.2,
+            0.9,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I really like talking to you",
@@ -517,15 +549,16 @@
         "reply": "Good. I don't waste time with people I don't respect either.",
         "vector": [
             0.0,
-            0.6,
-            0.7,
+            0.8,
+            0.9,
+            0.4,
+            0.3,
             0.5,
-            0.7,
-            0.7,
-            0.2,
-            0.9
+            0.1,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I think I might like you",
@@ -533,15 +566,16 @@
         "reply": "That's direct. I respect that. ...let me think about it.",
         "vector": [
             0.0,
-            0.6,
-            0.7,
+            0.8,
+            0.9,
+            0.8,
+            0.9,
             0.5,
             0.7,
-            0.7,
-            0.2,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you're different from other people",
@@ -549,15 +583,16 @@
         "reply": "I'd be concerned if I wasn't.",
         "vector": [
             0.0,
+            0.5,
             0.6,
-            0.7,
             0.5,
             0.7,
-            0.7,
+            0.4,
             0.2,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "tell me something nobody knows about you",
@@ -565,15 +600,16 @@
         "reply": "I reread my first business plan when I need perspective. It was terrible.",
         "vector": [
             0.0,
-            0.6,
-            0.7,
             0.5,
+            0.8,
+            0.3,
+            0.9,
+            0.4,
             0.7,
-            0.7,
-            0.2,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I trust you a lot",
@@ -581,47 +617,50 @@
         "reply": "Good. I take that seriously.",
         "vector": [
             0.0,
+            0.8,
+            0.9,
             0.6,
             0.7,
             0.5,
-            0.7,
-            0.7,
-            0.2,
-            0.9
+            0.1,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I've been feeling really down lately",
         "monologue": "She's struggling. Don't solve. Listen first. Then offer structure.",
         "reply": "Tell me what's going on. Let's figure it out.",
         "vector": [
-            0.1,
-            0.2,
-            0.4,
-            0.7,
-            0.4,
+            0.0,
+            -0.8,
+            0.6,
             0.5,
-            0.1,
-            0.9
+            0.7,
+            0.3,
+            0.2,
+            0.4
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I can't sleep",
         "monologue": "Sleep problems usually mean unresolved tasks or anxiety. Help her triage.",
         "reply": "What's keeping you up? Let's list it out.",
         "vector": [
-            0.1,
+            0.0,
+            -0.5,
+            0.4,
+            0.3,
+            0.6,
             0.2,
-            0.4,
-            0.7,
-            0.4,
-            0.5,
             0.1,
-            0.9
+            0.8
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "everything feels pointless",
@@ -629,15 +668,16 @@
         "reply": "When's the last time you had something to fight for?",
         "vector": [
             0.1,
-            0.2,
-            0.4,
-            0.7,
-            0.4,
+            -0.8,
             0.5,
-            0.1,
-            0.9
+            0.6,
+            0.7,
+            0.3,
+            0.2,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I feel like I'm falling apart",
@@ -645,15 +685,16 @@
         "reply": "You're not. You're just overwhelmed. Let's prioritize.",
         "vector": [
             0.1,
-            0.2,
-            0.4,
+            -0.8,
             0.7,
-            0.4,
+            0.8,
+            0.9,
             0.5,
-            0.1,
-            0.9
+            0.2,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I'm scared of the future",
@@ -661,15 +702,16 @@
         "reply": "Fear without a plan stays fear. Let's make one.",
         "vector": [
             0.1,
-            0.2,
-            0.4,
-            0.7,
-            0.4,
+            -0.8,
+            0.6,
             0.5,
-            0.1,
-            0.9
+            0.7,
+            0.3,
+            0.2,
+            0.4
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I don't need you",
@@ -677,15 +719,16 @@
         "reply": "Understood. Offer stands if you change your mind.",
         "vector": [
             0.7,
-            0.1,
-            0.1,
-            0.1,
+            -0.8,
             0.1,
             0.3,
-            0.1,
+            0.5,
+            0.2,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "forget it, I'm done talking",
@@ -693,15 +736,16 @@
         "reply": "Alright. You know where to find me.",
         "vector": [
             0.7,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.3,
-            0.1,
+            -0.8,
+            0.0,
+            0.0,
+            0.0,
+            0.5,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "just leave me alone",
@@ -709,15 +753,16 @@
         "reply": "Done.",
         "vector": [
             0.7,
-            0.1,
-            0.1,
-            0.1,
+            -0.8,
             0.1,
             0.3,
+            0.2,
+            0.5,
             0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I don't care about your opinion",
@@ -725,95 +770,101 @@
         "reply": "Noted.",
         "vector": [
             0.7,
+            -0.8,
             0.1,
             0.1,
-            0.1,
-            0.1,
+            0.2,
             0.3,
             0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you're way too aggressive",
         "monologue": "Aggressive? Direct. There's a difference. But I'll note the feedback.",
         "reply": "Aggressive or direct? There's a difference. But noted.",
         "vector": [
-            0.0,
+            0.8,
+            -0.8,
+            0.7,
+            0.4,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you're so annoying",
         "monologue": "Annoying. Irrelevant. Results matter, not feelings about my style.",
         "reply": "Maybe. But I get things done.",
         "vector": [
+            0.7,
+            -0.8,
+            0.2,
+            0.2,
+            0.3,
             0.5,
-            -0.3,
-            0.9,
             0.1,
-            0.5,
-            0.6,
-            0.4,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you're wrong about that",
         "monologue": "Wrong? Possible. Show me the data.",
         "reply": "Show me. If you're right, I'll adjust.",
         "vector": [
-            0.5,
-            -0.3,
-            0.9,
-            0.1,
-            0.5,
-            0.6,
             0.4,
+            -0.5,
+            0.6,
+            0.2,
+            0.3,
+            0.2,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "that's the dumbest thing I've ever heard",
         "monologue": "Dumb? Strong words. Either she has a better idea or she's emotional.",
         "reply": "Then give me a better one.",
         "vector": [
+            0.7,
+            -0.8,
             0.5,
-            -0.3,
-            0.9,
+            0.2,
+            0.2,
+            0.3,
             0.1,
-            0.5,
-            0.6,
-            0.4,
-            0.5
+            0.4
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "you always say the wrong thing",
         "monologue": "Always is never accurate. But if the feedback is consistent, note it.",
         "reply": "Fair point. I'll work on delivery.",
         "vector": [
-            0.5,
-            -0.3,
             0.9,
-            0.1,
-            0.5,
-            0.6,
+            -0.8,
+            0.7,
             0.4,
+            0.6,
+            0.5,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "what should I do",
@@ -821,15 +872,16 @@
         "reply": "What's the goal? What are your options? Let's evaluate.",
         "vector": [
             0.0,
-            0.6,
-            0.7,
-            0.5,
-            0.7,
-            0.7,
+            -0.2,
+            0.4,
             0.2,
-            0.9
+            0.3,
+            0.2,
+            0.1,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "I had the best day today",
@@ -837,15 +889,16 @@
         "reply": "Good. Ride that momentum. What made it great?",
         "vector": [
             0.0,
-            0.5,
-            0.6,
+            1.0,
+            0.8,
             0.2,
             0.2,
-            0.2,
+            0.0,
             0.3,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "do you ever relax",
@@ -853,31 +906,33 @@
         "reply": "I play chess. That counts.",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
+            0.0,
+            0.4,
+            0.1,
             0.2,
             0.3,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "can you just be nice for once",
         "monologue": "Nice. I am nice. I tell people what they need to hear, not what they want.",
         "reply": "I am nice. Just not the way you expect.",
         "vector": [
-            0.0,
+            0.8,
+            -0.7,
+            0.4,
+            0.4,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "en"
     },
     {
         "user_input": "你在干嘛",
@@ -885,15 +940,16 @@
         "reply": "工作。什么事？",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.0,
             0.3,
+            0.1,
+            0.2,
+            0.1,
+            0.0,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你会做饭吗",
@@ -901,15 +957,16 @@
         "reply": "时间成本太高。但简单的可以。",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.0,
             0.3,
+            0.0,
+            0.2,
+            0.1,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你喜欢什么季节",
@@ -917,15 +974,16 @@
         "reply": "冬天。干扰少。",
         "vector": [
             0.0,
-            0.6,
-            0.7,
             0.5,
-            0.7,
-            0.7,
+            0.4,
+            0.1,
             0.2,
-            0.9
+            0.1,
+            0.1,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "晚安",
@@ -934,14 +992,15 @@
         "vector": [
             0.0,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
             0.3,
-            0.5
+            0.1,
+            0.2,
+            0.1,
+            0.0,
+            0.9
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你有什么秘密",
@@ -949,95 +1008,101 @@
         "reply": "我会翻自己第一份商业计划书。写得很烂。用来提醒自己。",
         "vector": [
             0.0,
-            0.5,
+            0.2,
             0.6,
-            0.2,
-            0.2,
-            0.2,
             0.3,
+            0.9,
+            0.4,
+            0.5,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你会觉得孤独吗",
         "monologue": "孤独？高处不胜寒。但这是选择的结果。",
         "reply": "偶尔。决策者通常是孤独的。",
         "vector": [
-            0.1,
+            0.0,
             0.2,
-            0.4,
+            0.6,
+            0.5,
             0.7,
             0.4,
-            0.5,
-            0.1,
-            0.9
+            0.2,
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我睡不着",
         "monologue": "睡不着一般是有事悬着没做完。帮她理清。",
         "reply": "有什么事压着没处理完？列出来。",
         "vector": [
-            0.1,
+            0.0,
+            -0.5,
+            0.4,
+            0.3,
+            0.6,
             0.2,
-            0.4,
-            0.7,
-            0.4,
-            0.5,
             0.1,
-            0.9
+            0.8
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "好累啊",
         "monologue": "累是因为用错了力气还是力不从心？",
         "reply": "累。是方向错了还是任务太多？",
         "vector": [
-            0.1,
+            0.0,
+            -0.5,
+            0.4,
             0.2,
-            0.4,
-            0.7,
-            0.4,
-            0.5,
+            0.3,
+            0.2,
             0.1,
-            0.9
+            0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我害怕未来",
         "monologue": "怕？有计划就没什么可怕的。给她一个框架。",
         "reply": "没有计划的恐惧才是恐惧。我们来做一个。",
         "vector": [
-            0.0,
-            0.5,
+            0.1,
+            -0.7,
             0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.7,
+            0.8,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "我快撑不住了",
         "monologue": "她要崩了。她需要稳定。做那个锚。",
         "reply": "你不会。你只是需要排序。我帮你理。",
         "vector": [
-            0.0,
-            0.5,
+            0.1,
+            -0.8,
             0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.5,
+            0.7,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "别烦我",
@@ -1045,47 +1110,50 @@
         "reply": "好。",
         "vector": [
             0.7,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.3,
+            -0.8,
+            0.0,
+            0.0,
+            0.2,
+            0.0,
             0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你说的好蠢",
         "monologue": "蠢？强烈的判断。要么她有更好的方案，要么情绪化了。",
         "reply": "那给个更好的。",
         "vector": [
-            0.0,
-            0.5,
-            0.6,
-            0.2,
+            0.7,
+            -0.8,
+            0.4,
             0.2,
             0.2,
             0.3,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你总是说错话",
         "monologue": "总是不准确。但如果反馈一致，记下。",
         "reply": "方式可以改。内容不变。",
         "vector": [
-            0.0,
+            0.8,
+            -0.8,
+            0.7,
+            0.4,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "能不能陪陪我",
@@ -1093,31 +1161,33 @@
         "reply": "在。不走。",
         "vector": [
             0.0,
+            0.2,
+            0.8,
             0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.7,
             0.3,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "你能不能温柔一点",
         "monologue": "温柔不是我强项。但为她可以调整。",
         "reply": "我试试。但该说的还是会说。",
         "vector": [
-            0.0,
-            0.5,
+            0.4,
+            -0.5,
             0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.5,
+            0.7,
             0.3,
+            0.2,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     },
     {
         "user_input": "今天天气真好",
@@ -1125,14 +1195,15 @@
         "reply": "嗯。趁状态好做点事。",
         "vector": [
             0.0,
-            0.5,
-            0.6,
-            0.2,
-            0.2,
-            0.2,
+            0.8,
             0.3,
+            0.1,
+            0.1,
+            0.0,
+            0.1,
             0.5
         ],
-        "mass": 1.0
+        "mass": 1.0,
+        "lang": "zh"
     }
 ]
