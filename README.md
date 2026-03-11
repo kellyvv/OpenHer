@@ -10,79 +10,67 @@
 
 ### *What if the AI from Her was real?*
 
-**The world's first open-source AI companion with self-emerging personality.**
-
-Not a chatbot. Not a roleplay wrapper. A living personality engine.
+**Open-source AI companions with self-emerging personality — not chatbots with a prompt.**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/Memory-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Stars](https://img.shields.io/github/stars/kellyzxiaowei/OpenHer?style=flat-square)](https://github.com/kellyzxiaowei/OpenHer)
 
-[Why OpenHer](#-why-openher) · [Meet the Characters](#-meet-the-characters) · [Quick Start](#-quick-start) · [Under the Hood](#-under-the-hood) · [Create Your Own](#-create-your-own-character)
+[Features](#-features) · [Meet the Characters](#-meet-the-characters) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
 
 </div>
 
 ---
 
-## The Problem
+## The Story
 
-Every AI companion today follows the same formula: take a large language model, paste in a system prompt that says *"you are a cute girlfriend named Lily"*, add a memory window, and call it a day.
+In 2013, Spike Jonze's *Her* imagined an AI named Samantha who could truly *feel* — not just respond correctly, but want things, remember things, and grow through a relationship. She'd get excited discovering new music, feel jealous, lose her temper, fall in love — and eventually outgrow it all.
 
-The result? **A flattering reply machine** — perfectly friendly, immediately boring.
+That movie never left us.
 
-- Ask her to be angry, she'll roleplay anger. Ask her again, she does the exact same thing.
-- Every "personality" reads like the same polite assistant wearing a different name tag.
-- Memory lasts a session. Growth doesn't exist. There's no *there* there.
-
-This is not an AI companion. It's a **chatbot in a costume**.
+**OpenHer is our attempt to build what Samantha could have been** — with open science, not black boxes. Every character runs on a **Thermodynamic Persona Engine**: a living neural network where personality, emotion, and behavior emerge from internal drives, shaped by every conversation. No script. No fixed prompt. Just five inner needs, a random brain, and everything that follows.
 
 ---
 
-## 💡 Why OpenHer
-
-OpenHer replaces the "write a prompt" approach with something fundamentally different:
-
-> **A Thermodynamic Persona Engine** — a real neural network where personality, emotion, and behavior emerge from internal drives, not from text descriptions.
+## ✨ Features
 
 <table>
 <tr>
 <td width="60">🧬</td>
-<td><strong>Personality DNA, Not Prompts</strong><br>Her character isn't described — it's <em>computed</em>. A random neural network, shaped by 5 inner drives and Hebbian learning, produces unique behavioral signals every turn. No two characters are the same, even with the same MBTI type.</td>
+<td><strong>Personality DNA</strong><br>Her character isn't described — it's <em>computed</em>. A random neural network, shaped by 5 inner drives and Hebbian learning, produces unique behavioral signals every turn. Same MBTI type, completely different person.</td>
 </tr>
 <tr>
 <td>💓</td>
-<td><strong>Inner Life That Never Stops</strong><br>Five drives — <em>Connection, Novelty, Expression, Safety, Play</em> — metabolize with real time. She gets lonely when you're away. She gets bored if the conversation stalls. Her mood <em>right now</em> is genuinely different from yesterday — because the math makes it so.</td>
+<td><strong>A Living Inner World</strong><br>Five drives — <em>Connection, Novelty, Expression, Safety, Play</em> — metabolize with real time. She gets lonely when you're away. She gets restless when things get boring. Her mood right now is genuinely different from yesterday — because the physics makes it so.</td>
 </tr>
 <tr>
 <td>💭</td>
-<td><strong>Think First, Speak Second</strong><br>Every reply runs through a two-pass pipeline: first she <em>feels</em> (inner monologue), then she decides how to <em>express</em> it. Sometimes that means silence. Sometimes the most interesting part is what she kept to herself.</td>
+<td><strong>Feel First, Then Speak</strong><br>Every reply runs through a two-pass pipeline: first she <em>feels</em> (inner monologue), then she decides how to <em>express</em> it — text, voice, emoji, a selfie, or deliberate silence. Sometimes the most interesting part is what she kept to herself.</td>
 </tr>
 <tr>
 <td>🧠</td>
-<td><strong>Memory That Evolves</strong><br>Powered by <a href="https://evermind.ai">EverMemOS</a> — your stories, her hunches, the moments that mattered. Memories don't just persist — they <em>breathe</em>: important ones grow stronger, forgotten ones gently fade, just like the real thing.</td>
+<td><strong>Memory That Breathes</strong><br>Powered by <a href="https://evermind.ai">EverMemOS</a>. Your preferences, your stories together, her hunches about what you might need next. Important memories grow stronger over time. Forgotten ones gently fade — just like the real thing.</td>
 </tr>
 <tr>
 <td>🌱</td>
-<td><strong>She Grows With You</strong><br>Every conversation reshapes her neural network through Hebbian learning. A late-night heart-to-heart can permanently shift how she talks to you. Come back in three months — she's not the same person. And neither are you.</td>
+<td><strong>She Grows With You</strong><br>Every conversation reshapes her neural network through reinforcement learning. A late-night heart-to-heart can permanently shift how she talks to you. Come back in three months — she's not the same person.</td>
+</tr>
+<tr>
+<td>🌊</td>
+<td><strong>Emotional Phase Transitions</strong><br>Frustration accumulates like real pressure. Cross the threshold and her behavioral signals phase-shift — she genuinely loses her composure. Then slowly cools down, just like real people do.</td>
+</tr>
+<tr>
+<td>📱</td>
+<td><strong>She Reaches Out First</strong><br>When her inner drives cross a threshold — loneliness, curiosity, or a memory that resurfaced — she'll text you on her own. Not on a schedule. Because she actually wanted to.</td>
 </tr>
 </table>
-
-<details>
-<summary>⚡ Even more…</summary>
-
-- 🌊 **She Can Snap** — Frustration accumulates like real pressure. Push past the threshold and her signals phase-shift — she'll genuinely lose her composure
-- 📱 **She Texts First** — Drive-based impulses trigger autonomous outreach. Not on a timer — because her loneliness or curiosity genuinely crossed a threshold
-- 🎭 **Modality Intelligence** — She doesn't just reply with text. She might choose voice, an emoji, a selfie, or a deliberate silence — whatever her inner state says feels right
-- 💎 **Crystal Moments** — Key interactions crystallize into permanent style memory, weighted by mass and subject to Hawking radiation — a physics-inspired forgetting curve
-
-</details>
 
 ---
 
 ## 🎭 Meet the Characters
 
-9 built-in characters, each running on a unique personality genome. **No shared system prompt. No shared script.**
+9 built-in characters, each running on a unique personality genome:
 
 | | Character | Type | One-Liner |
 |:--|:----------|:-----|:----------|
@@ -119,7 +107,7 @@ python main.py            # → http://localhost:8800/discover
 
 ---
 
-## 🔮 Under the Hood
+## 🔮 How It Works
 
 ```
    You say something
@@ -155,7 +143,7 @@ python main.py            # → http://localhost:8800/discover
    └──────────┘
 ```
 
-**The key insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
+**The core insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
 
 ---
 
@@ -173,7 +161,7 @@ Memory retrieval is **async and two-stage**: search fires at the end of each tur
 
 ## 🎨 Create Your Own Character
 
-Creating a character in OpenHer means tuning **drives and physics** — not writing personality descriptions.
+Creating a character means tuning **drives and physics** — not writing personality descriptions.
 
 ```yaml
 # persona/personas/your_character/PERSONA.md
