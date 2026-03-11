@@ -255,6 +255,7 @@ genome_seed:
 
 - [ ] Skill Engine (extensible tool-use framework)
 - [ ] Voice conversation mode — let her actually *speak*, not just type
+- [ ] Voice messages — when she's busy, she sends you a voice note, like a real friend
 - [ ] Video calls — face-to-face chats where you can see her expressions change
 - [ ] Selfie & travel videos — she sends you short clips of places she's been, things she's seen
 - [ ] Multi-agent social interactions
