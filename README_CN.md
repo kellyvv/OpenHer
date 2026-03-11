@@ -6,6 +6,9 @@
 
 <div align="center">
 
+<img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
+
+
 # 🧬 OpenHer
 
 ### *如果《Her》里的 AI 是真的呢？*
