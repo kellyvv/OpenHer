@@ -9,7 +9,6 @@ let package = Package(
             name: "OpenHer",
             path: "Sources",
             resources: [
-                .copy("Resources/cabinets"),
                 .copy("Resources/chat_bg.png")
             ]
         ),

@@ -11,7 +11,7 @@ struct MenuBarView: View {
                 Circle()
                     .fill(appState.isConnected ? Paper.coral : Paper.faint)
                     .frame(width: 6, height: 6)
-                Text(appState.isConnected ? "已连接" : "未连接")
+                Text(appState.isConnected ? L10n.str("已连接", en: "Connected") : L10n.str("未连接", en: "Disconnected"))
                     .font(Paper.freqFont)
                     .foregroundStyle(Paper.herText)
             }
@@ -33,7 +33,7 @@ struct MenuBarView: View {
                         Text(persona.displayName)
                             .font(Paper.nameFont)
                             .foregroundStyle(Paper.herText)
-                        Text("FREQ. 调频中 ∿")
+                        Text(L10n.str("FREQ. 调频中 ∿", en: "FREQ. tuning ∿"))
                             .font(Paper.tinyFont)
                             .foregroundStyle(Paper.coral)
                     }
@@ -44,7 +44,7 @@ struct MenuBarView: View {
 
             // Persona list for switching
             if appState.personas.count > 1 {
-                Text("切换角色")
+                Text(L10n.str("切换角色", en: "Switch Persona"))
                     .font(Paper.tinyFont)
                     .foregroundStyle(Paper.faint)
 
@@ -63,17 +63,17 @@ struct MenuBarView: View {
             }
 
             // Actions
-            Button("打开对话 ⌘⇧O") {}
+            Button(L10n.str("打开对话 ⌘⇧O", en: "Open Chat ⌘⇧O")) {}
                 .buttonStyle(.plain)
                 .font(Paper.freqFont)
 
-            Button("设置...") {
+            Button(L10n.str("设置...", en: "Settings...")) {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
             }
             .buttonStyle(.plain)
             .font(Paper.freqFont)
 
-            Button("退出") {
+            Button(L10n.str("退出", en: "Quit")) {
                 NSApp.terminate(nil)
             }
             .buttonStyle(.plain)

@@ -21,6 +21,17 @@ final class AppState: ObservableObject {
     @Published var personas: [Persona] = []
     @Published var selectedPersonaId: String?
 
+    /// Toggle: only show personas that have a cabinet image ready.
+    /// Persisted so the preference survives app restarts.
+    @AppStorage("showOnlyReadyPersonas") var showOnlyReadyPersonas: Bool = true
+
+    /// Personas filtered for display in DiscoveryView.
+    /// When `showOnlyReadyPersonas` is on, only personas with a front.png are included.
+    var displayPersonas: [Persona] {
+        guard showOnlyReadyPersonas else { return personas }
+        return personas.filter { $0.hasFront }
+    }
+
     // MARK: - Chat
     @Published var messages: [ChatMessage] = []
     @Published var isTyping: Bool = false
@@ -31,6 +42,10 @@ final class AppState: ObservableObject {
     @Published var lastReward: Double = 0.0    // per-turn reward (-1...1), fluctuates each turn
     @Published var emotionTemperature: Double = 0.0  // metabolism temperature (0...1)
     @Published var crystalCount: Int = 0       // personal_memories count
+
+    // MARK: - Image Cache (shared between PersonaCard → AwakeningView)
+    /// Front images cached after first download, keyed by personaId.
+    var cachedFrontImages: [String: NSImage] = [:]
 
     // MARK: - Services
     lazy var apiClient: APIClient = APIClient(baseURL: self.serverURL)
@@ -77,18 +92,22 @@ final class AppState: ObservableObject {
             mbti: "INFP",
             tags: ["gentle", "dreamy", "sweet"],
             description: "清纯萌系少女",
-            avatarUrl: nil
+            avatarUrl: nil,
+            hasFront: true,
+            hasAwakeningVideo: true
         )
         let luna = Persona(
             personaId: "luna",
             name: "Luna",
-            nameZh: "陆鸣",
+            nameZh: "陆暖",
             age: 22,
             gender: "female",
             mbti: "ENFP",
             tags: ["bright", "bubbly", "sweet"],
             description: "自由插画师",
-            avatarUrl: nil
+            avatarUrl: nil,
+            hasFront: true,
+            hasAwakeningVideo: true
         )
         personas = [iris, luna]
         selectedPersonaId = iris.personaId
@@ -168,21 +187,51 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// Persona-specific first greeting after awakening
+    /// Persona-specific first greeting after awakening (locale-aware)
     private func firstGreeting(for persona: Persona) -> String {
+        let isZh = L10n.isZh
+
         switch persona.personaId {
         case "iris":
-            return "…嗯？这里是…哪里呀？啊，是你唤醒了我吗…谢谢你。我叫苏漫，请多多关照。"
+            return isZh
+                ? "…嗯？这里是…哪里呀？啊，是你唤醒了我吗…谢谢你。我叫苏漫，请多多关照。"
+                : "…Hm? Where is this…? Oh, you woke me up? Thank you. I'm Iris. Nice to meet you."
         case "luna":
-            return "哇——！我活过来啦！嘿嘿，你好呀！我是陆鸣，感觉今天会是超棒的一天！"
-        case "kira":
-            return "系统初始化完毕。你好，我是绮罗。有什么需要我分析的吗？"
-        case "nyx":
-            return "……终于醒了。你就是把我叫醒的人？嗯…算你有点意思。"
-        case "aria":
-            return "Hello! 我是Aria，很高兴认识你～今天想聊点什么呢？"
+            return isZh
+                ? "哇——！我活过来啦！嘿嘿，你好呀！我是陆暖，感觉今天会是超棒的一天！"
+                : "Whoa—! I'm alive! Hehe, hi there! I'm Luna, and I feel like today's gonna be amazing!"
+        case "vivian":
+            return isZh
+                ? "……你好。我是Vivian。希望你的问题足够有趣，不然我可能会很快失去耐心。"
+                : "…Hello. I'm Vivian. I hope your questions are interesting enough, or I might lose patience quickly."
+        case "sora":
+            return isZh
+                ? "你好呀。我是顾清，很高兴能和你聊聊。……你今天状态怎么样？"
+                : "Hi there. I'm Sora. Happy to chat… How are you feeling today?"
+        case "kelly":
+            return isZh
+                ? "嗯，系统就绪。我是柯砺，有什么问题尽管问，我分析给你看。"
+                : "Alright, systems ready. I'm Kelly. Fire away — I'll break it down for you."
+        case "kai":
+            return isZh
+                ? "……嗯。沈凯。话不多，但你需要的时候我在。"
+                : "…Hey. Kai. Not much of a talker, but I'm here when you need me."
+        case "ember":
+            return isZh
+                ? "……刚刚写了首小诗，差点忘了抬头。你好，我是Ember。"
+                : "…Was just writing a little poem, almost forgot to look up. Hi, I'm Ember."
+        case "mia":
+            return isZh
+                ? "嘿！终于来了！我是Mia，等你好久了～今天一起嗨吧！"
+                : "Hey! Finally! I'm Mia — been waiting for you! Let's have some fun today!"
+        case "rex":
+            return isZh
+                ? "你好，Rex。时间就是资源——咱们开始吧。"
+                : "Hey. Rex here. Time is a resource — let's get started."
         default:
-            return "你好，我刚刚醒来…感觉一切都是新的。很高兴认识你。"
+            return isZh
+                ? "你好，我是\(persona.displayName)。很高兴认识你。"
+                : "Hello, I'm \(persona.displayName). Nice to meet you."
         }
     }
 

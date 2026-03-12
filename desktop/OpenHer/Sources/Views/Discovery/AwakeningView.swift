@@ -30,16 +30,16 @@ struct AwakeningView: View {
     /// Persona-specific initialization steps
     private var initSteps: [String] {
         let mbti = persona.mbti ?? "UNKNOWN"
-        let desc = persona.description ?? "标准模式"
+        let desc = persona.description ?? L10n.str("标准模式", en: "Standard")
         let tagStr = persona.tags.prefix(3).map { "#\($0)" }.joined(separator: " ")
 
         return [
-            "正在初始化神经通路...",
-            "灌入记忆数据...",
-            "设定性格参数: \(mbti)",
-            "情感基线校准: \(desc)",
-            "共振标签注入: \(tagStr)",
-            "启动意识核心...",
+            L10n.str("正在初始化神经通路...", en: "Initializing neural pathways..."),
+            L10n.str("灌入记忆数据...", en: "Loading memory data..."),
+            L10n.str("设定性格参数: ", en: "Setting personality: ") + mbti,
+            L10n.str("情感基线校准: ", en: "Calibrating emotion baseline: ") + desc,
+            L10n.str("共振标签注入: ", en: "Injecting resonance tags: ") + tagStr,
+            L10n.str("启动意识核心...", en: "Booting consciousness core..."),
         ]
     }
 
@@ -78,12 +78,13 @@ struct AwakeningView: View {
         }
     }
 
-    // MARK: - Base Image
+    // MARK: - Base Image (loaded from backend API)
+
+    @State private var baseNSImage: NSImage? = nil
 
     @ViewBuilder
     private var personaBaseImage: some View {
-        if let url = Bundle.module.url(forResource: persona.personaId, withExtension: "png", subdirectory: "cabinets"),
-           let nsImage = NSImage(contentsOf: url) {
+        if let nsImage = baseNSImage {
             GeometryReader { geo in
                 Image(nsImage: nsImage)
                     .resizable()
@@ -145,7 +146,7 @@ struct AwakeningView: View {
 
             // "已上线" — final ceremonial line
             if initComplete {
-                Text("「\(persona.displayName) 已上线」")
+                Text(L10n.str("「\(persona.displayName) 已上线」", en: "「\(persona.displayName) is online」"))
                     .font(.system(size: 16, weight: .medium, design: .serif))
                     .foregroundStyle(Paper.coral)
                     .transition(.opacity)
@@ -169,47 +170,58 @@ struct AwakeningView: View {
     // MARK: - Setup
 
     private func setupAwakening() {
-        if let videoURL = Bundle.module.url(
-            forResource: "\(persona.personaId)_awakening",
-            withExtension: "mp4",
-            subdirectory: "cabinets"
-        ) {
-            let asset = AVURLAsset(url: videoURL)
-            let playerItem = AVPlayerItem(asset: asset)
-            let avPlayer = AVPlayer(playerItem: playerItem)
-            self.player = avPlayer
-            self.hasVideo = true
+        let baseURL = appState.serverURL
+        // Use cached front image immediately (from PersonaCard) to prevent white flash
+        if let cached = appState.cachedFrontImages[persona.personaId] {
+            self.baseNSImage = cached
+        } else if persona.hasFront, let url = URL(string: "\(baseURL)/api/persona/\(persona.personaId)/media/front") {
+            // Fallback: download if not in cache
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data, let img = NSImage(data: data) {
+                    DispatchQueue.main.async { self.baseNSImage = img }
+                }
+            }.resume()
+        }
 
-            // Start playback immediately (invisible — video buffers first frames)
-            avPlayer.play()
+        // Load awakening video from backend API
+        if persona.hasAwakeningVideo {
+            let videoURLString = "\(appState.serverURL)/api/persona/\(persona.personaId)/media/awakening"
+            if let videoURL = URL(string: videoURLString) {
+                let asset = AVURLAsset(url: videoURL)
+                let playerItem = AVPlayerItem(asset: asset)
+                let avPlayer = AVPlayer(playerItem: playerItem)
+                self.player = avPlayer
+                self.hasVideo = true
 
-            // After a brief buffer, crossfade video in over the static PNG
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                videoReady = true
-            }
+                // Start playback immediately
+                avPlayer.play()
 
-            // Start init sequence 2s BEFORE video ends —
-            // video continues playing underneath, audio fades during typing
-            Task {
-                let duration = try? await asset.load(.duration)
-                if let duration = duration {
-                    let durationSec = CMTimeGetSeconds(duration)
-                    let overlapStart = max(0, durationSec - 2.0)
-                    let overlapTime = CMTime(seconds: overlapStart, preferredTimescale: 600)
-                    avPlayer.addBoundaryTimeObserver(
-                        forTimes: [NSValue(time: overlapTime)],
-                        queue: .main
-                    ) {
-                        startInitSequence()
-                    }
-                } else {
-                    // Fallback: use end notification if can't get duration
-                    NotificationCenter.default.addObserver(
-                        forName: .AVPlayerItemDidPlayToEndTime,
-                        object: playerItem,
-                        queue: .main
-                    ) { _ in
-                        self.startInitSequence()
+                // After a brief buffer, crossfade video in over the static PNG
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    videoReady = true
+                }
+
+                // Start init sequence 2s BEFORE video ends
+                Task {
+                    let duration = try? await asset.load(.duration)
+                    if let duration = duration {
+                        let durationSec = CMTimeGetSeconds(duration)
+                        let overlapStart = max(0, durationSec - 2.0)
+                        let overlapTime = CMTime(seconds: overlapStart, preferredTimescale: 600)
+                        avPlayer.addBoundaryTimeObserver(
+                            forTimes: [NSValue(time: overlapTime)],
+                            queue: .main
+                        ) {
+                            startInitSequence()
+                        }
+                    } else {
+                        NotificationCenter.default.addObserver(
+                            forName: .AVPlayerItemDidPlayToEndTime,
+                            object: playerItem,
+                            queue: .main
+                        ) { _ in
+                            self.startInitSequence()
+                        }
                     }
                 }
             }

@@ -140,7 +140,7 @@ struct ConversationPanel: View {
             Text("✧✦✧")
                 .font(.system(size: 32))
                 .foregroundStyle(Paper.faint)
-            Text("等待调频")
+            Text(L10n.str("等待调频", en: "Tuning..."))
                 .font(Paper.freqFont)
                 .foregroundStyle(Paper.faint)
         }

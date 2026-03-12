@@ -1,6 +1,6 @@
 ---
 name: weather
-description: Get current weather and forecasts (no API key required).
+description: Get current weather and forecasts for the user's location (no API key required).
 trigger: tool
 executor: sandbox
 homepage: https://wttr.in/:help
@@ -9,48 +9,42 @@ metadata: { "openclaw": { "emoji": "🌤️", "requires": { "bins": ["curl"] } }
 
 # Weather
 
-Two free services, no API keys needed.
+Query weather using wttr.in (free, no API key).
 
-## wttr.in (primary)
+## Location detection priority
 
-Quick one-liner:
+1. If the user specifies a city → use it directly
+2. Otherwise → auto-detect via IP geolocation:
 
 ```bash
-curl -s "wttr.in/London?format=3"
-# Output: London: ⛅️ +8°C
+CITY=$(curl -s --connect-timeout 3 ipinfo.io/city 2>/dev/null)
+[ -z "$CITY" ] && CITY="Shanghai"
+curl -s "wttr.in/${CITY}?format=%l:+%c+%t+%h+%w"
 ```
 
-Compact format:
+## Common patterns
+
+Compact one-liner (auto-detect location):
 
 ```bash
-curl -s "wttr.in/London?format=%l:+%c+%t+%h+%w"
-# Output: London: ⛅️ +8°C 71% ↙5km/h
+curl -s "wttr.in/$(curl -s --connect-timeout 3 ipinfo.io/city 2>/dev/null || echo Shanghai)?format=%l:+%c+%t+%h+%w"
 ```
 
-Full forecast:
+User specifies city:
 
 ```bash
-curl -s "wttr.in/London?T"
+curl -s "wttr.in/Beijing?format=%l:+%c+%t+%h+%w"
+```
+
+Full forecast (multi-day):
+
+```bash
+curl -s "wttr.in/$(curl -s --connect-timeout 3 ipinfo.io/city 2>/dev/null || echo Shanghai)?T&lang=zh"
 ```
 
 Format codes: `%c` condition · `%t` temp · `%h` humidity · `%w` wind · `%l` location · `%m` moon
 
 Tips:
-
 - URL-encode spaces: `wttr.in/New+York`
-- Airport codes: `wttr.in/JFK`
-- Units: `?m` (metric) `?u` (USCS)
+- Chinese output: add `&lang=zh`
 - Today only: `?1` · Current only: `?0`
-- PNG: `curl -s "wttr.in/Berlin.png" -o /tmp/weather.png`
-
-## Open-Meteo (fallback, JSON)
-
-Free, no key, good for programmatic use:
-
-```bash
-curl -s "https://api.open-meteo.com/v1/forecast?latitude=51.5&longitude=-0.12&current_weather=true"
-```
-
-Find coordinates for a city, then query. Returns JSON with temp, windspeed, weathercode.
-
-Docs: https://open-meteo.com/en/docs

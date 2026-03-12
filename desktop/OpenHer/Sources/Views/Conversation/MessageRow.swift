@@ -29,10 +29,10 @@ struct MessageRow: View {
                             Image(systemName: "exclamationmark.circle")
                                 .font(.system(size: 11))
                                 .foregroundStyle(Paper.coral)
-                            Text("发送失败")
+                            Text(L10n.str("发送失败", en: "Failed"))
                                 .font(Paper.tinyFont)
                                 .foregroundStyle(Paper.coral)
-                            Button("重试") {
+                            Button(L10n.str("重试", en: "Retry")) {
                                 onRetry?()
                             }
                             .font(Paper.tinyFont)

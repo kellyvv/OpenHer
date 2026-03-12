@@ -785,6 +785,44 @@ class ChatAgent:
         """
         await self._turn_lock.acquire()
         try:
+            # ── Step -1: Task skill routing (before persona engine) ──
+            if self.skill_engine:
+                skill_defs = self.skill_engine.build_skill_declarations()
+                if skill_defs:
+                    routing_resp = None
+                    try:
+                        routing_resp = await self.llm.chat(
+                            [ChatMessage(role="user", content=user_message)],
+                            tools=skill_defs,
+                            tool_choice="auto",
+                        )
+                    except Exception as e:
+                        print(f"  [skill] ⚠ Tool routing failed ({e}), fallback to persona engine")
+                    if routing_resp and routing_resp.tool_calls:
+                        tool_name = routing_resp.tool_calls[0]["name"]
+                        print(f"  [skill] 🔧 Tool call (stream): {tool_name}")
+                        try:
+                            result = await self.skill_engine.execute(tool_name, user_message, self.llm)
+                        except Exception as e:
+                            print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
+                            result = None
+                        if result is not None:
+                            try:
+                                reply = await self._express_wrap(result, user_message)
+                            except Exception as e:
+                                print(f"  [skill] ❌ express_wrap() failed ({e})")
+                                reply = result.output.get("stdout") or "出了点问题"
+                            self.history.append(ChatMessage(role="user", content=user_message))
+                            self.history.append(ChatMessage(role="assistant", content=reply))
+                            if len(self.history) > self.max_history:
+                                self.history = self.history[-self.max_history:]
+                            self._log_task(tool_name, user_message, result.output, reply)
+                            # Wrap in markers that stream_to_ws/output_router expects
+                            yield f"【最终回复】\n{reply}\n【表达方式】\n文字"
+                            return
+                        # execute() failed → result is None → fall through to persona engine
+
+            # ── Step 0: persona engine (zero changes below this line) ──
             self._turn_count += 1
             self._turn_used_fallback = False
             now = time.time()

@@ -472,6 +472,8 @@ class PersonaInfo(BaseModel):
     tags: list[str]
     description: str
     avatar_url: Optional[str] = None
+    has_front: bool = False           # has idimage/front.png
+    has_awakening_video: bool = False  # has idimage/awakening.mp4
 
 
 # ──────────────────────────────────────────────────────────────
@@ -646,8 +648,17 @@ async def list_personas():
     personas = persona_loader.load_all()
     result = []
     avatar_svc = _get_avatar_service()
+    import re as _re_bio
+    _personas_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas")
     for pid, p in personas.items():
         avatar_path = avatar_svc.repo.get_avatar_path(pid)
+        # Extract first sentence only (YAML `>` folds multi-line bio into one string)
+        _raw_bio = p.bio.get("zh") or p.bio.get("en") or p.personality or ""
+        _first_sentence = _re_bio.split(r'[。！？\n]', _raw_bio)[0].strip()
+        # Check idimage/ for media assets
+        _idimage_dir = os.path.join(_personas_dir, pid, "idimage")
+        _has_front = os.path.isfile(os.path.join(_idimage_dir, "front.png"))
+        _has_video = os.path.isfile(os.path.join(_idimage_dir, "awakening.mp4"))
         result.append(PersonaInfo(
             persona_id=pid,
             name=p.name,
@@ -656,10 +667,33 @@ async def list_personas():
             gender=p.gender,
             mbti=p.mbti,
             tags=p.tags,
-            description=(p.bio.get("zh") or p.bio.get("en") or p.personality or "")[:120],
+            description=_first_sentence[:120],
             avatar_url=f"/api/avatar/{pid}" if avatar_path else None,
+            has_front=_has_front,
+            has_awakening_video=_has_video,
         ))
     return {"personas": [r.model_dump() for r in result]}
+
+
+@app.get("/api/persona/{persona_id}/media/{media_type}")
+async def get_persona_media(persona_id: str, media_type: str):
+    """
+    Serve persona media from idimage/ directory.
+    media_type: 'front', 'awakened', 'awakening'
+    """
+    _media_map = {
+        "front": ("front.png", "image/png"),
+        "awakened": ("awakened.png", "image/png"),
+        "awakening": ("awakening.mp4", "video/mp4"),
+    }
+    if media_type not in _media_map:
+        raise HTTPException(status_code=400, detail=f"Unknown media type: {media_type}")
+    filename, mime = _media_map[media_type]
+    _personas_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas")
+    file_path = os.path.join(_personas_dir, persona_id, "idimage", filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail=f"Media not found: {persona_id}/{media_type}")
+    return FileResponse(file_path, media_type=mime, filename=filename)
 
 
 @app.post("/api/chat")

@@ -9,7 +9,7 @@ struct InputLine: View {
     var body: some View {
         HStack(spacing: 12) {
             // Text input (no border, no box)
-            TextField("说点什么...", text: $text, axis: .vertical)
+            TextField(L10n.str("说点什么...", en: "Type something..."), text: $text, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(Paper.inputFont)
                 .foregroundStyle(Paper.herText)

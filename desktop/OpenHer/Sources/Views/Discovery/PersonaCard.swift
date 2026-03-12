@@ -1,18 +1,20 @@
 import SwiftUI
 
-/// Discovery persona sheet — fixed exhibit composition tuned for the cabinet reference.
+/// Discovery persona sheet — loads cabinet image from backend API.
 struct PersonaCard: View {
     let persona: Persona
     let onAwaken: () -> Void
+    @EnvironmentObject var appState: AppState
 
     @State private var isAwakening = false
+    @State private var cabinetNSImage: NSImage? = nil
 
     var body: some View {
         GeometryReader { geometry in
             let size = geometry.size
 
             ZStack(alignment: .bottom) {
-                // === Full-page persona background (cabinet + paper) ===
+                // === Full-page persona background (cabinet from API) ===
                 cabinetImage(size: size)
 
                 // === BOTTOM: Text overlay — pixel-matched to reference ===
@@ -22,18 +24,15 @@ struct PersonaCard: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onAppear { loadFrontImage() }
     }
 
-    // MARK: - Cabinet Image with Awakening Transition
+    // MARK: - Cabinet Image from Backend API
 
     @ViewBuilder
     private func cabinetImage(size: CGSize) -> some View {
-        let dormantURL = Bundle.module.url(forResource: persona.id, withExtension: "png", subdirectory: "cabinets")
-
-        if let url = dormantURL, let originalImage = NSImage(contentsOf: url) {
-            // Show dormant image only — no crossfade on awaken.
-            // AwakeningView will pick up from this same visual state.
-            Image(nsImage: originalImage)
+        if let nsImage = cabinetNSImage {
+            Image(nsImage: nsImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: size.width, height: size.height)
@@ -41,6 +40,26 @@ struct PersonaCard: View {
         } else {
             PaperBackground()
         }
+    }
+
+    /// Load front.png from backend (or cache). Caches in appState for AwakeningView reuse.
+    private func loadFrontImage() {
+        // Use cached image if available
+        if let cached = appState.cachedFrontImages[persona.personaId] {
+            self.cabinetNSImage = cached
+            return
+        }
+        guard persona.hasFront else { return }
+        let urlString = "\(appState.serverURL)/api/persona/\(persona.personaId)/media/front"
+        guard let url = URL(string: urlString) else { return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data, let img = NSImage(data: data) {
+                DispatchQueue.main.async {
+                    self.cabinetNSImage = img
+                    self.appState.cachedFrontImages[self.persona.personaId] = img
+                }
+            }
+        }.resume()
     }
 
     // MARK: - Awakening Action
@@ -88,7 +107,7 @@ struct PersonaCard: View {
 
             HStack(spacing: 6) {
                 ForEach(persona.tags.prefix(3), id: \.self) { tag in
-                    Text("#\(tag)")
+                    Text("#\(Self.localizedTag(tag))")
                         .font(.custom("Baskerville", size: 14))
                         .foregroundStyle(DiscoveryPalette.buttonText)
                         .padding(.horizontal, 11)
@@ -104,7 +123,7 @@ struct PersonaCard: View {
             Spacer().frame(height: 24)
 
             Button(action: triggerAwakening) {
-                Text("唤醒")
+                Text(L10n.str("唤醒", en: "Awaken"))
                     .font(.system(size: 22, weight: .medium, design: .serif))
                     .foregroundStyle(DiscoveryPalette.buttonText)
                     .shadow(color: DiscoveryPalette.buttonTextShadow.opacity(0.28), radius: 0.6, x: 0, y: 1)
@@ -201,7 +220,7 @@ struct PersonaCard: View {
 
     @ViewBuilder
     private var glassCabinet: some View {
-        if let nsImage = loadCabinetImage() {
+        if let nsImage = cabinetNSImage {
             let contentMode: ContentMode = nsImage.size.height > nsImage.size.width * 1.15 ? .fit : .fill
 
             Image(nsImage: nsImage)
@@ -287,16 +306,24 @@ struct PersonaCard: View {
         .shadow(color: Paper.herText.opacity(0.1), radius: 24, y: 16)
     }
 
-    /// Load the cabinet PNG for this persona from the bundle.
-    /// Looks for `cabinets/{personaId}.png` inside Bundle.module.
-    private func loadCabinetImage() -> NSImage? {
-        let url = Bundle.module.url(
-            forResource: persona.personaId,
-            withExtension: "png",
-            subdirectory: "cabinets"
-        )
-        guard let url = url else { return nil }
-        return NSImage(contentsOf: url)
+    // MARK: - Tag Localization
+
+    /// Map English tags to Chinese for zh locale
+    private static let tagMap: [String: String] = [
+        "gentle": "温柔", "poetic": "诗意", "dreamy": "梦幻",
+        "bright": "明朗", "bubbly": "活泼", "sweet": "甜美",
+        "quiet": "沉静", "observant": "细腻", "warm": "温暖",
+        "reliable": "可靠", "low-key warm": "内敛温暖",
+        "sharp-tongued": "毒舌", "restless": "不安分", "curious": "好奇",
+        "energetic": "活力", "spontaneous": "随性",
+        "decisive": "果断", "commanding": "威严", "strategic": "运筹帷幄",
+        "insightful": "洞察", "gentle-firm": "温和坚定", "deep": "深沉",
+        "sharp": "犀利", "witty": "机智", "secretly caring": "傲娇",
+    ]
+
+    static func localizedTag(_ tag: String) -> String {
+        guard L10n.isZh, let zh = tagMap[tag] else { return tag }
+        return zh
     }
 
     // MARK: - Helpers
@@ -316,8 +343,14 @@ struct PersonaCard: View {
                     }
                 }
             }
-            // Take only the first phrase (occupation)
-            let first = clean.components(separatedBy: "，").first ?? clean
+            // Take only the first phrase (occupation) — split by any sentence punctuation
+            var first = clean
+            for sep in ["，", "。", ",", ".", "；", "！", "？"] {
+                if let part = first.components(separatedBy: sep).first, part.count < first.count {
+                    first = part
+                    break
+                }
+            }
             parts.append(first)
         }
         return parts.joined(separator: " · ")
