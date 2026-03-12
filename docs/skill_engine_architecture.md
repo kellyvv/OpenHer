@@ -1,29 +1,32 @@
 # SkillEngine 统一改造架构说明
 
-> 本文档记录 SkillEngine v9 的完整架构设计，包括 Stage 1（骨架 + 人格技能迁移）和 Stage 2（Task Skill 零侵入集成）。
+> 本文档记录 SkillEngine v10 的完整架构设计，包括双层 Skill 模型、Task Skill 注入引擎模式、人格内敛 Skill 路径。
 
 ---
 
 ## 1. 核心架构：双层 Skill
 
-SkillEngine 将所有技能统一为 `SKILL.md` 格式，但运行时分为两条完全独立的执行路径：
+SkillEngine 将所有技能统一为 `SKILL.md` 格式，运行时分为两条执行路径：
 
 | 维度 | 任务 Skill（Task） | 人格内敛 Skill（Intrinsic） |
-|------|--------------------|-----------------------------|
+|------|--------------------|---------------------------|
 | **trigger** | `tool` | `modality` |
-| **典型例子** | weather、翻译、搜索、代码执行 | selfie_gen（自拍）、语音克隆 |
+| **典型例子** | weather、翻译、搜索、汇率 | selfie_gen（自拍）、语音克隆 |
 | **触发机制** | LLM function calling 路由（Step -1） | Express pass 涌现 modality（"照片"） |
 | **执行器** | `sandbox_executor`（shell 命令） | Python handler（`handler_fn` 入口点） |
-| **经过人格引擎** | ❌ early return | ✅ 完整 Critic→Feel→Express |
-| **记忆写入** | `task.db`（隔离 SQLite） | EverMemOS + Hebbian |
-| **回复生成** | `_express_wrap`（轻量 LLM 包装） | Express pass（完整人格表达） |
+| **经过人格引擎** | ✅ 注入 user_message → 完整 Critic→Feel→Express | ✅ 完整 Critic→Feel→Express |
+| **记忆写入** | history + EverMemOS（已知取舍） | EverMemOS + Hebbian |
+| **回复生成** | Feel→Express（完整人格表达，含真实数据） | Express pass（完整人格表达） |
 | **语义** | 用户要求"帮忙做的事" | 角色主动"想做的事" |
 
-### 为什么要分两层
+### 架构演进：从 bypass 到 inject
 
-人格内敛 Skill 是 Express pass 涌现的结果——角色通过 Feel（内心活动）产生表达需求，Express 选择 modality（"照片"），然后触发 selfie_gen。这是角色自我表达的延伸，必须经过完整人格引擎。
+**v9（旧）**：Task Skill 绕过人格引擎 → `_express_wrap` 轻量包装 → early return
+- 问题：角色语气弱、丢失具体数据、引擎状态断裂
 
-任务 Skill 是纯工具执行，用户说"查天气"不需要角色"内心活动"，直接路由→执行→用角色口吻包装结果即可。如果强行走人格引擎，Critic/Feel/Express 处理"查天气"会产生无意义的内心活动和 Hebbian 学习记录。
+**v10（当前）**：Task Skill 执行后 → stdout 注入 `user_message` → fall through 到人格引擎
+- 优势：角色一致性、数据完整性、引擎状态正常更新
+- 取舍：history/EverMemOS 存入含注入数据的合成消息（见第 5 节）
 
 ---
 
@@ -41,41 +44,20 @@ SKILL.md
     └── 完整技能文档（handler 提示词 / shell 命令示例）
 ```
 
-### 设计理由
-
 - **L1 永远加载**：启动时读取所有 SKILL.md frontmatter，构建 `modality_skills` 映射和 `tool_skills` 列表
-- **L2 按需加载**：body 可能很大（几 KB 的提示词），只在技能首次执行时加载
+- **L2 按需加载**：body 可能很大，只在技能首次执行时加载
 - **activate() 幂等**：重复调用不会重新读文件
-
-### Skill dataclass 关键属性
-
-```python
-@dataclass
-class Skill:
-    skill_id: str          # 目录名
-    name: str
-    description: str       # L1 路由用（function calling description）
-    trigger: str           # "modality" | "tool" | "cron" | "manual"
-    modality: str          # Express modality 绑定（如 "照片"）
-    executor: str          # "handler" | "sandbox"
-    handler_fn: str        # Python 入口（如 "skills.selfie_gen.handler.generate_selfie"）
-    body: Optional[str]    # L2 指令，None = 未激活
-
-    @property
-    def is_activated(self) -> bool:
-        return self.body is not None
-```
 
 ---
 
 ## 3. 执行路径
 
-### Task Skill 端到端路径
+### Task Skill 端到端路径（v10 inject 模式）
 
 ```
 "帮我看下北京天气"
   ↓
-_chat_inner() [under turn_lock]
+chat_stream() / _chat_inner() [under turn_lock]
   ↓
 Step -1: build_skill_declarations() → [{name:"weather", description:...}]
   ↓
@@ -93,20 +75,16 @@ skill_engine.execute("weather", user_intent, llm)
   ↓
 SkillExecutionResult(success=True, output={stdout, stderr, command})
   ↓
-_express_wrap(result, user_message)
-  ├─ LLM([system:persona_section[:500], user:工具输出+原话])
-  └─ 三层兜底：content or stdout or "（查询完成）"
+stdout 注入 user_message:
+  user_message = f"{user_message}\n\n[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n{stdout[:800]}"
   ↓
-_log_task → task.db (隔离)
+Fall through → Step 0: Critic → Feel → Express → Hebbian → EverMemOS
   ↓
-history 追加 + max_history 截断
-  ↓
-return {"reply": "北京今天22度晴天哦～", "modality": "文字"}
-  ↓
-Critic / Feel / Express / Hebbian / EVERMEMOS 从未执行 ✓
+角色用自己的语气回复，融入真实数据：
+"今天北京+14°C，湿度47%，风速↓14km/h，挺适合出去走走的呢~"
 ```
 
-### 人格内敛 Skill 路径（对比）
+### 人格内敛 Skill 路径（不变）
 
 ```
 Express pass 涌现 modality="照片"
@@ -122,125 +100,130 @@ Hebbian 学习 + EverMemOS 记忆 ✓
 
 ---
 
-## 4. Guard Clause 设计
+## 4. Guard Clause 设计（v10）
 
 ```python
-async def _chat_inner(self, user_message: str) -> dict:
-    # ── Step -1: Task skill routing ──
-    # 位置：_turn_count += 1 之前（所有人格引擎步骤之前）
-    if self.skill_engine:
-        skill_defs = self.skill_engine.build_skill_declarations()
-        if skill_defs:
-            # 路由 LLM 调用
-            ...
-            if routing_resp and routing_resp.tool_calls:
-                # execute → express_wrap → return
-                ...
-                return {"reply": reply, "modality": "文字"}
+async def chat_stream(self, user_message: str) -> AsyncIterator[str]:
+    await self._turn_lock.acquire()
+    try:
+        # ── Step -1: Task skill routing ──
+        if self.skill_engine:
+            skill_defs = self.skill_engine.build_skill_declarations()
+            if skill_defs:
+                routing_resp = await self.llm.chat(...)   # 三层异常保护
+                if routing_resp and routing_resp.tool_calls:
+                    result = await self.skill_engine.execute(...)
+                    if result is not None:
+                        stdout = result.output.get("stdout", "").strip()
+                        if stdout:
+                            user_message = f"{user_message}\n\n[...]\n{stdout[:800]}"
+                            # 不 return，继续到 Step 0
+                # fall through（无论成功与否）
 
-    # ── Step 0: 人格引擎（零改动）──
-    self._turn_count += 1
-    ...
+        # ── Step 0: 人格引擎（零改动）──
+        self._turn_count += 1
+        ...
 ```
 
-### 为什么在 _turn_count 之前
+### 注入 vs 旧 bypass 对比
 
-| 状态变量 | 工具路径是否更新 | 理由 |
-|----------|----------------|------|
-| `_turn_count` | ❌ 不递增 | EverMemOS `if _turn_count == 1` 仍正确触发于第一个人格轮次 |
-| `_last_active` | ❌ 不更新 | 人格节奏 EMA 只统计人格轮次 |
-| `_search_turn_id` | ❌ 不触碰 | 异步搜索并发保护不受影响 |
+| 状态变量 | v9 bypass | v10 inject |
+|----------|-----------|------------|
+| `_turn_count` | ❌ 不递增 | ✅ 正常递增 |
+| `_last_active` | ❌ 不更新 | ✅ 正常更新 |
+| Critic / Feel / Express | ❌ 跳过 | ✅ 完整运行 |
+| Hebbian / EverMemOS | ❌ 不触发 | ✅ 正常触发（含注入数据） |
+| Lock release | ✅ finally | ✅ finally |
 
 ### 三层异常处理
 
 ```
-第一层：路由 LLM 失败 → 静默回退人格引擎
+第一层：路由 LLM 失败 → 静默回退人格引擎（用户不知道有 tool 尝试）
 第二层：execute() 失败 → result=None → 落穿到人格引擎
-第三层：express_wrap() 失败 → 用 stdout 兜底，不丢弃已有数据
+第三层：stdout 为空 → user_message 不变 → 引擎按普通消息处理
 ```
-
-设计原则：**路由/执行失败 = 回退人格引擎**（用户不知道有 tool 尝试），**包装失败 = 给原始数据**（已拿到数据不应丢弃）。
 
 ---
 
-## 5. 记忆隔离
+## 5. 已知取舍（下游污染）
+
+v10 inject 模式下，`user_message` 被重绑定后流入以下位置：
+
+| 位置 | 内容 | 影响 |
+|------|------|------|
+| `self.history` | 合成消息存入 history[-4:] | ⚠️ 中 — 后续 Express light context 含注入文本 |
+| `_evermemos_store_bg` | 合成消息写入长期记忆 | ⚠️ 较高 — 检索时含 stdout 被当作用户话语 |
+| `_evermemos_search_bg` | 向量搜索 query 含 stdout | ⚠️ 低 |
+| `_last_action['user_input']` | crystallization 记录合成文本 | ⚠️ 低 |
+
+**Phase D 优化方向**：保留 `original_msg`，仅修改传入 Feel/Express 的版本，用 `original_msg` 写入 history/EverMemOS。需修改引擎内部。
+
+---
+
+## 6. 记忆隔离
 
 ```
 chat.db (ChatLogStore)     ← 前端展示历史
 task.db (TaskLogStore)     ← 工具执行记录（隔离）
-EverMemOS                  ← 人格长期记忆（仅人格轮次写入）
-agent.history              ← 工作记忆（工具轮和人格轮都写入，用于上下文）
-Hebbian                    ← 人格学习（仅人格轮次触发）
-```
-
-`task.db` schema：
-
-```sql
-CREATE TABLE task_executions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    persona_id TEXT NOT NULL,
-    skill_id TEXT NOT NULL,
-    user_input TEXT NOT NULL,
-    command TEXT DEFAULT '',
-    stdout TEXT DEFAULT '',
-    stderr TEXT DEFAULT '',
-    success INTEGER NOT NULL DEFAULT 0,
-    reply TEXT DEFAULT '',
-    created_at REAL NOT NULL
-);
+EverMemOS                  ← 人格长期记忆（v10: 工具轮也写入，含注入数据）
+agent.history              ← 工作记忆（工具轮和人格轮都写入）
+Hebbian                    ← 人格学习（v10: 工具轮也触发）
 ```
 
 ---
 
-## 6. LLM Provider 扩展
+## 7. SKILL.md 编写规范
 
-```python
-# ChatResponse 新增
-tool_calls: Optional[list[dict]] = None  # [{name, arguments}]
+### Task Skill（trigger: tool）
 
-# chat() 签名扩展
-async def chat(self, messages, temperature=None, max_tokens=None,
-               tools=None, tool_choice=None) -> ChatResponse
+SKILL.md 的 body 是 LLM 生成 shell 命令的上下文。编写规则：
+
+1. **命令必须带 `--connect-timeout`** — 防止网络挂起
+2. **命令必须带 `|| echo "错误提示"` 兜底** — 确保 stdout 永不为空
+3. **不使用嵌套 `$(...)` 子 shell** — 特殊字符会破坏 URL
+4. **城市名/参数 URL 编码空格用 `+`** — 如 `New+York`
+
+示例（weather SKILL）：
+
+```bash
+# 用户指定城市
+curl -s --connect-timeout 5 "wttr.in/Beijing?format=%l:+%c+%t+%h+%w" || echo "天气查询暂时不可用"
+
+# 未指定城市（IP 自动定位）
+curl -s --connect-timeout 5 "wttr.in/?format=%l:+%c+%t+%h+%w" || echo "天气查询暂时不可用"
 ```
-
-- 5 个 provider（DashScope/Moonshot/OpenAI/DeepSeek/Ollama）全部继承 `OpenAICompatProvider`，改一处全生效
-- `if tools:` 空列表不传 API（兼容不支持 function calling 的 provider）
-- `chat_stream()` 不改（streaming 不支持 tools，已知限制）
 
 ---
 
-## 7. 文件清单
+## 8. 文件清单
 
 ```
 agent/skills/
 ├── __init__.py          # 只导出 SkillEngine
 ├── skill_engine.py      # 统一引擎（L1/L2 + build_skill_declarations + execute）
-├── sandbox_executor.py  # [NEW] shell 命令沙盒执行
-└── task_log_store.py    # [NEW] task.db 隔离存储
+├── sandbox_executor.py  # shell 命令沙盒执行
+└── task_log_store.py    # task.db 隔离存储
 
 providers/llm/
-├── base.py              # [MODIFY] ChatResponse.tool_calls + chat() tools
-└── client.py            # [MODIFY] 透传 tools/tool_choice
+├── base.py              # ChatResponse.tool_calls + chat() tools
+└── client.py            # 透传 tools/tool_choice
 
 skills/weather/
-└── SKILL.md             # [MODIFY] trigger:tool + executor:sandbox
+└── SKILL.md             # trigger:tool + executor:sandbox
 
-agent/chat_agent.py      # [MODIFY] guard clause + _express_wrap + _log_task
-pytest.ini               # [NEW] asyncio_mode + testpaths
-tests/test_skill_engine.py  # [MODIFY] +9 Stage 2 测试
+agent/chat_agent.py      # guard clause + inject-into-engine（_express_wrap 已删除）
 ```
 
 ---
 
-## 8. 审查教训（10 轮 24 Bug）
+## 9. 审查教训（10 轮 24 Bug + v10 迭代）
 
 | 教训 | 代表 Bug |
-|------|---------|
+|------|---------| 
 | **所有 LLM 调用用 [system, user] 双消息** | Bug 1, 4: system-only 消息部分 provider 拒绝 |
 | **工具路径必须有异常兜底** | Bug 6, 9: LLM 调用失败不能阻断人格引擎 |
 | **边界值永远检查** | Bug 7, 15: 空命令、空 body 静默成功 |
 | **大小写要归一化** | Bug 14: LLM 返回 "Weather" vs "weather" |
-| **decode 要加 errors='replace'** | Bug 16: 非 UTF-8 输出会崩溃 |
-| **测试需要 fixture + import** | Bug 17-19: 测试文件缺 fixture 定义和 import |
-| **确定性任务用低温度** | Bug 21: 命令生成用 0.92 会不稳定 |
-| **pytest 配置必须限制 testpaths** | Bug 20: vendor 测试会被误收集 |
+| **SKILL 命令必须自带 fallback** | v10: curl 失败时 stdout 为空导致数据丢失 |
+| **不用嵌套子 shell 做城市检测** | v10: VPN 城市名含空格/引号破坏 URL |
+| **stdout 截断防 token 爆** | v10: 长 stdout 膨胀 user_message 超 token 预算 |

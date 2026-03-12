@@ -536,18 +536,15 @@ class ChatAgent:
                         print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
                         result = None
                     if result is not None:
-                        try:
-                            reply = await self._express_wrap(result, user_message)
-                        except Exception as e:
-                            print(f"  [skill] ❌ express_wrap() failed ({e})")
-                            reply = result.output.get("stdout") or "出了点问题"
-                        self.history.append(ChatMessage(role="user", content=user_message))
-                        self.history.append(ChatMessage(role="assistant", content=reply))
-                        if len(self.history) > self.max_history:
-                            self.history = self.history[-self.max_history:]
-                        self._log_task(tool_name, user_message, result.output, reply)
-                        return {"reply": reply, "modality": "文字"}
-                    # execute() failed → result is None → fall through to persona engine
+                        stdout = result.output.get("stdout", "").strip()
+                        if stdout:
+                            user_message = (
+                                f"{user_message}\n\n"
+                                f"[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n"
+                                f"{stdout[:800]}"
+                            )
+                            print(f"  [skill] ✅ 数据已注入 ({len(stdout)} chars), 继续引擎处理")
+                    # fall through to persona engine (with or without injected data)
 
         # ── Step 0: persona engine (zero changes below this line) ──
         self._turn_count += 1
@@ -742,23 +739,8 @@ class ChatAgent:
             result['image_path'] = image_path
         return result
 
-    async def _express_wrap(self, result, user_msg: str) -> str:
-        """Wrap tool execution result in persona voice. Runs outside persona engine."""
-        stdout = result.output.get("stdout", "")
-        error = result.output.get("stderr", "")
-        output_text = stdout if result.success else f"执行失败: {error}"
-
-        system_msg = ChatMessage(
-            role="system",
-            content=self.persona.build_system_prompt_section()[:500],
-        )
-        user_msg_obj = ChatMessage(
-            role="user",
-            content=f"工具输出：{output_text[:500]}\n用户原话：{user_msg}\n\n"
-                    "用你的语气把工具结果包装成一句自然回复，简短自然，不要机械报告数据。",
-        )
-        resp = await self.llm.chat([system_msg, user_msg_obj])
-        return resp.content or result.output.get("stdout", "") or "（查询完成）"
+    # _express_wrap removed — SKILL results now injected into user_message
+    # and processed through the full persona engine (Feel → Express).
 
     def _log_task(self, skill_id: str, user_input: str, output: dict, reply: str) -> None:
         """Log task execution to task.db (isolated from persona memory)."""
@@ -807,20 +789,15 @@ class ChatAgent:
                             print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
                             result = None
                         if result is not None:
-                            try:
-                                reply = await self._express_wrap(result, user_message)
-                            except Exception as e:
-                                print(f"  [skill] ❌ express_wrap() failed ({e})")
-                                reply = result.output.get("stdout") or "出了点问题"
-                            self.history.append(ChatMessage(role="user", content=user_message))
-                            self.history.append(ChatMessage(role="assistant", content=reply))
-                            if len(self.history) > self.max_history:
-                                self.history = self.history[-self.max_history:]
-                            self._log_task(tool_name, user_message, result.output, reply)
-                            # Wrap in markers that stream_to_ws/output_router expects
-                            yield f"【最终回复】\n{reply}\n【表达方式】\n文字"
-                            return
-                        # execute() failed → result is None → fall through to persona engine
+                            stdout = result.output.get("stdout", "").strip()
+                            if stdout:
+                                user_message = (
+                                    f"{user_message}\n\n"
+                                    f"[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n"
+                                    f"{stdout[:800]}"
+                                )
+                                print(f"  [skill] ✅ 数据已注入 ({len(stdout)} chars), 继续引擎处理")
+                        # fall through to persona engine (with or without injected data)
 
             # ── Step 0: persona engine (zero changes below this line) ──
             self._turn_count += 1
