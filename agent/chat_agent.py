@@ -207,6 +207,7 @@ class ChatAgent:
         self._prev_signals: Optional[dict] = None  # Previous turn signals for trend injection
         self._last_reward: float = 0.0
         self._last_modality: str = ""
+        self._last_image_path: Optional[str] = None
         self._last_drive_satisfaction: dict = {}
         # ── Concurrency lock (R2: serialize chat/stream/proactive_tick) ──
         self._turn_lock = asyncio.Lock()
@@ -692,6 +693,7 @@ class ChatAgent:
         if self.skill_engine and modality in self.skill_engine.modality_skills:
             result = await self._execute_skill(modality, express_response.content)
             image_path = result.output.get("image_path") if result else None
+            self._last_image_path = image_path
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -932,9 +934,7 @@ class ChatAgent:
             if self.skill_engine and modality in self.skill_engine.modality_skills:
                 result = await self._execute_skill(modality, raw_text)
                 image_path = result.output.get("image_path") if result else None
-                if image_path:
-                    # Yield a special marker for the frontend to pick up
-                    yield f"\n[__IMAGE__:{image_path}]"
+                self._last_image_path = image_path
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
@@ -992,8 +992,19 @@ class ChatAgent:
                 generate_selfie,
             )
 
+            # LLM reads SKILL.md body → generates structured prompt for image API
+            system_msg = ChatMessage("system",
+                f"根据以下技能文档和角色回复上下文，生成照片的结构化描述。\n"
+                f"只输出结构化内容，不要多余解释。\n\n{skill.body}"
+            )
+            user_msg = ChatMessage("user",
+                f"角色回复：{raw_output}\n角色名：{self.persona.name}"
+            )
+            prompt_resp = await self.llm.chat([system_msg, user_msg], temperature=0.3)
+            structured_output = prompt_resp.content
+
             # Parse structured output: description + aspect_ratio
-            parsed = parse_photo_output(raw_output)
+            parsed = parse_photo_output(structured_output)
             scene = parsed['description']
             aspect_ratio = parsed['aspect_ratio']
 
@@ -1264,6 +1275,7 @@ class ChatAgent:
             "search_timeout_rate": round(search_timeout_rate, 3),
             "fallback_rate": round(fallback_rate, 3),
             "relevant_injection_ratio": round(relevant_injection_ratio, 3),
+            "image_path": self._last_image_path,
         }
 
     # ────────────────────────────────────────────

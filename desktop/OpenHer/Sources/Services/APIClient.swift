@@ -63,11 +63,13 @@ actor APIClient {
                 content: userMsg,
                 modality: "文字"
             ))
+            let imageURL = dict["image_url"] as? String
             result.append(ChatMessage(
                 id: "h_a_\(msgId)",
                 role: .assistant,
                 content: agentReply,
-                modality: modality
+                modality: modality,
+                imageURL: imageURL
             ))
         }
         return result

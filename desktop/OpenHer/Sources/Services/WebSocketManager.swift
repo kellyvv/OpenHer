@@ -101,10 +101,12 @@ final class WebSocketManager: ObservableObject {
         case "chat_start":
             sessionId = json["session_id"] as? String
             streamingContent = ""
-            appState?.isTyping = true
 
         case "chat_chunk":
             if let chunk = json["content"] as? String {
+                if streamingContent.isEmpty {
+                    appState?.isTyping = true
+                }
                 streamingContent += chunk
                 updateStreamingMessage()
             }
@@ -124,9 +126,10 @@ final class WebSocketManager: ObservableObject {
                 print("[chat_end] personal_memories: \(pm)")
             }
             let engineStatus = parseEngineStatus(json)
+            let imageURL = json["image_url"] as? String
 
             // Finalize the assistant message
-            finalizeMessage(reply: reply, modality: modality, engineStatus: engineStatus)
+            finalizeMessage(reply: reply, modality: modality, imageURL: imageURL, engineStatus: engineStatus)
 
             // Update mood from engine status
             if let status = engineStatus {
@@ -197,7 +200,7 @@ final class WebSocketManager: ObservableObject {
         }
     }
 
-    private func finalizeMessage(reply: String, modality: String, engineStatus: EngineStatus?) {
+    private func finalizeMessage(reply: String, modality: String, imageURL: String? = nil, engineStatus: EngineStatus?) {
         guard let appState = appState else { return }
 
         let streamingId = "streaming_current"
@@ -207,6 +210,7 @@ final class WebSocketManager: ObservableObject {
                 role: .assistant,
                 content: reply,
                 modality: modality,
+                imageURL: imageURL,
                 engineStatus: engineStatus
             )
         } else {
@@ -214,6 +218,7 @@ final class WebSocketManager: ObservableObject {
                 role: .assistant,
                 content: reply,
                 modality: modality,
+                imageURL: imageURL,
                 engineStatus: engineStatus
             )
             appState.messages.append(msg)

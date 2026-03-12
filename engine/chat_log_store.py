@@ -39,12 +39,19 @@ class ChatLogStore:
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 modality TEXT DEFAULT '文字',
+                image_url TEXT DEFAULT NULL,
                 created_at REAL NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_chat_lookup
                 ON chat_messages(client_id, persona_id, created_at);
         """)
         self._conn.commit()
+        # Migration: add image_url column if missing (existing databases)
+        try:
+            self._conn.execute("SELECT image_url FROM chat_messages LIMIT 0")
+        except sqlite3.OperationalError:
+            self._conn.execute("ALTER TABLE chat_messages ADD COLUMN image_url TEXT DEFAULT NULL")
+            self._conn.commit()
 
     def save_turn(
         self,
@@ -53,17 +60,18 @@ class ChatLogStore:
         user_msg: str,
         agent_reply: str,
         modality: str = "文字",
+        image_url: str | None = None,
     ) -> None:
         """Save one conversation turn (user + assistant messages)."""
         now = time.time()
         self._conn.executemany(
             """
-            INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO chat_messages (client_id, persona_id, role, content, modality, image_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             [
-                (client_id, persona_id, "user", user_msg, "文字", now),
-                (client_id, persona_id, "assistant", agent_reply, modality, now),
+                (client_id, persona_id, "user", user_msg, "文字", None, now),
+                (client_id, persona_id, "assistant", agent_reply, modality, image_url, now),
             ],
         )
         self._conn.commit()
@@ -91,7 +99,7 @@ class ChatLogStore:
         if before_id is not None:
             rows = self._conn.execute(
                 """
-                SELECT id, role, content, modality, created_at
+                SELECT id, role, content, modality, image_url, created_at
                 FROM chat_messages
                 WHERE client_id = ? AND persona_id = ? AND id < ?
                 ORDER BY id DESC
@@ -102,7 +110,7 @@ class ChatLogStore:
         else:
             rows = self._conn.execute(
                 """
-                SELECT id, role, content, modality, created_at
+                SELECT id, role, content, modality, image_url, created_at
                 FROM chat_messages
                 WHERE client_id = ? AND persona_id = ?
                 ORDER BY id DESC
@@ -118,6 +126,7 @@ class ChatLogStore:
                 "role": r["role"],
                 "content": r["content"],
                 "modality": r["modality"],
+                "image_url": r["image_url"],
                 "created_at": r["created_at"],
             }
             for r in reversed(rows)

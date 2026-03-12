@@ -47,18 +47,9 @@ struct MessageRow: View {
                 }
             }
 
-            // Hover timestamp — only visible on mouse hover
-            if isHovering {
-                Text(formattedTime)
-                    .font(Paper.tinyFont)
-                    .foregroundStyle(Paper.faint)
-                    .transition(.opacity)
-            }
-        }
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isHovering = hovering
-            }
+            Text(formattedTime)
+                .font(Paper.tinyFont)
+                .foregroundStyle(Paper.faint)
         }
     }
 
@@ -81,14 +72,28 @@ struct MessageRow: View {
 
         case "照片":
             VStack(alignment: .leading, spacing: 8) {
-                RoundedRectangle(cornerRadius: 4)
-                    .strokeBorder(Paper.ink, lineWidth: 0.5)
-                    .frame(width: 200, height: 150)
-                    .background(Paper.faint.opacity(0.1))
-                    .overlay(
-                        Image(systemName: "photo")
-                            .foregroundStyle(Paper.faint)
-                    )
+                if let urlStr = message.imageURL,
+                   let url = URL(string: "http://localhost:8800" + urlStr) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        case .failure:
+                            photoPlaceholder
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 200, height: 150)
+                        @unknown default:
+                            photoPlaceholder
+                        }
+                    }
+                } else {
+                    photoPlaceholder
+                }
 
                 if !message.content.isEmpty {
                     Text(message.content)
@@ -127,5 +132,16 @@ struct MessageRow: View {
                 .lineSpacing(4)
                 .opacity(isFailed ? 0.5 : 1.0)
         }
+    }
+
+    private var photoPlaceholder: some View {
+        RoundedRectangle(cornerRadius: 4)
+            .strokeBorder(Paper.ink, lineWidth: 0.5)
+            .frame(width: 200, height: 150)
+            .background(Paper.faint.opacity(0.1))
+            .overlay(
+                Image(systemName: "photo")
+                    .foregroundStyle(Paper.faint)
+            )
     }
 }

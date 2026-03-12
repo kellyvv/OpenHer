@@ -1056,10 +1056,19 @@ async def websocket_chat(ws: WebSocket):
 
                 if not stream_error:
                     status = agent.get_status()
+                    image_path = status.pop("image_path", None)
+                    if image_path:
+                        # Extract persona_id/filename from .cache/selfie/persona_id/hash.png
+                        parts = image_path.replace("\\", "/").split("/")
+                        selfie_idx = parts.index("selfie") if "selfie" in parts else -1
+                        image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else f"/api/selfie/{os.path.basename(image_path)}"
+                    else:
+                        image_url = None
                     await ws.send_json({
                         "type": "chat_end",
                         "reply": _clean_reply_text,   # clean full reply for frontend
                         "modality": status.get("modality", ""),
+                        "image_url": image_url,
                         **status,
                     })
                     # Log conversation for debugging
@@ -1077,6 +1086,7 @@ async def websocket_chat(ws: WebSocket):
                             user_msg=text,
                             agent_reply=_clean_reply_text,
                             modality=status.get("modality", "文字") if not stream_error else "文字",
+                            image_url=image_url,
                         )
                     except Exception as e:
                         print(f"  [chat_log] save error: {e}")

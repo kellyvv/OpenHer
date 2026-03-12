@@ -136,7 +136,7 @@ async def generate_selfie(
     try:
         provider = get_image_gen(
             cache_dir=str(
-                Path(__file__).resolve().parents[2] / ".cache" / "selfie"
+                Path(__file__).resolve().parents[2] / ".cache" / "selfie" / persona_id
             ),
         )
     except ValueError as e:

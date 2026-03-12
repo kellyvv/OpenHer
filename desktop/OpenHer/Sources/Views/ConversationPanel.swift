@@ -70,11 +70,6 @@ struct ConversationPanel: View {
                                     )
                                     .id(message.id)
                                 }
-
-                                // Typing indicator
-                                if appState.isTyping {
-                                    typingIndicator
-                                }
                             }
                             .padding(.leading, 12)
                             .padding(.trailing, Paper.hPadding)

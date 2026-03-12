@@ -18,6 +18,7 @@ struct ChatMessage: Codable, Identifiable {
     let role: MessageRole
     var content: String
     var modality: String
+    var imageURL: String?
     var timestamp: Date
     var sendStatus: SendStatus?
 
@@ -29,6 +30,7 @@ struct ChatMessage: Codable, Identifiable {
         role: MessageRole,
         content: String,
         modality: String = "文字",
+        imageURL: String? = nil,
         timestamp: Date = Date(),
         sendStatus: SendStatus? = nil,
         engineStatus: EngineStatus? = nil
@@ -37,6 +39,7 @@ struct ChatMessage: Codable, Identifiable {
         self.role = role
         self.content = content
         self.modality = modality
+        self.imageURL = imageURL
         self.timestamp = timestamp
         self.sendStatus = sendStatus
         self.engineStatus = engineStatus
