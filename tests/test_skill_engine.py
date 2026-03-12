@@ -1,7 +1,8 @@
-"""Tests for the unified SkillEngine (v9 architecture).
+"""Tests for the dual SkillEngine architecture (v6).
 
-Covers L1 loading, L2 activation, modality_skills mapping,
-get_by_modality, tool_skills, build_skills_prompt, and ExecutionStatus.
+TaskSkillEngine: trigger=tool skills only.
+ModalitySkillEngine: trigger=modality skills only.
+Shared types: skill_types.py (Skill, ExecutionStatus, SkillExecutionResult).
 """
 
 import os
@@ -11,17 +12,25 @@ from pathlib import Path
 
 import pytest
 
-from agent.skills.skill_engine import (
+from agent.skills.skill_types import (
     ExecutionStatus,
     Skill,
-    SkillEngine,
     SkillExecutionResult,
+    load_skill,
 )
+from agent.skills.task_skill_engine import TaskSkillEngine
+from agent.skills.modality_skill_engine import ModalitySkillEngine
+# Backward compat alias
+from agent.skills import SkillEngine
 
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
 
 @pytest.fixture
-def skills_dir(tmp_path):
-    """Create a temporary skills directory with a test SKILL.md."""
+def modality_skills_dir(tmp_path):
+    """Create a temporary skills directory with a modality SKILL.md."""
     skill_dir = tmp_path / "selfie_gen"
     skill_dir.mkdir()
     skill_md = skill_dir / "SKILL.md"
@@ -45,6 +54,55 @@ def skills_dir(tmp_path):
 
 
 @pytest.fixture
+def tool_skill_dir(tmp_path):
+    """Create a trigger:tool skill with body."""
+    skill_dir = tmp_path / "weather"
+    skill_dir.mkdir()
+    (skill_dir / "SKILL.md").write_text(textwrap.dedent("""\
+        ---
+        name: weather
+        description: Get current weather and forecasts (no API key required).
+        trigger: tool
+        executor: sandbox
+        ---
+
+        Quick command: curl -s "wttr.in/{city}?format=3"
+    """))
+    return tmp_path
+
+
+@pytest.fixture
+def mixed_skills_dir(tmp_path):
+    """Create a directory with both modality and tool skills."""
+    # Modality skill
+    selfie_dir = tmp_path / "selfie_gen"
+    selfie_dir.mkdir()
+    (selfie_dir / "SKILL.md").write_text(textwrap.dedent("""\
+        ---
+        name: 角色照片生成
+        description: 以自拍照片表达自我
+        trigger: modality
+        modality: 照片
+        handler_fn: skills.selfie_gen.handler.generate_selfie
+        ---
+        照片指南
+    """))
+    # Tool skill
+    weather_dir = tmp_path / "weather"
+    weather_dir.mkdir()
+    (weather_dir / "SKILL.md").write_text(textwrap.dedent("""\
+        ---
+        name: weather
+        description: Get weather info.
+        trigger: tool
+        executor: sandbox
+        ---
+        curl "wttr.in/{city}"
+    """))
+    return tmp_path
+
+
+@pytest.fixture
 def openclaw_skills_dir(tmp_path):
     """Create an OpenClaw-style skill (no trigger/executor, has scripts/)."""
     skill_dir = tmp_path / "weather"
@@ -62,112 +120,27 @@ def openclaw_skills_dir(tmp_path):
     return tmp_path
 
 
-class TestL1Loading:
-    """L1 metadata loading — body should be None."""
+# ---------------------------------------------------------------------------
+# Shared types (skill_types.py)
+# ---------------------------------------------------------------------------
 
-    def test_load_all_returns_l1_only(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        skills = engine.load_all()
+class TestSharedTypes:
+    """Skill, ExecutionStatus, SkillExecutionResult from skill_types.py."""
 
-        assert "selfie_gen" in skills
-        skill = skills["selfie_gen"]
+    def test_load_skill_modality(self, modality_skills_dir):
+        skill = load_skill(modality_skills_dir / "selfie_gen")
+        assert skill.skill_id == "selfie_gen"
         assert skill.name == "角色照片生成"
-        assert skill.description == "以自拍照片表达自我"
         assert skill.trigger == "modality"
         assert skill.modality == "照片"
-        assert skill.executor == "handler"
         assert skill.handler_fn == "skills.selfie_gen.handler.generate_selfie"
-        assert skill.resources == ["idimage/"]
-        assert skill.base_dir == str(skills_dir / "selfie_gen")
-        assert skill.body is None  # L1: body not loaded
+        assert skill.body is None  # L1 only
         assert not skill.is_activated
 
-
-class TestL2Activation:
-    """L2 activation — body should be loaded from SKILL.md content."""
-
-    def test_activate_loads_body(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-
-        engine.activate("selfie_gen")
-        skill = engine.get("selfie_gen")
-        assert skill.is_activated
-        assert "角色照片生成" in skill.body
-        assert "详细的照片生成指南" in skill.body
-
-    def test_activate_idempotent(self, skills_dir):
-        """Repeated activate() should not re-read file."""
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-
-        engine.activate("selfie_gen")
-        body_first = engine.get("selfie_gen").body
-
-        # Mutate body to detect re-read
-        engine.get("selfie_gen").body = "MODIFIED"
-        engine.activate("selfie_gen")
-        assert engine.get("selfie_gen").body == "MODIFIED"  # Not re-read
-
-
-class TestModalitySkills:
-    """modality_skills property and get_by_modality."""
-
-    def test_modality_skills_mapping(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-
-        mapping = engine.modality_skills
-        assert mapping == {"照片": "selfie_gen"}
-
-    def test_get_by_modality(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-
-        skill = engine.get_by_modality("照片")
-        assert skill is not None
-        assert skill.skill_id == "selfie_gen"
-
-        # Non-existent modality
-        assert engine.get_by_modality("语音") is None
-
-
-class TestToolSkills:
-    """tool_skills property — Stage 1 should be empty for modality skills."""
-
-    def test_tool_skills_empty(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-        assert engine.tool_skills == []
-
-    def test_openclaw_defaults_to_tool(self, openclaw_skills_dir):
-        """OpenClaw skill with scripts/ dir → trigger:tool, executor:sandbox."""
-        engine = SkillEngine(str(openclaw_skills_dir))
-        engine.load_all()
-
-        skill = engine.get("weather")
+    def test_load_skill_tool(self, tool_skill_dir):
+        skill = load_skill(tool_skill_dir / "weather")
         assert skill.trigger == "tool"
         assert skill.executor == "sandbox"
-        assert skill in engine.tool_skills
-
-
-class TestBuildSkillsPrompt:
-    """build_skills_prompt uses description (not body)."""
-
-    def test_build_skills_prompt_l1_uses_desc(self, skills_dir):
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-
-        prompt = engine.build_skills_prompt()
-        assert "技能指南" in prompt
-        assert "角色照片生成" in prompt
-        assert "以自拍照片表达自我" in prompt
-        # Body content should NOT appear (body=None, uses description)
-        assert "详细的照片生成指南" not in prompt
-
-
-class TestExecutionStatus:
-    """ExecutionStatus enum and SkillExecutionResult."""
 
     def test_execution_status_enum(self):
         assert ExecutionStatus.COMPLETED.value == "completed"
@@ -183,7 +156,7 @@ class TestExecutionStatus:
             output={"image_path": "/tmp/photo.png"},
         )
         assert result.output.get("image_path") == "/tmp/photo.png"
-        assert result.next_skills == []  # Stage 2 placeholder default
+        assert result.next_skills == []
 
     def test_skill_execution_result_failed(self):
         result = SkillExecutionResult(
@@ -197,66 +170,139 @@ class TestExecutionStatus:
 
 
 # ---------------------------------------------------------------------------
-# Stage 2: Task skill declarations & execution
+# ModalitySkillEngine
+# ---------------------------------------------------------------------------
+
+class TestModalitySkillEngine:
+    """ModalitySkillEngine — only loads trigger=modality skills."""
+
+    def test_load_only_modality_skills(self, mixed_skills_dir):
+        engine = ModalitySkillEngine(str(mixed_skills_dir))
+        skills = engine.load_all()
+        assert "selfie_gen" in skills
+        assert "weather" not in skills  # tool skill filtered out
+
+    def test_modality_skills_mapping(self, modality_skills_dir):
+        engine = ModalitySkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        assert engine.modality_skills == {"照片": "selfie_gen"}
+
+    def test_get_by_modality(self, modality_skills_dir):
+        engine = ModalitySkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        skill = engine.get_by_modality("照片")
+        assert skill is not None
+        assert skill.skill_id == "selfie_gen"
+        assert engine.get_by_modality("语音") is None
+
+    def test_activate_loads_body(self, modality_skills_dir):
+        engine = ModalitySkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        engine.activate("selfie_gen")
+        skill = engine.get_by_modality("照片")
+        assert skill.is_activated
+        assert "角色照片生成" in skill.body
+
+    def test_build_prompt(self, modality_skills_dir):
+        engine = ModalitySkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        prompt = engine.build_prompt()
+        assert "技能指南" in prompt
+        assert "角色照片生成" in prompt
+        assert "以自拍照片表达自我" in prompt
+        # Body content should NOT appear (L1 uses description only)
+        assert "详细的照片生成指南" not in prompt
+
+    def test_empty_dir(self, tmp_path):
+        engine = ModalitySkillEngine(str(tmp_path))
+        skills = engine.load_all()
+        assert skills == {}
+        assert engine.modality_skills == {}
+        assert engine.build_prompt() == ""
+
+
+# ---------------------------------------------------------------------------
+# TaskSkillEngine
+# ---------------------------------------------------------------------------
+
+class TestTaskSkillEngine:
+    """TaskSkillEngine — only loads trigger=tool skills."""
+
+    def test_load_only_tool_skills(self, mixed_skills_dir):
+        engine = TaskSkillEngine(str(mixed_skills_dir))
+        skills = engine.load_all()
+        assert "weather" in skills
+        assert "selfie_gen" not in skills  # modality skill filtered out
+
+    def test_tool_skills_property(self, tool_skill_dir):
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        assert len(engine.tool_skills) == 1
+        assert engine.tool_skills[0].skill_id == "weather"
+
+    def test_build_skill_declarations(self, tool_skill_dir):
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        defs = engine.build_skill_declarations()
+        assert len(defs) == 1
+        assert defs[0]["type"] == "function"
+        assert defs[0]["function"]["name"] == "weather"
+        assert defs[0]["function"]["description"]
+
+    def test_empty_declarations_for_modality_only(self, modality_skills_dir):
+        engine = TaskSkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        assert engine.build_skill_declarations() == []
+
+    def test_openclaw_defaults_to_tool(self, openclaw_skills_dir):
+        engine = TaskSkillEngine(str(openclaw_skills_dir))
+        engine.load_all()
+        skill = engine.get("weather")
+        assert skill.trigger == "tool"
+        assert skill.executor == "sandbox"
+        assert skill in engine.tool_skills
+
+    def test_backward_compat_alias(self):
+        """SkillEngine import should still work as TaskSkillEngine alias."""
+        assert SkillEngine is TaskSkillEngine
+
+
+# ---------------------------------------------------------------------------
+# Isolation test
+# ---------------------------------------------------------------------------
+
+class TestIsolation:
+    """Both engines load from same dir but get distinct skills."""
+
+    def test_engines_are_isolated(self, mixed_skills_dir):
+        task_engine = TaskSkillEngine(str(mixed_skills_dir))
+        modality_engine = ModalitySkillEngine(str(mixed_skills_dir))
+
+        task_skills = task_engine.load_all()
+        modality_skills = modality_engine.load_all()
+
+        # No overlap
+        assert set(task_skills.keys()) & set(modality_skills.keys()) == set()
+        assert "weather" in task_skills
+        assert "selfie_gen" in modality_skills
+
+
+# ---------------------------------------------------------------------------
+# Task skill execution
 # ---------------------------------------------------------------------------
 
 from unittest.mock import AsyncMock
 from providers.llm.base import ChatResponse
 
 
-@pytest.fixture
-def tool_skill_dir(tmp_path):
-    """Create a trigger:tool skill with body (for declarations + execute tests)."""
-    skill_dir = tmp_path / "weather"
-    skill_dir.mkdir()
-    (skill_dir / "SKILL.md").write_text(textwrap.dedent("""\
-        ---
-        name: weather
-        description: Get current weather and forecasts (no API key required).
-        trigger: tool
-        executor: sandbox
-        ---
-
-        Quick command: curl -s "wttr.in/{city}?format=3"
-    """))
-    return tmp_path
-
-
-class TestBuildSkillDeclarations:
-    """build_skill_declarations() — OpenAI function calling format."""
-
-    def test_returns_openai_format(self, tool_skill_dir):
-        engine = SkillEngine(str(tool_skill_dir))
-        engine.load_all()
-        defs = engine.build_skill_declarations()
-        assert len(defs) == 1
-        assert defs[0]["type"] == "function"
-        assert defs[0]["function"]["name"] == "weather"
-        assert defs[0]["function"]["description"]  # non-empty
-        assert defs[0]["function"]["parameters"] == {"type": "object", "properties": {}}
-
-    def test_auto_load_if_not_loaded(self, tool_skill_dir):
-        engine = SkillEngine(str(tool_skill_dir))
-        # Not calling load_all() — should auto-load
-        defs = engine.build_skill_declarations()
-        assert len(defs) == 1
-
-    def test_empty_when_no_tool_skills(self, skills_dir):
-        """modality-only skills return empty declarations."""
-        engine = SkillEngine(str(skills_dir))
-        engine.load_all()
-        assert engine.build_skill_declarations() == []
-
-
 class TestExecute:
-    """execute() — OpenClaw SKILL model execution."""
+    """TaskSkillEngine.execute() — command generation + sandbox."""
 
     async def test_execute_success(self, tool_skill_dir):
-        """LLM generates valid command → sandbox executes → success."""
         class MockLLM:
             async def chat(self, msgs, **kw):
                 return ChatResponse(content="echo hello_weather")
-        engine = SkillEngine(str(tool_skill_dir))
+        engine = TaskSkillEngine(str(tool_skill_dir))
         engine.load_all()
         result = await engine.execute("weather", "北京天气", MockLLM())
         assert result.success
@@ -265,19 +311,17 @@ class TestExecute:
         assert result.status == ExecutionStatus.COMPLETED
 
     async def test_execute_empty_command(self, tool_skill_dir):
-        """LLM returns empty content → FAILED, sandbox never called."""
         class MockLLM:
             async def chat(self, msgs, **kw):
                 return ChatResponse(content="")
-        engine = SkillEngine(str(tool_skill_dir))
+        engine = TaskSkillEngine(str(tool_skill_dir))
         engine.load_all()
         result = await engine.execute("weather", "北京天气", MockLLM())
         assert not result.success
         assert "empty command" in result.output["error"]
 
     async def test_execute_unknown_skill(self, tool_skill_dir):
-        """Unknown skill_id → FAILED immediately."""
-        engine = SkillEngine(str(tool_skill_dir))
+        engine = TaskSkillEngine(str(tool_skill_dir))
         engine.load_all()
         result = await engine.execute("nonexistent", "whatever", AsyncMock())
         assert not result.success

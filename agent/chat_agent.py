@@ -150,6 +150,8 @@ class ChatAgent:
         llm: LLMClient,
         user_id: str = "default_user",
         user_name: Optional[str] = None,
+        task_skill_engine=None,
+        modality_skill_engine=None,
         skills_prompt: Optional[str] = None,
         skill_engine=None,
         memory_store: Optional[MemoryStore] = None,
@@ -163,8 +165,10 @@ class ChatAgent:
         self.llm = llm
         self.user_id = user_id
         self.user_name = user_name
+        # Dual skill engines (isolated)
+        self.task_skill_engine = task_skill_engine or skill_engine  # backward compat
+        self.modality_skill_engine = modality_skill_engine
         self.skills_prompt = skills_prompt or ""
-        self.skill_engine = skill_engine
         self.task_log_store = task_log_store
 
         self.memory_store = memory_store
@@ -208,6 +212,7 @@ class ChatAgent:
         self._last_reward: float = 0.0
         self._last_modality: str = ""
         self._last_image_path: Optional[str] = None
+        self._last_audio_path: Optional[str] = None
         self._last_drive_satisfaction: dict = {}
         # ── Concurrency lock (R2: serialize chat/stream/proactive_tick) ──
         self._turn_lock = asyncio.Lock()
@@ -339,7 +344,7 @@ class ChatAgent:
 
         combined_injection = identity + "\n\n" + signal_injection
 
-        # Inject skills (including photo capability + reference images)
+        # Inject skills prompt — legacy path (skills_prompt param), will be removed
         if self.skills_prompt:
             combined_injection += "\n\n" + self.skills_prompt
 
@@ -398,6 +403,12 @@ class ChatAgent:
         if few_shot:
             header = "[Character speech reference]" if is_en else "[角色说话参考]"
             rendered = f"{header}\n{few_shot}\n\n{rendered}"
+
+        # Inject modality skill L1 descriptions (语音/照片 etc)
+        if self.modality_skill_engine:
+            skill_prompt = self.modality_skill_engine.build_prompt()
+            if skill_prompt:
+                rendered += "\n\n" + skill_prompt
 
         return rendered
 
@@ -516,8 +527,8 @@ class ChatAgent:
     async def _chat_inner(self, user_message: str) -> dict:
         """Inner chat implementation (called under lock)."""
         # ── Step -1: Task skill routing (before persona engine) ──
-        if self.skill_engine:
-            skill_defs = self.skill_engine.build_skill_declarations()
+        if self.task_skill_engine:
+            skill_defs = self.task_skill_engine.build_skill_declarations()
             if skill_defs:
                 routing_resp = None
                 try:
@@ -532,7 +543,7 @@ class ChatAgent:
                     tool_name = routing_resp.tool_calls[0]["name"]
                     print(f"  [skill] 🔧 Tool call: {tool_name}")
                     try:
-                        result = await self.skill_engine.execute(tool_name, user_message, self.llm)
+                        result = await self.task_skill_engine.execute(tool_name, user_message, self.llm)
                     except Exception as e:
                         print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
                         result = None
@@ -643,7 +654,7 @@ class ChatAgent:
             episode_text = self._blend_injection(
                 self._relevant_episodes, self._episode_summary, episode_budget
             )
-            name = self.user_name or self.user_id
+            name = self.user_name or "你"
             if self.persona.lang == 'en':
                 if profile_text:
                     feel_prompt += f"\n\n[{name}'s preferences] {profile_text}"
@@ -688,12 +699,31 @@ class ChatAgent:
         express_response = await self.llm.chat(express_messages)
         _, reply, modality = extract_reply(express_response.content)
 
-        # ── Step 9c: Photo generation (when modality matches a persona skill) ──
+        # ── Step 9c: Modality — let LLM output be the authority ──
+        # Skill engine claims modality directly from LLM raw text (primary).
+        # _parse_modality result is fallback for base modalities only.
         image_path = None
-        if self.skill_engine and modality in self.skill_engine.modality_skills:
-            result = await self._execute_skill(modality, express_response.content)
-            image_path = result.output.get("image_path") if result else None
-            self._last_image_path = image_path
+        self._last_audio_path = None  # reset each turn
+        skill_result = None
+        _raw_mod = ""
+        _matches = list(_SECTION_RE.finditer(express_response.content))
+        if _matches:
+            _raw_mod = express_response.content[_matches[-1].end():].strip()
+            print(f"  [express] raw_modality='{_raw_mod[:80]}'")
+
+        if self.modality_skill_engine and _raw_mod:
+            for skill_mod in self.modality_skill_engine.modality_skills:
+                if skill_mod in _raw_mod:
+                    modality = skill_mod
+                    print(f"  [skill] 🎯 modality='{modality}' (claimed from LLM output)")
+                    skill_result = await self.modality_skill_engine.execute(
+                        modality, express_response.content, self.persona, self.llm
+                    )
+                    if skill_result and skill_result.success:
+                        image_path = skill_result.output.get("image_path")
+                        self._last_image_path = image_path
+                        self._last_audio_path = skill_result.output.get("audio_path")
+                    break
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -737,8 +767,10 @@ class ChatAgent:
         self._evermemos_search_bg(user_message)
 
         result = {'reply': reply, 'modality': modality}
-        if image_path:
-            result['image_path'] = image_path
+        if skill_result and skill_result.success:
+            for key in ('image_path', 'audio_path'):
+                if skill_result.output.get(key):
+                    result[key] = skill_result.output[key]
         return result
 
     # _express_wrap removed — SKILL results now injected into user_message
@@ -770,8 +802,8 @@ class ChatAgent:
         await self._turn_lock.acquire()
         try:
             # ── Step -1: Task skill routing (before persona engine) ──
-            if self.skill_engine:
-                skill_defs = self.skill_engine.build_skill_declarations()
+            if self.task_skill_engine:
+                skill_defs = self.task_skill_engine.build_skill_declarations()
                 if skill_defs:
                     routing_resp = None
                     try:
@@ -786,7 +818,7 @@ class ChatAgent:
                         tool_name = routing_resp.tool_calls[0]["name"]
                         print(f"  [skill] 🔧 Tool call (stream): {tool_name}")
                         try:
-                            result = await self.skill_engine.execute(tool_name, user_message, self.llm)
+                            result = await self.task_skill_engine.execute(tool_name, user_message, self.llm)
                         except Exception as e:
                             print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
                             result = None
@@ -891,7 +923,7 @@ class ChatAgent:
                 episode_text = self._blend_injection(
                     self._relevant_episodes, self._episode_summary, episode_budget
                 )
-                name = self.user_name or self.user_id
+                name = self.user_name or "你"
                 if profile_text:
                     feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
                 if episode_text:
@@ -930,11 +962,28 @@ class ChatAgent:
             raw_text = "".join(full_response)
             _, reply, modality = extract_reply(raw_text)
 
-            # ── Photo generation (when modality matches a persona skill) ──
-            if self.skill_engine and modality in self.skill_engine.modality_skills:
-                result = await self._execute_skill(modality, raw_text)
-                image_path = result.output.get("image_path") if result else None
-                self._last_image_path = image_path
+            # ── Modality — let LLM output be the authority ──
+            self._last_audio_path = None  # reset each turn
+            skill_result = None
+            _raw_mod = ""
+            _raw_modality_match = list(_SECTION_RE.finditer(raw_text))
+            if _raw_modality_match:
+                _raw_mod = raw_text[_raw_modality_match[-1].end():].strip()
+                print(f"  [express] raw_modality='{_raw_mod[:80]}'")
+
+            if self.modality_skill_engine and _raw_mod:
+                for skill_mod in self.modality_skill_engine.modality_skills:
+                    if skill_mod in _raw_mod:
+                        modality = skill_mod
+                        print(f"  [skill] 🎯 modality='{modality}' (claimed from LLM output)")
+                        skill_result = await self.modality_skill_engine.execute(
+                            modality, raw_text, self.persona, self.llm
+                        )
+                        if skill_result and skill_result.success:
+                            image_path = skill_result.output.get("image_path")
+                            self._last_image_path = image_path
+                            self._last_audio_path = skill_result.output.get("audio_path")
+                        break
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
@@ -968,74 +1017,6 @@ class ChatAgent:
             self._evermemos_search_bg(user_message)
         finally:
             self._turn_lock.release()
-
-    async def _execute_skill(self, modality: str, raw_output: str):
-        """Execute a persona skill matched by modality.
-
-        Stage 1: directly calls selfie_gen with parse_photo_output.
-        Stage 2: will use generic handler dispatch via SkillEngine.execute().
-
-        Returns:
-            Optional[SkillExecutionResult] or None if no skill matched.
-        """
-        from agent.skills.skill_engine import SkillExecutionResult, ExecutionStatus
-
-        skill = self.skill_engine.get_by_modality(modality)
-        if not skill:
-            return None
-        if not skill.is_activated:
-            self.skill_engine.activate(skill.skill_id)
-
-        try:
-            from skills.selfie_gen.handler import (
-                parse_photo_output,
-                generate_selfie,
-            )
-
-            # LLM reads SKILL.md body → generates structured prompt for image API
-            system_msg = ChatMessage("system",
-                f"根据以下技能文档和角色回复上下文，生成照片的结构化描述。\n"
-                f"只输出结构化内容，不要多余解释。\n\n{skill.body}"
-            )
-            user_msg = ChatMessage("user",
-                f"角色回复：{raw_output}\n角色名：{self.persona.name}"
-            )
-            prompt_resp = await self.llm.chat([system_msg, user_msg], temperature=0.3)
-            structured_output = prompt_resp.content
-
-            # Parse structured output: description + aspect_ratio
-            parsed = parse_photo_output(structured_output)
-            scene = parsed['description']
-            aspect_ratio = parsed['aspect_ratio']
-
-            if not scene:
-                print("  [skill] ⚠ No scene description found in modality output")
-                return None
-
-            print(f"  [skill] 📸 Generating photo: {scene[:60]}...")
-            result = await generate_selfie(
-                persona_id=self.persona.persona_id,
-                scene_description=scene,
-                persona_name=self.persona.name,
-                aspect_ratio=aspect_ratio,
-            )
-
-            success = result.get("success", True)
-            if success and result.get("image_path"):
-                print(f"  [skill] ✅ Photo generated: {result['image_path']}")
-            else:
-                print(f"  [skill] ❌ Photo generation failed: {result.get('error')}")
-
-            return SkillExecutionResult(
-                skill_id=skill.skill_id,
-                success=success,
-                status=ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED,
-                output=result,
-            )
-
-        except Exception as e:
-            print(f"  [skill] ❌ Exception: {e}")
-            return None
 
     async def _evermemos_gather(self) -> dict:
         """
@@ -1138,7 +1119,7 @@ class ChatAgent:
                     user_id=self.evermemos_uid,
                     persona_id=self.persona.persona_id,
                     persona_name=self.persona.name,
-                    user_name=self.user_name or self.user_id,
+                    user_name=self.user_name or "用户",
                     group_id=self._group_id,
                     user_message=user_message,
                     agent_reply=reply,
@@ -1276,6 +1257,7 @@ class ChatAgent:
             "fallback_rate": round(fallback_rate, 3),
             "relevant_injection_ratio": round(relevant_injection_ratio, 3),
             "image_path": self._last_image_path,
+            "audio_path": self._last_audio_path,
         }
 
     # ────────────────────────────────────────────
@@ -1369,7 +1351,7 @@ class ChatAgent:
                 print(f"  [proactive] flashback search failed: {e}")
 
         # ── Step 4: Build stimulus (data formatting, not decision logic) ──
-        name = self.user_name or self.user_id
+        name = self.user_name or "你"
         hours = (start - self._last_active) / 3600 if self._last_active > 0 else 0
 
         parts = [f"[内在状态] 已{hours:.0f}小时未与{name}互动。{impulse_desc}"]

@@ -19,11 +19,12 @@ bio:
     养了一盆多肉植物叫小芽。
 
 voice:
+  voice_preset: "Bella"
+  base_instructions: "音色轻柔甜美，语速偏慢，带有梦幻感和诗意气质，像在轻声细语"
   ref_audio: voice_sample.wav
   description: Soft, warm voice with slow gentle pace, like a whisper
-  provider: qwen3-tts
+  provider: dashscope
   emotion_enabled: true
-  voice_preset: gentle_female
 
 image:
   prompt_base: >

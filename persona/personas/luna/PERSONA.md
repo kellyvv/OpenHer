@@ -19,11 +19,12 @@ bio:
     养了一只叫 Mochi 的橘猫。
 
 voice:
+  voice_preset: "Maia"
+  base_instructions: "音色明亮温暖，语调起伏明显，语速明快，带有少女的亲切感和知性气质"
   ref_audio: voice_sample.wav
   description: Sweet, clear voice with upbeat energy, slightly fast pace
-  provider: qwen3-tts
+  provider: dashscope
   emotion_enabled: true
-  voice_preset: sweet_female
 
 image:
   prompt_base: >

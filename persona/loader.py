@@ -25,7 +25,8 @@ class VoiceConfig:
     description: Optional[str] = None     # Natural language voice description (fallback)
     provider: str = "qwen3-tts"           # TTS provider to use
     emotion_enabled: bool = True          # Whether to inject emotion in TTS
-    voice_preset: str = "default"         # Edge TTS voice preset key
+    voice_preset: str = "default"         # Voice ID for current provider (e.g. "Maia", "Bella")
+    base_instructions: Optional[str] = None  # TTS persona base instructions (Qwen3-TTS)
 
 
 @dataclass
@@ -195,6 +196,7 @@ class PersonaLoader:
             provider=voice_meta.get("provider", "qwen3-tts"),
             emotion_enabled=voice_meta.get("emotion_enabled", True),
             voice_preset=voice_meta.get("voice_preset", "default"),
+            base_instructions=voice_meta.get("base_instructions"),
         )
 
         # Image config

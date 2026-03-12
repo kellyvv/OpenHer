@@ -100,27 +100,41 @@ def select_reference_image(persona_id: str) -> Optional[str]:
 
 async def generate_selfie(
     persona_id: str,
-    scene_description: str,
+    raw_output: str = "",
     persona_name: str = "",
+    # Backward compat params (used if raw_output is empty)
+    scene_description: str = "",
     image_size: str = "1K",
     aspect_ratio: str = "",
+    **kwargs,
 ) -> dict:
     """Generate a selfie/photo for the persona.
 
-    All scene description and constraints come from Actor (shaped by SKILL prompt).
-    Handler only passes parameters + reference image to the API.
+    Unified handler interface — called by ModalitySkillEngine.execute().
+    Accepts raw_output (LLM structured text) and parses internally.
+    Also accepts legacy params (scene_description, aspect_ratio) for backward compat.
 
     Args:
         persona_id: Persona identifier
-        scene_description: Scene description from Actor (already shaped by SKILL)
+        raw_output: LLM structured output to parse (new unified interface)
         persona_name: Display name
+        scene_description: Legacy: direct scene description (fallback if raw_output empty)
         image_size: Output size (default "1K")
-        aspect_ratio: Aspect ratio from Actor output (e.g. "9:16")
+        aspect_ratio: Legacy: direct aspect ratio (fallback)
 
     Returns:
         Dict with keys: success, image_path, error, aspect_ratio, reference_used
     """
     from providers.registry import get_image_gen
+
+    # Parse from raw_output (unified interface) if available
+    if raw_output and not scene_description:
+        parsed = parse_photo_output(raw_output)
+        scene_description = parsed['description']
+        aspect_ratio = aspect_ratio or parsed['aspect_ratio']
+
+    if not scene_description:
+        return {"success": False, "image_path": None, "error": "No scene description"}
 
     # Select reference image
     ref_image_path = select_reference_image(persona_id)

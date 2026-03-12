@@ -31,7 +31,7 @@ from persona import PersonaLoader
 from providers.llm import LLMClient
 from agent.chat_agent import ChatAgent
 from providers.media.tts_engine import TTSEngine, TTSProvider
-from agent.skills import SkillEngine
+from agent.skills import TaskSkillEngine, ModalitySkillEngine
 from engine.state_store import StateStore
 from engine.chat_log_store import ChatLogStore
 from memory.memory_store import MemoryStore
@@ -72,8 +72,8 @@ app.add_middleware(
 persona_loader: PersonaLoader = None
 llm_client: LLMClient = None
 tts_engine: TTSEngine = None
-skill_engine: SkillEngine = None
-skills_prompt: str = ""
+task_skill_engine: TaskSkillEngine = None
+modality_skill_engine: ModalitySkillEngine = None
 state_store: StateStore = None
 chat_log_store: ChatLogStore = None
 memory_store: MemoryStore = None
@@ -115,7 +115,7 @@ _proactive_metrics = {
 @app.on_event("startup")
 async def startup():
     """Initialize all services on server start."""
-    global persona_loader, llm_client, tts_engine, skill_engine, skills_prompt
+    global persona_loader, llm_client, tts_engine, task_skill_engine, modality_skill_engine
     global state_store, chat_log_store, memory_store, evermemos, cron_scheduler, genome_data_dir
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -145,12 +145,14 @@ async def startup():
         minimax_model=tts_cfg.get("minimax_model", "speech-2.8-turbo"),
     )
 
-    # 4. Load skills
-    skill_engine = SkillEngine(os.path.join(base_dir, "skills"))
-    loaded_skills = skill_engine.load_all()
-    skills_prompt = skill_engine.build_skills_prompt()
-    cron_skills = skill_engine.get_cron_skills()
-    print(f"✓ 加载了 {len(loaded_skills)} 个技能, {len(cron_skills)} 个定时任务")
+    # 4. Load skills (dual engine architecture)
+    skills_dir = os.path.join(base_dir, "skills")
+    task_skill_engine = TaskSkillEngine(skills_dir)
+    task_loaded = task_skill_engine.load_all()
+    modality_skill_engine = ModalitySkillEngine(skills_dir)
+    modality_loaded = modality_skill_engine.load_all()
+    cron_skills = task_skill_engine.get_cron_skills()
+    print(f"✓ 加载了 {len(task_loaded)}+{len(modality_loaded)} 个技能 (task+modality), {len(cron_skills)} 个定时任务")
 
     # 5. Data directories
     data_dir = os.path.join(base_dir, ".data")
@@ -580,8 +582,9 @@ def get_or_create_session(
         llm=llm_client,
         user_id=stable_user_id,
         user_name=user_name,
-        skills_prompt=skills_prompt or None,
-        skill_engine=skill_engine,
+        skills_prompt=None,
+        task_skill_engine=task_skill_engine,
+        modality_skill_engine=modality_skill_engine,
         memory_store=memory_store,
         genome_seed=genome_seed,
         genome_data_dir=genome_data_dir,
@@ -683,6 +686,7 @@ async def get_persona_media(persona_id: str, media_type: str):
     """
     _media_map = {
         "front": ("front.png", "image/png"),
+        "face": ("face.png", "image/png"),
         "awakened": ("awakened.png", "image/png"),
         "awakening": ("awakening.mp4", "video/mp4"),
     }
@@ -1057,6 +1061,7 @@ async def websocket_chat(ws: WebSocket):
                 if not stream_error:
                     status = agent.get_status()
                     image_path = status.pop("image_path", None)
+                    audio_path = status.pop("audio_path", None)
                     if image_path:
                         # Extract persona_id/filename from .cache/selfie/persona_id/hash.png
                         parts = image_path.replace("\\", "/").split("/")
@@ -1071,6 +1076,21 @@ async def websocket_chat(ws: WebSocket):
                         "image_url": image_url,
                         **status,
                     })
+
+                    # Deliver modality skill audio via existing tts_audio channel
+                    if audio_path and os.path.isfile(audio_path):
+                        try:
+                            with open(audio_path, "rb") as f:
+                                audio_b64 = base64.b64encode(f.read()).decode()
+                            await ws.send_json({
+                                "type": "tts_audio",
+                                "audio": audio_b64,
+                                "format": "wav",
+                            })
+                            print(f"  [skill] 🔊 Audio delivered: {os.path.basename(audio_path)}")
+                        except Exception as e:
+                            print(f"  [skill] ⚠ Audio delivery failed: {e}")
+
                     # Log conversation for debugging
                     print(f"  [chat] 👤 {text}")
                     print(f"  [chat] 🤖 {_clean_reply_text[:120]}")

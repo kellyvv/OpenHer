@@ -16,7 +16,7 @@ from typing import Optional, Callable, Awaitable
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from agent.skills.skill_engine import Skill
+from agent.skills.skill_types import Skill
 
 
 # Type alias for the callback that delivers cron messages
