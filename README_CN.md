@@ -13,7 +13,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/记忆引擎-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Stars](https://img.shields.io/github/stars/kellyzxiaowei/OpenHer?style=flat-square)](https://github.com/kellyzxiaowei/OpenHer)
+[![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
 
 [特性](#-特性) · [认识她们](#-认识她们) · [快速开始](#-快速开始) · [技术原理](#-技术原理) · [创建你自己的角色](#-创建你自己的角色)
 
@@ -126,19 +126,40 @@
 ## 🚀 快速开始
 
 ```bash
-git clone https://github.com/kellyzxiaowei/OpenHer.git
+git clone https://github.com/kellyvv/OpenHer.git
 cd OpenHer
 
-python -m venv venv && source venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env     # 填入你的 LLM API 密钥
+cp .env.example .env     # 填入你的 LLM API 密钥 (GEMINI_API_KEY / ANTHROPIC_API_KEY 等)
 python main.py            # → http://localhost:8800/discover
 ```
 
-**支持模型：** Qwen3 · GPT-4o · Claude · DeepSeek · Moonshot · Ollama (本地)
+**支持模型：** Gemini · Claude · Qwen3 · GPT-4o · Moonshot · Ollama (本地)
 
 **可选：** 连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆。
+
+---
+
+## 🏆 LLM 兼容性
+
+我们在人格引擎的三个层面上对每个支持的 LLM 做了基准测试：
+
+| 模型 | 人格保真 | 情感深度 | 奖励信号 | 格式 | 记忆 |
+|------|:---:|:---:|:---:|:---:|:---:|
+| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | +0.48 | ✅ | ✅ |
+| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.51 | ✅ | ✅ |
+| **Qwen3** | — | — | — | ✅ | ✅ |
+| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | +0.26 | ⚠️ | ✅ |
+
+> **人格保真** — 冷启动对话中的 MBTI 一致性与人格分化度
+> **情感深度** — 层次化情感表达、边界设定、真实回应
+> **奖励信号** — 4h 离线后的平均代谢奖励（驱力挫败释放）
+> **格式** — 无 prompt 格式泄漏（如 `【表达方式】` token）
+> **记忆** — Hebbian 结晶与跨会话持久化
+
+→ 完整报告：[docs/benchmark/llm_comparison_report.md](docs/benchmark/llm_comparison_report.md)
 
 ---
 
@@ -232,11 +253,13 @@ genome_seed:
 | 层 | 技术 |
 |:---|:-----|
 | 运行时 | Python 3.11+, FastAPI, WebSocket, asyncio |
-| LLM | Qwen3, GPT-4o, Claude, DeepSeek, Moonshot, Ollama |
+| LLM | Gemini, Claude, Qwen3, GPT-4o, Moonshot, Ollama |
 | 记忆 | **EverMemOS**（自部署 / 云端）+ SQLite 本地状态 |
-| 前端 | React + Vite |
+| 桌面端 | SwiftUI (macOS 原生) |
+| 网页端 | React + Vite |
 | 语音 | DashScope · OpenAI · MiniMax |
-| 图像 | DashScope (Wanx) |
+| 图像 | Gemini Imagen |
+| 技能 | 可扩展技能框架（语音、自拍、天气） |
 
 ---
 
@@ -248,14 +271,16 @@ genome_seed:
 - [x] 两阶段 感受 → 表达 架构
 - [x] EverMemOS 长期记忆集成
 - [x] 驱力驱动的主动消息
-- [x] 多 LLM 服务商支持（6 家）
+- [x] 多 LLM 服务商支持（7 家）
 - [x] 自拍生成（表达方式路由）
+- [x] LLM 基准测试套件（3 层测试）
 
 ### Phase 2 · 任务技能引擎 🔧
 
-- [ ] 可扩展技能框架 —— 让她学会使用工具，完成真实任务
-- [ ] 语音对话模式 —— 让她真正*说话*，不只是打字
-- [ ] 语音短信 —— 忙的时候发一段语音给你，像真人朋友一样
+- [x] 可扩展技能框架 —— 语音、自拍、天气技能
+- [x] 语音短信 —— 发语音给你，像真人朋友一样
+- [x] macOS 原生桌面客户端 (SwiftUI)
+- [ ] 语音对话模式 —— 实时语音聊天
 - [ ] 视频通话 —— 面对面聊天，看到她的表情变化
 - [ ] 自拍 & 旅行视频 —— 她会发自己的短视频给你，去过的地方、看到的风景
 - [ ] 多角色社交互动

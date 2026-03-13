@@ -13,7 +13,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/Memory-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Stars](https://img.shields.io/github/stars/kellyzxiaowei/OpenHer?style=flat-square)](https://github.com/kellyzxiaowei/OpenHer)
+[![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
 
 [Features](#-features) · [Meet the Characters](#-meet-the-characters) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
 
@@ -126,19 +126,40 @@ When her inner drives cross a threshold — loneliness, curiosity, or a memory t
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/kellyzxiaowei/OpenHer.git
+git clone https://github.com/kellyvv/OpenHer.git
 cd OpenHer
 
-python -m venv venv && source venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env     # Add your LLM API key
+cp .env.example .env     # Add your LLM API key (GEMINI_API_KEY / ANTHROPIC_API_KEY / etc.)
 python main.py            # → http://localhost:8800/discover
 ```
 
-**Supports:** Qwen3 · GPT-4o · Claude · DeepSeek · Moonshot · Ollama (local)
+**Supports:** Gemini · Claude · Qwen3 · GPT-4o · Moonshot · Ollama (local)
 
 **Optional:** Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory.
+
+---
+
+## 🏆 LLM Compatibility
+
+We benchmark every supported LLM across three layers of our persona engine:
+
+| Model | Persona Fidelity | Emotional Depth | Reward Signal | Format | Memory |
+|-------|:---:|:---:|:---:|:---:|:---:|
+| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | +0.48 | ✅ | ✅ |
+| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.51 | ✅ | ✅ |
+| **Qwen3** | — | — | — | ✅ | ✅ |
+| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | +0.26 | ⚠️ | ✅ |
+
+> **Persona Fidelity** — MBTI consistency & persona differentiation across cold-start conversations
+> **Emotional Depth** — Layered emotional expression, boundary-setting, authentic responses
+> **Reward Signal** — Average metabolic reward after 4h offline (drive frustration release)
+> **Format** — No prompt format leakage (e.g. `【表达方式】` tokens)
+> **Memory** — Hebbian crystallization & cross-session persistence
+
+→ Full benchmark report: [docs/benchmark/llm_comparison_report.md](docs/benchmark/llm_comparison_report.md)
 
 ---
 
@@ -232,11 +253,13 @@ genome_seed:
 | Layer | Technology |
 |:------|:-----------|
 | Runtime | Python 3.11+, FastAPI, WebSocket, asyncio |
-| LLM | Qwen3, GPT-4o, Claude, DeepSeek, Moonshot, Ollama |
+| LLM | Gemini, Claude, Qwen3, GPT-4o, Moonshot, Ollama |
 | Memory | **EverMemOS** (self-hosted / cloud) + SQLite local state |
-| Frontend | React + Vite |
+| Desktop | SwiftUI (macOS native) |
+| Web | React + Vite |
 | Voice | DashScope · OpenAI · MiniMax |
-| Image | DashScope (Wanx) |
+| Image | Gemini Imagen |
+| Skills | Extensible skill framework (voice, selfie, weather) |
 
 ---
 
@@ -248,14 +271,16 @@ genome_seed:
 - [x] Two-pass Feel → Express architecture
 - [x] EverMemOS long-term memory integration
 - [x] Drive-based proactive messaging
-- [x] Multi-LLM provider support (6 providers)
+- [x] Multi-LLM provider support (7 providers)
 - [x] Selfie generation via modality routing
+- [x] LLM benchmark suite (3-layer testing)
 
 ### Phase 2 · Task & Skill Engine 🔧
 
-- [ ] Extensible skill framework — let her learn to use tools and complete real tasks
-- [ ] Voice conversation mode — let her actually *speak*, not just type
-- [ ] Voice messages — when she's busy, she sends you a voice note, like a real friend
+- [x] Extensible skill framework — voice, selfie, weather skills
+- [x] Voice messages — she sends you voice notes, like a real friend
+- [x] macOS native desktop client (SwiftUI)
+- [ ] Voice conversation mode — real-time voice chat
 - [ ] Video calls — face-to-face chats where you can see her expressions change
 - [ ] Selfie & travel videos — she sends you short clips of places she's been, things she's seen
 - [ ] Multi-agent social interactions
