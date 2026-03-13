@@ -144,22 +144,23 @@ python main.py            # → http://localhost:8800/discover
 
 ## 🏆 LLM Compatibility
 
-We benchmark every supported LLM across three layers of our persona engine:
+OpenHer works with multiple LLMs — but not all models are created equal. Personality emergence is *hard* for an LLM: it needs to stay in character, express layered emotions, and never leak internal prompt formats. We tested every supported model so you don't have to guess.
 
-| Model | Persona Fidelity | Emotional Depth | Reward Signal | Format | Memory |
-|-------|:---:|:---:|:---:|:---:|:---:|
-| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | +0.48 | ✅ | ✅ |
-| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.51 | ✅ | ✅ |
-| **Qwen3** | — | — | — | ✅ | ✅ |
-| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | +0.26 | ⚠️ | ✅ |
+**Our recommendation:**
 
-> **Persona Fidelity** — MBTI consistency & persona differentiation across cold-start conversations
-> **Emotional Depth** — Layered emotional expression, boundary-setting, authentic responses
-> **Reward Signal** — Average metabolic reward after 4h offline (drive frustration release)
-> **Format** — No prompt format leakage (e.g. `【表达方式】` tokens)
-> **Memory** — Hebbian crystallization & cross-session persistence
+- 🥇 **Claude Haiku 4.5** — Best overall. Characters feel the most *real*. Kelly (ENTP) will push back when you're being sentimental — "honestly, I don't really know you. I'm just listening." Zero format leakage.
+- 🥈 **Gemini Flash Lite** — Nearly as good, and cheaper. Great default choice. Slightly more emotionally expressive — Luna (ENFP) gets *excited*.
+- 🇨🇳 **Qwen3** — Best option if you're in mainland China and need a model without VPN. Fully supported.
+- ⚠️ **GPT-4o-mini** — Works, but all characters start sounding the same. Occasional prompt leakage.
 
-→ Full benchmark report: [docs/benchmark/llm_comparison_report.md](docs/benchmark/llm_comparison_report.md)
+| Model | Persona Fidelity | Emotional Depth | Format | Overall |
+|-------|:---:|:---:|:---:|:---:|
+| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ | **10/10** |
+| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ✅ | **9/10** |
+| **Qwen3** | — | — | ✅ | *supported* |
+| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
+
+→ How we test (3-layer methodology + raw data): [Benchmark Report](docs/benchmark/llm_comparison_report.md)
 
 ---
 
