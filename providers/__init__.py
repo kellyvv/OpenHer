@@ -3,7 +3,7 @@ Unified Provider Architecture — providers/
 
 按能力分层，一个供应商一个文件。
 
-  llm/       → LLM 对话 (dashscope, openai, deepseek, moonshot, ollama)
+  llm/       → LLM 对话 (dashscope, openai, moonshot, ollama, gemini)
   speech/    → 语音 (tts/, asr/, live/)
   memory/    → 记忆 (soulmem 常驻, evermemos 可选)
   image/     → 图像 (avatar generation)

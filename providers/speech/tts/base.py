@@ -20,11 +20,9 @@ from typing import Optional
 # ─────────────────────────────────────────────────────────────
 
 class TTSProvider(str, Enum):
-    EDGE = "edge"             # Free, built-in, decent Chinese
     OPENAI = "openai"         # High quality, paid
-    DASHSCOPE = "dashscope"   # Qwen3-TTS via DashScope API
+    DASHSCOPE = "dashscope"   # CosyVoice via DashScope API
     MINIMAX = "minimax"       # MiniMax speech-2.8 (clone + emotion)
-    QWEN3_LOCAL = "qwen3"     # Qwen3-TTS local (voice design)
 
 
 @dataclass

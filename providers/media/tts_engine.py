@@ -20,7 +20,6 @@ from typing import Optional
 from providers.speech.tts.base import TTSProvider, TTSResult  # noqa: F401
 
 # Re-export constants (used by external code)
-from providers.speech.tts.edge import EDGE_VOICE_PRESETS  # noqa: F401
 from providers.speech.tts.minimax import EMOTION_TO_MINIMAX  # noqa: F401
 
 
@@ -32,7 +31,7 @@ class TTSEngine:
     Constructor 签名与原版完全一致，所有调用方无需改动。
 
     Usage:
-        # 基础用法 (Edge TTS, 免费)
+        # 基础用法 (DashScope CosyVoice)
         engine = TTSEngine()
         result = await engine.synthesize(text="你好呀！")
 
@@ -50,7 +49,7 @@ class TTSEngine:
 
     def __init__(
         self,
-        provider: TTSProvider = TTSProvider.EDGE,
+        provider: TTSProvider = TTSProvider.DASHSCOPE,
         cache_dir: Optional[str] = None,
         openai_api_key: Optional[str] = None,
         dashscope_api_key: Optional[str] = None,
@@ -108,7 +107,7 @@ class TTSEngine:
 
         Args:
             text: Text to speak
-            voice_preset: Preset name from EDGE_VOICE_PRESETS
+            voice_preset: Voice preset name
             voice_name: Voice ID (MiniMax voice_id, OpenAI voice, etc.)
             emotion_instruction: Free-text instruction (OpenAI/DashScope)
             emotion: Emotion state name → auto-mapped to MiniMax emotion
@@ -147,7 +146,7 @@ class TTSEngine:
 
     def get_available_voices(self) -> dict[str, str]:
         """List available voice presets."""
-        return dict(EDGE_VOICE_PRESETS)
+        return {"default": "default"}
 
     @staticmethod
     def get_available_emotions() -> list[str]:

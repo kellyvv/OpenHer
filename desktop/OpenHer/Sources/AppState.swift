@@ -91,6 +91,7 @@ final class AppState: ObservableObject {
             gender: "female",
             mbti: "INFP",
             tags: ["gentle", "dreamy", "sweet"],
+            tagsZh: ["温柔", "梦幻", "甜美"],
             description: "清纯萌系少女",
             avatarUrl: nil,
             hasFront: true,
@@ -104,6 +105,7 @@ final class AppState: ObservableObject {
             gender: "female",
             mbti: "ENFP",
             tags: ["bright", "bubbly", "sweet"],
+            tagsZh: ["明朗", "活泼", "甜美"],
             description: "自由插画师",
             avatarUrl: nil,
             hasFront: true,
@@ -202,7 +204,7 @@ final class AppState: ObservableObject {
                 : "Whoa—! I'm alive! Hehe, hi there! I'm Luna, and I feel like today's gonna be amazing!"
         case "vivian":
             return isZh
-                ? "……你好。我是Vivian。希望你的问题足够有趣，不然我可能会很快失去耐心。"
+                ? "……你好。我是顾霆微。希望你的问题足够有趣，不然我可能会很快失去耐心。"
                 : "…Hello. I'm Vivian. I hope your questions are interesting enough, or I might lose patience quickly."
         case "sora":
             return isZh
@@ -266,7 +268,6 @@ final class AppState: ObservableObject {
             sendStatus: .sending
         )
         messages.append(userMsg)
-        isTyping = true
 
         // Send via WebSocket
         wsManager.sendChat(

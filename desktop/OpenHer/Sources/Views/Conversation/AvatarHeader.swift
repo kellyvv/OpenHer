@@ -10,9 +10,44 @@ struct AvatarHeader: View {
     let avatarURL: URL?
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 6) {
+            // Avatar — real face photo, placed on paper
+            if let url = avatarURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .overlay(
+                                Color(red: 0.82, green: 0.70, blue: 0.55)
+                                    .opacity(0.15)
+                                    .blendMode(.multiply)
+                            )
+                    default:
+                        Image(systemName: "person.fill")
+                            .foregroundStyle(Paper.faint)
+                    }
+                }
+                .frame(width: 50, height: 66)
+                .mask(
+                    RadialGradient(
+                        gradient: Gradient(colors: [
+                            .black,
+                            .black.opacity(0.95),
+                            .black.opacity(0.6),
+                            .clear
+                        ]),
+                        center: .center,
+                        startRadius: 15,
+                        endRadius: 38
+                    )
+                )
+                .rotationEffect(.degrees(-1.5))
+            }
+
             Text(persona?.displayName ?? "")
-                .font(Paper.nameFont)
+                .font(.system(size: 16, weight: .regular))
                 .foregroundStyle(Paper.herText)
         }
         .frame(maxWidth: .infinity)

@@ -224,8 +224,8 @@ class ChatAgent:
 
         # ── EverMemOS Async Memory ──
         self.evermemos = evermemos
-        self.evermemos_uid = f"{user_id}__{persona.persona_id}"
-        self._group_id = f"{persona.persona_id}__{user_id}"  # group_id for EverMemOS
+        self.evermemos_uid = f"{user_id}__{persona.persona_id}"  # sender for user messages in store
+        self._group_id = f"{persona.persona_id}__{user_id}"  # group_id scopes per user-persona pair
         self._user_profile: str = ""
         self._episode_summary: str = ""   # Narrative history for Critic + Actor
         self._session_ctx = None   # SessionContext loaded on first turn
@@ -516,15 +516,16 @@ class ChatAgent:
         blended += "；" + static[:sta_budget]
         return blended
 
-    async def chat(self, user_message: str) -> dict:
+    async def chat(self, user_message: str, on_feel_done=None) -> dict:
         """
         Process a user message through the full Genome v10 lifecycle.
         Returns only the reply (monologue is stored internally).
+        on_feel_done: optional async callback invoked after Feel pass completes.
         """
         async with self._turn_lock:
-            return await self._chat_inner(user_message)
+            return await self._chat_inner(user_message, on_feel_done=on_feel_done)
 
-    async def _chat_inner(self, user_message: str) -> dict:
+    async def _chat_inner(self, user_message: str, on_feel_done=None) -> dict:
         """Inner chat implementation (called under lock)."""
         # ── Step -1: Task skill routing (before persona engine) ──
         if self.task_skill_engine:
@@ -685,6 +686,10 @@ class ChatAgent:
 
         feel_response = await self.llm.chat(feel_messages)
         monologue = self._extract_monologue(feel_response.content)
+
+        # Notify caller that Feel is done (typing can start)
+        if on_feel_done:
+            await on_feel_done()
 
         # ── Step 9b: Pass 2 — Express (monologue → reply + modality) ──
         turn_lang = self._detect_turn_lang(user_message)
@@ -943,6 +948,9 @@ class ChatAgent:
             feel_response = await self.llm.chat(feel_messages)
             monologue = self._extract_monologue(feel_response.content)
 
+            # Signal to stream consumer that Feel is done → "typing" can start
+            yield "__FEEL_DONE__"
+
             # ── Step 9b: Pass 2 — Express (streamed to frontend) ──
             turn_lang = self._detect_turn_lang(user_message)
             express_few_shot = self.style_memory.build_few_shot_prompt(
@@ -1039,6 +1047,7 @@ class ChatAgent:
             self._session_ctx = await self.evermemos.load_session_context(
                 user_id=self.evermemos_uid,
                 persona_id=self.persona.persona_id,
+                group_id=self._group_id,
             )
             if self._session_ctx.user_profile:
                 self._user_profile = self._session_ctx.user_profile
@@ -1113,9 +1122,9 @@ class ChatAgent:
         """Step 11: Fire-and-forget EverMemOS storage (asyncio.create_task)."""
         if not (self.evermemos and self.evermemos.available):
             return
-        try:
-            asyncio.create_task(
-                self.evermemos.store_turn(
+        async def _do_store():
+            try:
+                await self.evermemos.store_turn(
                     user_id=self.evermemos_uid,
                     persona_id=self.persona.persona_id,
                     persona_name=self.persona.name,
@@ -1124,7 +1133,11 @@ class ChatAgent:
                     user_message=user_message,
                     agent_reply=reply,
                 )
-            )
+                print(f"  [evermemos] ✅ stored turn (uid={self.evermemos_uid}, pid={self.persona.persona_id})")
+            except Exception as e:
+                print(f"  [evermemos] ❌ store failed: {type(e).__name__}: {e}")
+        try:
+            asyncio.create_task(_do_store())
         except Exception as e:
             print(f"  [evermemos] create_task error: {e}")
 
@@ -1150,6 +1163,7 @@ class ChatAgent:
                 self.evermemos.search_relevant_memories(
                     query=user_message,
                     user_id=self.evermemos_uid,
+                    group_id=self._group_id,
                 )
             )
         except Exception as e:
@@ -1342,6 +1356,7 @@ class ChatAgent:
                 facts, episodes, profile = await self.evermemos.search_relevant_memories(
                     query=impulse_desc,
                     user_id=self.evermemos_uid,
+                    group_id=self._group_id,
                 )
                 if episodes:
                     flashback_parts.append(f"[记忆闪回] {episodes}")

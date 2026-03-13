@@ -15,6 +15,7 @@ struct Persona: Codable, Identifiable, Hashable {
     let gender: String?
     let mbti: String?
     let tags: [String]
+    let tagsZh: [String]?
     let description: String?
     let avatarUrl: String?
 
@@ -30,6 +31,7 @@ struct Persona: Codable, Identifiable, Hashable {
         case name
         case nameZh = "name_zh"
         case age, gender, mbti, tags, description
+        case tagsZh = "tags_zh"
         case avatarUrl = "avatar_url"
         case hasFront = "has_front"
         case hasAwakeningVideo = "has_awakening_video"

@@ -103,26 +103,7 @@ struct MessageRow: View {
             }
 
         case "语音":
-            HStack(spacing: 8) {
-                Image(systemName: "play.circle")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Paper.ink)
-
-                HStack(spacing: 2) {
-                    ForEach(0..<20, id: \.self) { i in
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(Paper.coral)
-                            .frame(
-                                width: 2,
-                                height: CGFloat.random(in: 4...16)
-                            )
-                    }
-                }
-
-                Text("0:15")
-                    .font(Paper.freqFont)
-                    .foregroundStyle(Paper.coral)
-            }
+            VoiceMessageView(message: message)
 
         default:
             Text(message.content)

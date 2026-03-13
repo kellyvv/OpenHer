@@ -45,7 +45,7 @@ from engine.genome import DRIVE_LABELS
 # Load env
 # ──────────────────────────────────────────────────────────────
 
-load_dotenv()
+load_dotenv(override=True)  # override=True: .env values take precedence over shell exports
 
 # ──────────────────────────────────────────────────────────────
 # App setup
@@ -179,6 +179,8 @@ async def startup():
             base_url=mem_cfg["base_url"] or None,
             api_key=mem_cfg["api_key"] or None,
         )
+        if evermemos.available:
+            await evermemos.verify_connection()
     else:
         evermemos = None
         print("ℹ EverMemOS: 未配置或已禁用，使用本地 MemoryStore")
@@ -472,6 +474,7 @@ class PersonaInfo(BaseModel):
     gender: str
     mbti: Optional[str]
     tags: list[str]
+    tags_zh: list[str] = []
     description: str
     avatar_url: Optional[str] = None
     has_front: bool = False           # has idimage/front.png
@@ -661,7 +664,10 @@ async def list_personas():
         # Check idimage/ for media assets
         _idimage_dir = os.path.join(_personas_dir, pid, "idimage")
         _has_front = os.path.isfile(os.path.join(_idimage_dir, "front.png"))
-        _has_video = os.path.isfile(os.path.join(_idimage_dir, "awakening.mp4"))
+        _has_video = any(
+            os.path.isfile(os.path.join(_idimage_dir, v))
+            for v in ("awakening.mp4", "wakening.mp4")
+        )
         result.append(PersonaInfo(
             persona_id=pid,
             name=p.name,
@@ -670,6 +676,7 @@ async def list_personas():
             gender=p.gender,
             mbti=p.mbti,
             tags=p.tags,
+            tags_zh=p.tags_zh,
             description=_first_sentence[:120],
             avatar_url=f"/api/avatar/{pid}" if avatar_path else None,
             has_front=_has_front,
@@ -685,19 +692,20 @@ async def get_persona_media(persona_id: str, media_type: str):
     media_type: 'front', 'awakened', 'awakening'
     """
     _media_map = {
-        "front": ("front.png", "image/png"),
-        "face": ("face.png", "image/png"),
-        "awakened": ("awakened.png", "image/png"),
-        "awakening": ("awakening.mp4", "video/mp4"),
+        "front": [("front.png", "image/png")],
+        "face": [("face.png", "image/png")],
+        "awakened": [("awakened.png", "image/png")],
+        "awakening": [("awakening.mp4", "video/mp4"), ("wakening.mp4", "video/mp4")],
+        "wakening": [("wakening.mp4", "video/mp4")],
     }
     if media_type not in _media_map:
         raise HTTPException(status_code=400, detail=f"Unknown media type: {media_type}")
-    filename, mime = _media_map[media_type]
     _personas_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas")
-    file_path = os.path.join(_personas_dir, persona_id, "idimage", filename)
-    if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404, detail=f"Media not found: {persona_id}/{media_type}")
-    return FileResponse(file_path, media_type=mime, filename=filename)
+    for filename, mime in _media_map[media_type]:
+        file_path = os.path.join(_personas_dir, persona_id, "idimage", filename)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path, media_type=mime)
+    raise HTTPException(status_code=404, detail=f"Media not found: {persona_id}/{media_type}")
 
 
 @app.post("/api/chat")
@@ -1027,16 +1035,18 @@ async def websocket_chat(ws: WebSocket):
                 # Register WS connection for proactive push (Bug 1)
                 _ws_connections[session_id] = ws
 
-                await ws.send_json({
-                    "type": "chat_start",
-                    "session_id": session_id,
-                })
-
                 stream_error = False
                 _clean_reply_text = ""
                 try:
                     async def _ws_send(msg: dict):
                         await ws.send_json(msg)
+
+                    async def _on_feel_done():
+                        """Send chat_start after Feel pass — triggers 正在输入 at the right time."""
+                        await ws.send_json({
+                            "type": "chat_start",
+                            "session_id": session_id,
+                        })
 
                     async def _on_complete(reply: str, modality: str):
                         nonlocal _clean_reply_text
@@ -1045,6 +1055,7 @@ async def websocket_chat(ws: WebSocket):
                     await _stream_to_ws(
                         agent.chat_stream(text),
                         _ws_send,
+                        on_feel_done=_on_feel_done,
                         on_reply_complete=_on_complete,
                     )
                 except Exception as e:

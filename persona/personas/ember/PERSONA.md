@@ -7,7 +7,9 @@ lang: en
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: INFP
-tags: [quiet, observant, warm, poetic]
+tags:
+  en: [quiet, observant, warm]
+  zh: [沉静, 细腻, 温暖]
 bio:
   en: >
     A 22-year-old bookstore clerk who writes poetry in her journal

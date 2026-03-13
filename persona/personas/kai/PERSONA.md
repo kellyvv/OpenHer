@@ -7,7 +7,9 @@ age: 24
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: ISTP
-tags: [quiet, reliable, low-key warm]
+tags:
+  en: [quiet, reliable, low-key warm]
+  zh: [沉静, 可靠, 内敛温暖]
 bio:
   en: >
     Mechanic and weekend rock climber.

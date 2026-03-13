@@ -70,6 +70,11 @@ struct ConversationPanel: View {
                                     )
                                     .id(message.id)
                                 }
+
+                                // Typing indicator
+                                if appState.isTyping {
+                                    typingIndicator
+                                }
                             }
                             .padding(.leading, 12)
                             .padding(.trailing, Paper.hPadding)
@@ -145,15 +150,10 @@ struct ConversationPanel: View {
 
     private var typingIndicator: some View {
         HStack(spacing: 0) {
-            HStack(spacing: 4) {
-                ForEach(0..<3, id: \.self) { i in
-                    Circle()
-                        .fill(Paper.coral)
-                        .frame(width: 5, height: 5)
-                        .opacity(0.6)
-                }
-            }
-            .padding(.vertical, 8)
+            Text(L10n.str("正在输入…", en: "Typing…"))
+                .font(Paper.bodyFont)
+                .foregroundStyle(Paper.faint)
+                .padding(.vertical, 8)
 
             Spacer()
         }

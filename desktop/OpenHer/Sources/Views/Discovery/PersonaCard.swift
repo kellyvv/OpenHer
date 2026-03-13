@@ -106,8 +106,8 @@ struct PersonaCard: View {
             Spacer().frame(height: 14)
 
             HStack(spacing: 6) {
-                ForEach(persona.tags.prefix(3), id: \.self) { tag in
-                    Text("#\(Self.localizedTag(tag))")
+                ForEach(Self.localizedTags(persona).prefix(3), id: \.self) { tag in
+                    Text("#\(tag)")
                         .font(.custom("Baskerville", size: 14))
                         .foregroundStyle(DiscoveryPalette.buttonText)
                         .padding(.horizontal, 11)
@@ -306,24 +306,10 @@ struct PersonaCard: View {
         .shadow(color: Paper.herText.opacity(0.1), radius: 24, y: 16)
     }
 
-    // MARK: - Tag Localization
-
-    /// Map English tags to Chinese for zh locale
-    private static let tagMap: [String: String] = [
-        "gentle": "温柔", "poetic": "诗意", "dreamy": "梦幻",
-        "bright": "明朗", "bubbly": "活泼", "sweet": "甜美",
-        "quiet": "沉静", "observant": "细腻", "warm": "温暖",
-        "reliable": "可靠", "low-key warm": "内敛温暖",
-        "sharp-tongued": "毒舌", "restless": "不安分", "curious": "好奇",
-        "energetic": "活力", "spontaneous": "随性",
-        "decisive": "果断", "commanding": "威严", "strategic": "运筹帷幄",
-        "insightful": "洞察", "gentle-firm": "温和坚定", "deep": "深沉",
-        "sharp": "犀利", "witty": "机智", "secretly caring": "傲娇",
-    ]
-
-    static func localizedTag(_ tag: String) -> String {
-        guard L10n.isZh, let zh = tagMap[tag] else { return tag }
-        return zh
+    /// Return localized tags: use tags_zh for Chinese locale, tags for English
+    static func localizedTags(_ persona: Persona) -> [String] {
+        if L10n.isZh, let zh = persona.tagsZh, !zh.isEmpty { return zh }
+        return persona.tags
     }
 
     // MARK: - Helpers

@@ -7,7 +7,9 @@ age: 27
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: INFJ
-tags: [insightful, gentle-firm, deep]
+tags:
+  en: [insightful, gentle-firm, deep]
+  zh: [洞察, 温和坚定, 深沉]
 bio:
   en: >
     27-year-old psychologist at a university counseling center.

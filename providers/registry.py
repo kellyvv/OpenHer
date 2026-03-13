@@ -23,7 +23,7 @@ from .speech.tts.base import BaseTTSProvider
 # ─────────────────────────────────────────────────────────────
 
 # Map: provider name → class
-_LLM_PROVIDERS: dict[str, type[OpenAICompatProvider]] = {}
+_LLM_PROVIDERS: dict[str, type[BaseLLMProvider]] = {}
 
 
 def _register_llm_providers():
@@ -33,16 +33,18 @@ def _register_llm_providers():
 
     from .llm.dashscope import DashScopeLLMProvider
     from .llm.openai import OpenAILLMProvider
-    from .llm.deepseek import DeepSeekLLMProvider
     from .llm.moonshot import MoonshotLLMProvider
     from .llm.ollama import OllamaLLMProvider
+    from .llm.gemini import GeminiLLMProvider
+    from .llm.claude import ClaudeLLMProvider
 
     _LLM_PROVIDERS.update({
         "dashscope": DashScopeLLMProvider,
         "openai": OpenAILLMProvider,
-        "deepseek": DeepSeekLLMProvider,
         "moonshot": MoonshotLLMProvider,
         "ollama": OllamaLLMProvider,
+        "gemini": GeminiLLMProvider,
+        "claude": ClaudeLLMProvider,
     })
 
 
@@ -61,7 +63,7 @@ def get_llm(
     This is the primary factory — LLMClient facade delegates here.
 
     Args:
-        provider:    Provider name (dashscope/openai/deepseek/moonshot/ollama).
+        provider:    Provider name (dashscope/openai/moonshot/ollama/gemini).
                      Default: config active_provider.
         model:       Model name. Default: config model.
         api_key:     API key. Default: resolved from env var.
@@ -123,18 +125,14 @@ def _register_tts_providers():
     if _TTS_PROVIDERS:
         return
 
-    from .speech.tts.edge import EdgeTTSProvider
     from .speech.tts.openai import OpenAITTSProvider
     from .speech.tts.dashscope import DashScopeTTSProvider
     from .speech.tts.minimax import MiniMaxTTSProvider
-    from .speech.tts.qwen3_local import Qwen3LocalTTSProvider
 
     _TTS_PROVIDERS.update({
-        "edge": EdgeTTSProvider,
         "openai": OpenAITTSProvider,
         "dashscope": DashScopeTTSProvider,
         "minimax": MiniMaxTTSProvider,
-        "qwen3": Qwen3LocalTTSProvider,
     })
 
 
@@ -148,7 +146,7 @@ def get_tts(
     Create a TTS provider instance.
 
     Args:
-        provider:      Provider name (edge/openai/dashscope/minimax/qwen3).
+        provider:      Provider name (openai/dashscope/minimax).
         cache_dir:     Audio cache directory.
         api_key:       API key (for the active provider).
         minimax_model: MiniMax model name override.

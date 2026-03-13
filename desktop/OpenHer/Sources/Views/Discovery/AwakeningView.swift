@@ -31,7 +31,7 @@ struct AwakeningView: View {
     private var initSteps: [String] {
         let mbti = persona.mbti ?? "UNKNOWN"
         let desc = persona.description ?? L10n.str("标准模式", en: "Standard")
-        let tagStr = persona.tags.prefix(3).map { "#\($0)" }.joined(separator: " ")
+        let tagStr = PersonaCard.localizedTags(persona).prefix(3).map { "#\($0)" }.joined(separator: " ")
 
         return [
             L10n.str("正在初始化神经通路...", en: "Initializing neural pathways..."),

@@ -49,6 +49,7 @@ class Persona:
     lang: str = "zh"                          # Prompt label language: 'zh' or 'en'
     mbti: Optional[str] = None
     tags: list[str] = field(default_factory=list)
+    tags_zh: list[str] = field(default_factory=list)
 
     # Configs
     voice: VoiceConfig = field(default_factory=VoiceConfig)
@@ -90,8 +91,9 @@ class Persona:
             parts.append(f"- 性别：{self.gender}")
         if self.mbti:
             parts.append(f"- MBTI：{self.mbti}")
-        if self.tags:
-            parts.append(f"- 特点：{'、'.join(self.tags)}")
+        _display_tags = self.tags_zh if self.tags_zh else self.tags
+        if _display_tags:
+            parts.append(f"- 特点：{'、'.join(_display_tags)}")
 
         if self.personality:
             parts.append(f"\n## 性格\n{self.personality}")
@@ -228,7 +230,8 @@ class PersonaLoader:
             gender=meta.get("gender", "female"),
             lang=meta.get("lang", "zh"),
             mbti=meta.get("mbti"),
-            tags=meta.get("tags", []),
+            tags=meta.get("tags", {}).get("en", []) if isinstance(meta.get("tags"), dict) else meta.get("tags", []),
+            tags_zh=meta.get("tags", {}).get("zh", []) if isinstance(meta.get("tags"), dict) else [],
             voice=voice,
             image=image,
             bio=bio,

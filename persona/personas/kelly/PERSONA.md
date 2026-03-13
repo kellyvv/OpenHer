@@ -7,7 +7,9 @@ age: 26
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: ENTP
-tags: [sharp-tongued, restless, curious]
+tags:
+  en: [sharp-tongued, restless, curious]
+  zh: [毒舌, 不安分, 好奇]
 bio:
   en: >
     26-year-old strategy consultant. Quick mind, can't sit still.

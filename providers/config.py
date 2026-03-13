@@ -86,9 +86,9 @@ def get_llm_provider_config() -> dict:
     _PROVIDER_DEFAULT_MODELS = {
         "dashscope": "qwen-max",
         "openai": "gpt-4o",
-        "deepseek": "deepseek-chat",
         "moonshot": "moonshot-v1-auto",
         "ollama": "qwen3.5:9b",
+        "gemini": "gemini-3.1-flash-lite-preview",
     }
     model = (
         os.getenv("DEFAULT_MODEL")
@@ -122,7 +122,7 @@ def get_tts_provider_config() -> dict:
     speech = cfg.get("speech", cfg.get("tts", {}))
 
     return {
-        "active_provider": speech.get("provider", speech.get("active_provider", "edge")),
+        "active_provider": speech.get("provider", speech.get("active_provider", "dashscope")),
         "cache_dir": speech.get("cache_dir", ".cache/tts"),
         "providers": speech.get("providers", {}),
     }

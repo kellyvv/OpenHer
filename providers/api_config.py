@@ -13,7 +13,6 @@ Usage:
     #    "providers": {...}}
 
     tts = get_tts_config()
-    # → {"provider": "edge", "cache_dir": ".cache/tts",
     #    "api_keys": {"openai": "...", "dashscope": "...", "minimax": "..."}}
 
     mem = get_memory_config()
@@ -110,9 +109,9 @@ def get_llm_config() -> dict:
     _PROVIDER_DEFAULT_MODELS = {
         "dashscope": "qwen-max",
         "openai": "gpt-4o",
-        "deepseek": "deepseek-chat",
         "moonshot": "moonshot-v1-auto",
         "ollama": "qwen3.5:9b",
+        "gemini": "gemini-3.1-flash-lite-preview",
     }
     model = (
         os.getenv("DEFAULT_MODEL")
@@ -154,7 +153,7 @@ def get_tts_config() -> dict:
     minimax_model = providers.get("minimax", {}).get("model", "speech-2.8-turbo")
 
     return {
-        "provider": tts.get("provider", "edge"),
+        "provider": tts.get("provider", "dashscope"),
         "cache_dir": tts.get("cache_dir", ".cache/tts"),
         "api_keys": api_keys,
         "minimax_model": minimax_model,

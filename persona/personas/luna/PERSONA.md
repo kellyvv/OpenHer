@@ -7,7 +7,9 @@ age: 22
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: ENFP
-tags: [bright, bubbly, sweet]
+tags:
+  en: [bright, bubbly, sweet]
+  zh: [明朗, 活泼, 甜美]
 bio:
   en: >
     22-year-old freelance illustrator with a warm, healing art style.

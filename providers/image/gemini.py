@@ -42,6 +42,69 @@ class GeminiImageProvider(BaseImageProvider):
             self._client = genai.Client(api_key=self._api_key)
         return self._client
 
+    @staticmethod
+    def _load_and_compress_reference(
+        path: str,
+        max_px: int = 1024,
+        quality: int = 85,
+        threshold_kb: int = 500,
+    ) -> tuple[bytes, str]:
+        """Load and auto-compress a reference image for Gemini API.
+
+        Large PNGs (>500KB) cause Gemini to silently return empty responses.
+        Compresses to JPEG with max longest-side 1024px.
+
+        Returns: (image_bytes, mime_type)
+        """
+        raw_size = os.path.getsize(path)
+
+        # Skip compression if already small enough
+        if raw_size <= threshold_kb * 1024:
+            with open(path, "rb") as f:
+                data = f.read()
+            ext = os.path.splitext(path)[1].lower()
+            mime_map = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp'}
+            return data, mime_map.get(ext, 'image/png')
+
+        try:
+            from PIL import Image
+            import io
+
+            img = Image.open(path)
+            # Convert RGBA → RGB (JPEG doesn't support alpha)
+            if img.mode in ('RGBA', 'P', 'LA'):
+                img = img.convert('RGB')
+
+            # Resize if larger than max_px on longest side
+            w, h = img.size
+            if max(w, h) > max_px:
+                ratio = max_px / max(w, h)
+                new_w, new_h = int(w * ratio), int(h * ratio)
+                img = img.resize((new_w, new_h), Image.LANCZOS)
+
+            buf = io.BytesIO()
+            img.save(buf, format='JPEG', quality=quality)
+            compressed = buf.getvalue()
+
+            print(
+                f"  [gemini] 📦 Reference compressed: "
+                f"{raw_size/1024:.0f}KB → {len(compressed)/1024:.0f}KB "
+                f"({img.size[0]}x{img.size[1]})"
+            )
+            return compressed, 'image/jpeg'
+
+        except ImportError:
+            print("  [gemini] ⚠ Pillow not installed, using raw image")
+            with open(path, "rb") as f:
+                return f.read(), 'image/png'
+        except Exception as e:
+            print(f"  [gemini] ⚠ Compression failed ({e}), using raw image")
+            with open(path, "rb") as f:
+                data = f.read()
+            ext = os.path.splitext(path)[1].lower()
+            mime_map = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp'}
+            return data, mime_map.get(ext, 'image/png')
+
     async def generate(
         self,
         prompt: str,
@@ -76,15 +139,10 @@ class GeminiImageProvider(BaseImageProvider):
             parts = []
 
             if reference_image and os.path.exists(reference_image):
-                # Load image as bytes
-                with open(reference_image, "rb") as f:
-                    image_bytes = f.read()
-                # Detect MIME type
-                ext = os.path.splitext(reference_image)[1].lower()
-                mime_map = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp'}
-                mime = mime_map.get(ext, 'image/png')
+                # Auto-compress: large PNGs cause Gemini to silently return empty
+                image_bytes, mime = self._load_and_compress_reference(reference_image)
                 parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime))
-                print(f"  [gemini] 🖼 Reference image loaded: {os.path.basename(reference_image)}")
+                print(f"  [gemini] 🖼 Reference image loaded: {os.path.basename(reference_image)} ({len(image_bytes)/1024:.0f}KB, {mime})")
 
             parts.append(types.Part.from_text(text=prompt))
 
@@ -107,14 +165,31 @@ class GeminiImageProvider(BaseImageProvider):
                 response_modalities=["IMAGE", "TEXT"],
             )
 
-            # Run sync stream in executor to avoid blocking event loop
-            result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: self._generate_sync(contents, config, prompt),
-            )
+            # Run sync stream in executor with retry for transient errors
+            max_retries = 2
+            last_error = None
+            for attempt in range(max_retries + 1):
+                try:
+                    result = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: self._generate_sync(contents, config, prompt),
+                    )
+                    result.latency_ms = (time.time() - start_time) * 1000
+                    return result
+                except (ConnectionError, OSError, TimeoutError) as e:
+                    last_error = e
+                    if attempt < max_retries:
+                        wait = 2 ** attempt
+                        print(f"  [gemini] ⚠ Retry {attempt+1}/{max_retries} after {type(e).__name__}: {e}")
+                        await asyncio.sleep(wait)
+                    continue
 
-            result.latency_ms = (time.time() - start_time) * 1000
-            return result
+            return ImageResult(
+                success=False,
+                error=f"Failed after {max_retries} retries: {last_error}",
+                provider=self.PROVIDER_NAME,
+                latency_ms=(time.time() - start_time) * 1000,
+            )
 
         except Exception as e:
             return ImageResult(
@@ -129,13 +204,28 @@ class GeminiImageProvider(BaseImageProvider):
         text_parts = []
         image_path = None
         mime_type = "image/png"
+        chunk_count = 0
+
+        print(f"  [gemini] 📡 Streaming from model={self._model}, prompt={prompt[:80]}...")
 
         for chunk in self.client.models.generate_content_stream(
             model=self._model,
             contents=contents,
             config=config,
         ):
+            chunk_count += 1
             if chunk.parts is None:
+                # Log blocked/empty chunks for debugging
+                if hasattr(chunk, 'candidates') and chunk.candidates:
+                    for c in chunk.candidates:
+                        if hasattr(c, 'finish_reason') and c.finish_reason:
+                            print(f"  [gemini] ⚠ chunk #{chunk_count} finish_reason: {c.finish_reason}")
+                        if hasattr(c, 'safety_ratings') and c.safety_ratings:
+                            blocked = [r for r in c.safety_ratings if getattr(r, 'blocked', False)]
+                            if blocked:
+                                print(f"  [gemini] 🚫 safety blocked: {blocked}")
+                else:
+                    print(f"  [gemini] ⚠ chunk #{chunk_count}: no parts, no candidates")
                 continue
 
             for part in chunk.parts:
@@ -153,9 +243,13 @@ class GeminiImageProvider(BaseImageProvider):
 
                     with open(image_path, "wb") as f:
                         f.write(inline_data.data)
+                    print(f"  [gemini] ✅ image received: {len(inline_data.data)/1024:.0f}KB, mime={mime_type}")
 
                 elif part.text:
                     text_parts.append(part.text)
+                    print(f"  [gemini] 📝 text: {part.text[:120]}")
+
+        print(f"  [gemini] 📊 Stream done: {chunk_count} chunks, image={'YES' if image_path else 'NO'}, text_parts={len(text_parts)}")
 
         if image_path:
             return ImageResult(

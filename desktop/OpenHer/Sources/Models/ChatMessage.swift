@@ -19,6 +19,7 @@ struct ChatMessage: Codable, Identifiable {
     var content: String
     var modality: String
     var imageURL: String?
+    var audioData: Data?     // Decoded wav/mp3 from tts_audio WebSocket
     var timestamp: Date
     var sendStatus: SendStatus?
 
@@ -31,6 +32,7 @@ struct ChatMessage: Codable, Identifiable {
         content: String,
         modality: String = "文字",
         imageURL: String? = nil,
+        audioData: Data? = nil,
         timestamp: Date = Date(),
         sendStatus: SendStatus? = nil,
         engineStatus: EngineStatus? = nil
@@ -40,9 +42,15 @@ struct ChatMessage: Codable, Identifiable {
         self.content = content
         self.modality = modality
         self.imageURL = imageURL
+        self.audioData = audioData
         self.timestamp = timestamp
         self.sendStatus = sendStatus
         self.engineStatus = engineStatus
+    }
+
+    // Exclude audioData from Codable (it's transient runtime data)
+    enum CodingKeys: String, CodingKey {
+        case id, role, content, modality, imageURL, timestamp, sendStatus, engineStatus
     }
 }
 

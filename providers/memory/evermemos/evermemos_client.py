@@ -248,6 +248,33 @@ class EverMemOSClient:
         except Exception as e:
             print(f"⚠ EverMemOS init failed: {e}")
 
+    async def verify_connection(self) -> bool:
+        """Validate API key by making a lightweight request.
+        Call at server startup to fail fast on auth errors.
+        Returns True if connection is valid, False otherwise.
+        """
+        if not self._initialized or not self._client:
+            return False
+        try:
+            resp = await self._client.request(
+                "GET", "/memories",
+                json={"user_id": "__healthcheck__", "memory_type": "profile", "page_size": 1},
+                timeout=8.0,
+            )
+            if resp.status_code == 401:
+                print(f"✗ EverMemOS API key 无效 (HTTP 401) — 请检查 .env 中的 EVERMEMOS_API_KEY")
+                self._initialized = False
+                return False
+            if resp.status_code == 200:
+                print(f"  ↳ EverMemOS API key 验证通过 ✓")
+                return True
+            # Other status codes (e.g. 500) — warn but don't disable
+            print(f"  ↳ EverMemOS health check: HTTP {resp.status_code} (non-fatal)")
+            return True
+        except Exception as e:
+            print(f"  ↳ EverMemOS health check failed: {e} (non-fatal)")
+            return True  # Network issue, don't disable — might be transient
+
     @property
     def available(self) -> bool:
         return self._initialized and self._client is not None and not self._cb.is_open
@@ -260,6 +287,7 @@ class EverMemOSClient:
         self,
         user_id: str,
         persona_id: str,
+        group_id: str = "",
     ) -> SessionContext:
         """
         Called once at session start. Pulls user profile + episodes + foresight
@@ -287,9 +315,14 @@ class EverMemOSClient:
 
             async def _get_type(mtype: str):
                 try:
-                    resp = await self._client.get(
-                        "/memories",
-                        params={"user_id": user_id, "memory_type": mtype},
+                    body = {"memory_type": mtype}
+                    if group_id:
+                        body["group_ids"] = [group_id]
+                    else:
+                        body["user_id"] = user_id
+                    resp = await self._client.request(
+                        "GET", "/memories",
+                        json=body,
                         timeout=timeout,
                     )
                     if resp.status_code == 200:
@@ -454,7 +487,7 @@ class EverMemOSClient:
 
         try:
             # Store user message
-            await self._client.post("/memories", json={
+            r1 = await self._client.post("/memories", json={
                 "content": user_message,
                 "create_time": now_iso,
                 "message_id": str(uuid.uuid4()),
@@ -463,8 +496,13 @@ class EverMemOSClient:
                 "role": "user",
                 "group_id": group_id,
             })
-            # Store agent reply
-            await self._client.post("/memories", json={
+            print(f"  [evermemos] POST user msg: HTTP {r1.status_code} gid={group_id} sender={user_id}")
+            if r1.status_code not in (200, 202):
+                print(f"  [evermemos] store user msg failed: {r1.text[:200]}")
+                self._cb.record_failure()
+                return
+            # Store agent reply (flush=True → trigger immediate memory extraction)
+            r2 = await self._client.post("/memories", json={
                 "content": agent_reply,
                 "create_time": now_iso,
                 "message_id": str(uuid.uuid4()),
@@ -472,7 +510,13 @@ class EverMemOSClient:
                 "sender_name": persona_name,
                 "role": "assistant",
                 "group_id": group_id,
+                "flush": True,
             })
+            print(f"  [evermemos] POST agent msg: HTTP {r2.status_code} gid={group_id} sender={persona_id} flush=True")
+            if r2.status_code not in (200, 202):
+                print(f"  [evermemos] store agent msg failed: {r2.text[:200]}")
+                self._cb.record_failure()
+                return
             self._cb.record_success()
 
         except Exception as e:
@@ -569,6 +613,7 @@ class EverMemOSClient:
         self,
         query: str,
         user_id: str,
+        group_id: str = "",
     ) -> tuple[str, str, str]:
         """
         Search for memories most relevant to the current user message.
@@ -593,15 +638,19 @@ class EverMemOSClient:
                 retrieve_method = "agentic"
 
         try:
-            # Open-source API: GET /memories/search with JSON body
+            # EverMemOS API: GET /memories/search with JSON body
+            body = {
+                "query": query,
+                "retrieve_method": retrieve_method,
+            }
+            if group_id:
+                body["group_ids"] = [group_id]
+            else:
+                body["user_id"] = user_id
             resp = await self._client.request(
                 "GET",
                 "/memories/search",
-                json={
-                    "query": query,
-                    "user_id": user_id,
-                    "retrieve_method": retrieve_method,
-                },
+                json=body,
                 timeout=_CFG["search_timeout_sec"],
             )
 

@@ -6,7 +6,9 @@ age: 30
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: ENTJ
-tags: [decisive, commanding, strategic]
+tags:
+  en: [decisive, commanding, strategic]
+  zh: [果断, 威严, 运筹帷幄]
 bio:
   en: >
     30-year-old startup CEO. Built two companies from scratch.

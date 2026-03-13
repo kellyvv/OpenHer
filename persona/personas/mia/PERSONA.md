@@ -6,7 +6,9 @@ age: 23
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: ESFP
-tags: [energetic, spontaneous, warm]
+tags:
+  en: [energetic, spontaneous, warm]
+  zh: [活力, 随性, 温暖]
 bio:
   en: >
     23-year-old dance instructor and part-time DJ.

@@ -106,6 +106,7 @@ async def stream_to_ws(
     raw_stream: AsyncIterator[str],
     ws_send: WsSend,
     *,
+    on_feel_done: Callable[[], Awaitable[None]] | None = None,
     on_reply_complete: Callable[[str, str], Awaitable[None]] | None = None,
 ) -> None:
     """
@@ -120,6 +121,7 @@ async def stream_to_ws(
     Args:
         raw_stream:        AsyncIterator of raw LLM chunks from chat_agent
         ws_send:           Coroutine to send a dict to the WebSocket
+        on_feel_done:      Callback when Feel pass completes (before Express starts)
         on_reply_complete: Callback(clean_reply, modality) after full stream
     """
     buf = ""
@@ -128,6 +130,12 @@ async def stream_to_ws(
     full_raw: list[str] = []
 
     async for chunk in raw_stream:
+        # Intercept Feel-done sentinel (not a real chunk)
+        if chunk == "__FEEL_DONE__":
+            if on_feel_done:
+                await on_feel_done()
+            continue
+
         full_raw.append(chunk)
         if done_reply:
             continue

@@ -1,7 +1,7 @@
 """
 BaseLLMProvider — LLM 统一接口 + OpenAI-compat 共用基类.
 
-所有 LLM provider (dashscope, openai, deepseek, moonshot, ollama) 继承
+所有 LLM provider (dashscope, openai, moonshot, ollama, gemini) 继承
 OpenAICompatProvider，差异仅在默认 base_url / api_key_env / model。
 
 公共类型 ChatMessage, ChatResponse 定义在此，原模块 re-export。
@@ -78,7 +78,7 @@ class OpenAICompatProvider(BaseLLMProvider):
     """
     OpenAI-compatible LLM provider 共用实现.
 
-    DashScope, OpenAI, DeepSeek, Moonshot 均使用 OpenAI SDK，
+    DashScope, OpenAI, Moonshot 均使用 OpenAI SDK，
     只是 base_url / api_key / model 不同。
     """
 

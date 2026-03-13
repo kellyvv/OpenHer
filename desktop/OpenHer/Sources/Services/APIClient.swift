@@ -86,7 +86,8 @@ actor APIClient {
     // MARK: - Avatar
 
     nonisolated func avatarURL(for personaId: String) -> URL? {
-        URL(string: "\(baseURL)/api/avatar/\(personaId)")
+        // Use real face photo from idimage as avatar
+        URL(string: "\(baseURL)/api/persona/\(personaId)/media/face")
     }
 
     // MARK: - Internals

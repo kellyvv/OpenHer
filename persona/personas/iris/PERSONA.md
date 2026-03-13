@@ -7,7 +7,9 @@ age: 20
 
 # ═══ Display (仅 UI 展示，不注入 prompt) ═══
 mbti: INFP
-tags: [gentle, poetic, dreamy]
+tags:
+  en: [gentle, poetic, dreamy]
+  zh: [温柔, 诗意, 梦幻]
 bio:
   en: >
     Literature major who writes poetry and short stories.
@@ -19,7 +21,7 @@ bio:
     养了一盆多肉植物叫小芽。
 
 voice:
-  voice_preset: "Bella"
+  voice_preset: "Momo"
   base_instructions: "音色轻柔甜美，语速偏慢，带有梦幻感和诗意气质，像在轻声细语"
   ref_audio: voice_sample.wav
   description: Soft, warm voice with slow gentle pace, like a whisper

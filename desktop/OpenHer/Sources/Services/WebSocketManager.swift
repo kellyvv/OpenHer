@@ -101,12 +101,10 @@ final class WebSocketManager: ObservableObject {
         case "chat_start":
             sessionId = json["session_id"] as? String
             streamingContent = ""
+            appState?.isTyping = true
 
         case "chat_chunk":
             if let chunk = json["content"] as? String {
-                if streamingContent.isEmpty {
-                    appState?.isTyping = true
-                }
                 streamingContent += chunk
                 updateStreamingMessage()
             }
@@ -175,6 +173,18 @@ final class WebSocketManager: ObservableObject {
             let errContent = json["content"] as? String ?? "Unknown error"
             print("[WS] Error: \(errContent)")
             appState?.isTyping = false
+
+        case "tts_audio":
+            // Decode base64 audio and attach to last assistant message
+            if let audioBase64 = json["audio"] as? String,
+               let audioData = Data(base64Encoded: audioBase64) {
+                let format = json["format"] as? String ?? "wav"
+                print("[WS] tts_audio received: \(audioData.count) bytes (\(format))")
+                // Find the last assistant message and attach audio
+                if let idx = appState?.messages.lastIndex(where: { $0.role == .assistant }) {
+                    appState?.messages[idx].audioData = audioData
+                }
+            }
 
         default:
             break
