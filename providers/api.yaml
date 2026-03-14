@@ -49,6 +49,20 @@ tts:
       api_key_env: "MINIMAX_API_KEY"
       model: "speech-2.8-turbo"
 
+  # Per-persona voice mapping (provider-specific)
+  # When switching TTS provider, update these values accordingly
+  voice_map:
+    ember: "gentle_female"
+    iris: "Momo"
+    kai: "calm_male"
+    kelly: "calm_male"
+    luna: "Maia"
+    mia: "sweet_female"
+    nova: "Cherry"
+    rex: "calm_male"
+    sora: "gentle_female"
+    vivian: "Serena"
+
 # ── Memory (双层记忆) ──
 # SoulMem: 行为记忆 — 指导怎么做 (常驻，SQLite FTS5)
 # EverMemOS: 陈述记忆 — 记住做了什么 (可选增强，HTTP)

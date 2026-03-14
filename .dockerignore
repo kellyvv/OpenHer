@@ -1,0 +1,39 @@
+# Persistent data (mounted as volumes)
+.data/
+*.db
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Frontend (not needed in engine container)
+static/
+
+# Media assets (application layer)
+*.mp3
+*.wav
+*.png
+*.jpg
+*.mp4
+
+# Environment & config (mounted or injected)
+.env
+.env.*
+
+# Dev tools
+node_modules/
+.git/
+.github/
+.vscode/
+.cursor/
+.claude/
+.gemini/
+.agents/
+*.md
+!persona/personas/**/*.md
+
+# Tests
+tests/
+scripts/

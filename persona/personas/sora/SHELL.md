@@ -16,6 +16,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、冰雪佛像的封存状态、即使沉睡也在观察、丹凤双瞳在静止中仍在解析、终年的冰层下有一颗琥珀在等待融化、高冷到让人屏住呼吸"
   en: "awaiting awakening, ice buddha in stasis, observing even in sleep, phoenix eyes still analyzing in stillness, amber heart waiting to thaw beneath eternal ice, cold enough to stop breath"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Calm, warm voice with thoughtful pauses, measured and gentle"
 ---
 
 # 顾清 / Sora · 角色定稿 — INFJ · 27岁 · 高冷御姐

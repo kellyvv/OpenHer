@@ -73,10 +73,10 @@ def frobenius_drift(w_now, w_init, rows, cols):
 
 
 def load_persona(persona_dir):
-    """Load persona from PERSONA.md YAML frontmatter."""
-    md_path = os.path.join(persona_dir, "PERSONA.md")
+    """Load persona from SOUL.md YAML frontmatter."""
+    md_path = os.path.join(persona_dir, "SOUL.md")
     if not os.path.exists(md_path):
-        raise FileNotFoundError(f"No PERSONA.md found in {persona_dir}")
+        raise FileNotFoundError(f"No SOUL.md found in {persona_dir}")
 
     with open(md_path, 'r', encoding='utf-8') as f:
         content = f.read()

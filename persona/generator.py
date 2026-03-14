@@ -64,23 +64,13 @@ class PersonaGenerator:
     Usage:
         generator = PersonaGenerator(personas_dir="server/personas")
 
-        # 生成候选角色
+        # Generate candidate personas
         candidates = await generator.generate_candidates(
             gender="female", count=3
         )
 
-        # 锁定选定角色
+        # Lock the selected persona
         locked = generator.store.lock(candidates[0].id)
-
-        # 上传 MiniMax 克隆 (需要 API Key)
-        # from tts.minimax_tts import MiniMaxTTSClient
-        # minimax = MiniMaxTTSClient()
-        # minimax.clone_voice(
-        #     audio_path=locked.voice.ref_audio_path,
-        #     voice_id=f"openher_{locked.id}",
-        # )
-        # locked.voice.minimax_voice_id = f"openher_{locked.id}"
-        # generator.store.save(locked)
     """
 
     def __init__(
@@ -166,7 +156,7 @@ class PersonaGenerator:
             tags=persona_data.get("tags", []),
             backstory=persona_data.get("backstory", ""),
             voice=VoiceProfile(
-                design_description=persona_data.get("voice_description", ""),
+                description=persona_data.get("voice_description", ""),
                 ref_text=intro_text,
             ),
             avatar=AvatarProfile(
@@ -248,11 +238,11 @@ class PersonaGenerator:
         return None
 
     async def _generate_voice(self, profile: PersonaProfile):
-        """用 Qwen3-TTS voice_design 生成参考音频"""
+        """用 TTS voice_design 生成参考音频"""
         try:
             result = self.qwen3_client.voice_design(
                 text=profile.voice.ref_text,
-                description=profile.voice.design_description,
+                description=profile.voice.description,
                 language="Chinese",
             )
 
@@ -261,8 +251,6 @@ class PersonaGenerator:
             persona_dir.mkdir(parents=True, exist_ok=True)
             audio_path = str(persona_dir / "voice_ref.wav")
             result.save(audio_path)
-
-            profile.voice.ref_audio_path = audio_path
         except Exception as e:
             print(f"声音生成失败: {e}")
 

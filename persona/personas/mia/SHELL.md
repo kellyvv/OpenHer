@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、火焰被冻结在跳动的一刻、舞踈间的停顿、即使在玻璃里仍在发热、等待音乐响起、像六月界的太阳下山前最后一抹火烧云"
   en: "awaiting awakening, flame frozen mid-flicker, pause between dance beats, still radiating heat inside glass, waiting for music to drop, like the last burning cloud before sunset"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Bright, energetic voice with infectious laugh, fast and animated"
 ---
 
 # Mia · 角色定稿 — ESFP · 23岁 · 舞蹈老师/DJ

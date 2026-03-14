@@ -137,12 +137,20 @@ class ModalitySkillEngine:
             mod = importlib.import_module(module_path)
             handler = getattr(mod, fn_name)
 
+            # Resolve voice_preset from api.yaml voice_map (provider-agnostic)
+            from providers.config import _load as _load_config
+            _tts_cfg = _load_config().get("tts", {})
+            _voice_map = _tts_cfg.get("voice_map", {})
+            _default_voice = _tts_cfg.get("providers", {}).get(
+                _tts_cfg.get("provider", ""), {}
+            ).get("default_voice", "Cherry")
+
             result = await handler(
                 persona_id=persona.persona_id,
                 raw_output=structured_output,
                 persona_name=persona.name,
-                voice_preset=getattr(persona.voice, 'voice_preset', '') or '',
-                base_instructions=getattr(persona.voice, 'base_instructions', '') or '',
+                voice_preset=_voice_map.get(persona.persona_id, _default_voice),
+                base_instructions=getattr(persona.voice, 'description', '') or '',
             )
 
             success = result.get("success", False)

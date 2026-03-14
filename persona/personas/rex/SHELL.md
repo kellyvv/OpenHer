@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、权力雕像的封存状态、即使沉睡也在统治、灰绿冰川瞳即使在静止中也在审视、像大理石韩信的寒冷活力、权威不因沉睡而消减"
   en: "awaiting awakening, power sculpture in stasis, ruling even in sleep, grey-green glacier eyes assessing even in stillness, cold vitality of carved marble, authority undimmed by dormancy"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Deep, authoritative voice with measured pace, no wasted words"
 ---
 
 # Rex · 角色定稿 — ENTJ · 30岁 · 连续创业CEO

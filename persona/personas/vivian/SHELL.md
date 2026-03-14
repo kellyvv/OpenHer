@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、精密仪器的自选封存、即使静止也在计算、冰蓝扫描仪在最低功率运行、她不是被封存的而是选择留下的、量子态的冷寂"
   en: "awaiting awakening, precision instrument in self-chosen stasis, still calculating in stillness, ice-blue scanner on lowest power, she is not preserved but chose to remain, quantum-state solitude"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "音色低沉冷冽，语速偏慢且克制，带有压迫性的平稳感，像在审视一切但不急于回应"
 ---
 
 # Vivian · 角色定稿 — INTJ · 26岁 · 产品经理

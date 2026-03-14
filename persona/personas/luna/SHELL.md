@@ -16,6 +16,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、被按下暂停键的多巴胺、笑容冻结在最甜的一帧、即使封存也在发光、玻璃里的温度、像被暂停的阳光GIF、等待播放键"
   en: "awaiting awakening, paused dopamine, smile frozen at sweetest frame, glowing even when preserved, warmth inside glass, like a paused sunshine GIF, waiting for play button"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "音色明亮温暖，语调起伏明显，语速明快，带有少女的亲切感和知性气质"
 ---
 
 # 陆暖 / Luna · 角色定稿 — ENFP · 22岁 · 收藏感元气甜妹

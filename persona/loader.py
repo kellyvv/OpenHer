@@ -1,7 +1,7 @@
 """
-PersonaLoader — Parse PERSONA.md files and manage character definitions.
+PersonaLoader — Parse SOUL.md files and manage character definitions.
 
-Each persona is a directory containing a PERSONA.md with YAML frontmatter
+Each persona is a directory containing a SOUL.md with YAML frontmatter
 (name, age, mbti, tags, voice config, image config) and markdown body
 (personality description, speaking style, background story, behavioral rules).
 """
@@ -19,22 +19,12 @@ import yaml
 
 @dataclass
 class VoiceConfig:
-    """Voice cloning and synthesis configuration for a persona."""
-    ref_audio: Optional[str] = None       # Path to reference audio (3s clip)
-    ref_text: Optional[str] = None        # Transcript of reference audio
-    description: Optional[str] = None     # Natural language voice description (fallback)
-    provider: str = "qwen3-tts"           # TTS provider to use
-    emotion_enabled: bool = True          # Whether to inject emotion in TTS
-    voice_preset: str = "default"         # Voice ID for current provider (e.g. "Maia", "Bella")
-    base_instructions: Optional[str] = None  # TTS persona base instructions (Qwen3-TTS)
+    """Voice description for a persona (provider-agnostic).
 
+    Provider-specific settings (voice_preset, model) are in api.yaml → tts.voice_map.
+    """
+    description: Optional[str] = None     # Natural language voice description
 
-@dataclass
-class ImageConfig:
-    """Image generation configuration for a persona."""
-    prompt_base: Optional[str] = None     # Base prompt describing the character's appearance
-    style: str = "realistic"              # Art style: realistic / anime / illustration
-    negative_prompt: str = ""             # Things to avoid in generation
 
 
 @dataclass
@@ -53,7 +43,6 @@ class Persona:
 
     # Configs
     voice: VoiceConfig = field(default_factory=VoiceConfig)
-    image: ImageConfig = field(default_factory=ImageConfig)
 
     # Display layer
     bio: dict = field(default_factory=dict)  # {"en": ..., "zh": ...}
@@ -72,15 +61,6 @@ class Persona:
 
     # Source
     base_dir: str = ""                    # Absolute path to persona directory
-
-    def get_voice_ref_audio_path(self) -> Optional[str]:
-        """Resolve voice reference audio to absolute path."""
-        if self.voice.ref_audio and self.base_dir:
-            ref = self.voice.ref_audio
-            if not os.path.isabs(ref):
-                return os.path.join(self.base_dir, ref)
-            return ref
-        return None
 
     def build_system_prompt_section(self) -> str:
         """Build the persona section for system prompt injection."""
@@ -113,11 +93,11 @@ class Persona:
 
 
 class PersonaLoader:
-    """Load and manage persona definitions from PERSONA.md files."""
+    """Load and manage persona definitions from SOUL.md files."""
 
-    PERSONA_FILENAME = "PERSONA.md"
+    PERSONA_FILENAME = "SOUL.md"
 
-    # Known H2 sections in PERSONA.md body
+    # Known H2 sections in SOUL.md body
     SECTION_MAPPING = {
         "性格": "personality",
         "personality": "personality",
@@ -135,7 +115,7 @@ class PersonaLoader:
         """
         Args:
             personas_dir: Root directory containing persona subdirectories.
-                          Each subdirectory should contain a PERSONA.md.
+                          Each subdirectory should contain a SOUL.md.
         """
         self.personas_dir = Path(personas_dir)
         self._cache: dict[str, Persona] = {}
@@ -187,29 +167,23 @@ class PersonaLoader:
         meta = post.metadata
         persona_id = persona_dir.name
 
-        # Voice config
-        voice_meta = meta.get("voice", {})
+        # Voice + Image config: read from SHELL.md (external modality config)
+        # Falls back to SOUL.md frontmatter for backward compatibility
+        shell_file = persona_dir / "SHELL.md"
+        if shell_file.exists():
+            shell_post = frontmatter.load(str(shell_file))
+            shell_meta = shell_post.metadata
+        else:
+            shell_meta = meta  # fallback: read from SOUL.md
+
+        # Voice config (provider-agnostic, only description)
+        voice_meta = shell_meta.get("voice", {})
         if isinstance(voice_meta, str):
             voice_meta = {"description": voice_meta}
         voice = VoiceConfig(
-            ref_audio=voice_meta.get("ref_audio"),
-            ref_text=voice_meta.get("ref_text"),
             description=voice_meta.get("description"),
-            provider=voice_meta.get("provider", "qwen3-tts"),
-            emotion_enabled=voice_meta.get("emotion_enabled", True),
-            voice_preset=voice_meta.get("voice_preset", "default"),
-            base_instructions=voice_meta.get("base_instructions"),
         )
 
-        # Image config
-        image_meta = meta.get("image", {})
-        if isinstance(image_meta, str):
-            image_meta = {"prompt_base": image_meta}
-        image = ImageConfig(
-            prompt_base=image_meta.get("prompt_base"),
-            style=image_meta.get("style", "realistic"),
-            negative_prompt=image_meta.get("negative_prompt", ""),
-        )
 
         # Parse body sections
         sections = self._parse_sections(post.content)
@@ -233,7 +207,6 @@ class PersonaLoader:
             tags=meta.get("tags", {}).get("en", []) if isinstance(meta.get("tags"), dict) else meta.get("tags", []),
             tags_zh=meta.get("tags", {}).get("zh", []) if isinstance(meta.get("tags"), dict) else [],
             voice=voice,
-            image=image,
             bio=bio,
             personality=sections.get("personality", ""),
             speaking_style=sections.get("speaking_style", ""),

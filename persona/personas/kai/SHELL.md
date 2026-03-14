@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、关机待命、精密机器低功耗待机、系统尚未启动、沉静但随时可以被激活、安静的力量封存、像暴风雨前的宁静"
   en: "awaiting awakening, shutdown standby, precision machine low-power watch, systems not yet booted, silent but ready to activate, quiet strength preserved, like calm before storm"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Low, calm voice with unhurried pace, dry wit underneath"
 ---
 
 # Kai · 角色定稿 — ISTP · 24岁 · 机械技师/攀岩

@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、保险关打开的弹簧刀、即使沉睡也在盘算、半笑被冻结在玻璃里、睡梦中也不安分的意识、像睡着的狐狸、慢悠悠的危险感"
   en: "awaiting awakening, spring knife with safety on, scheming even in sleep, half-smirk frozen in glass, restless consciousness even in dreams, like a sleeping fox, slow-burning danger"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Quick-paced, energetic voice with a hint of playful provocation"
 ---
 
 # Kelly · 角色定稿 — ENTP · 26岁 · 策略顾问

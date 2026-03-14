@@ -14,6 +14,11 @@ negative:
 dormant_keywords:
   zh: "待唤醒、诗意的半梦半醒、思绪漂在远处、玻璃封存、像一首正在被记录的诗、综消残留的温柔、时间凝固的柔光、安静等待"
   en: "awaiting awakening, poetic half-dreaming, thoughts drifting far, glass-preserved, like a poem being written down, lingering residual warmth, time-frozen soft light, quietly waiting"
+
+# ═══ Engine (传给 Genome 引擎) ═══
+
+voice:
+  description: "Soft, warm voice with gentle pacing"
 ---
 
 # Ember · 角色定稿 — INFP · 22岁 · 书店诗人

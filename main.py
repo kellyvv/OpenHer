@@ -653,11 +653,12 @@ async def api_status():
 async def list_personas():
     personas = persona_loader.load_all()
     result = []
-    avatar_svc = _get_avatar_service()
     import re as _re_bio
     _personas_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas")
     for pid, p in personas.items():
-        avatar_path = avatar_svc.repo.get_avatar_path(pid)
+        # Check for static avatar.png
+        _avatar_path = os.path.join(_personas_dir, pid, "avatar.png")
+        _has_avatar = os.path.isfile(_avatar_path)
         # Extract first sentence only (YAML `>` folds multi-line bio into one string)
         _raw_bio = p.bio.get("zh") or p.bio.get("en") or p.personality or ""
         _first_sentence = _re_bio.split(r'[。！？\n]', _raw_bio)[0].strip()
@@ -678,7 +679,7 @@ async def list_personas():
             tags=p.tags,
             tags_zh=p.tags_zh,
             description=_first_sentence[:120],
-            avatar_url=f"/api/avatar/{pid}" if avatar_path else None,
+            avatar_url=f"/api/avatar/{pid}" if _has_avatar else None,
             has_front=_has_front,
             has_awakening_video=_has_video,
         ))
@@ -854,112 +855,18 @@ async def serve_selfie(filename: str):
 
 
 # ──────────────────────────────────────────────────────────────
-# Avatar API (后台管理 + 前端获取)
+# Avatar — Static file serving only (no generation)
 # ──────────────────────────────────────────────────────────────
-
-
-def _get_avatar_service():
-    """Lazy-create AvatarService."""
-    from persona.avatar.service import AvatarService
-    return AvatarService(
-        personas_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas"),
-        persona_loader=persona_loader,
-    )
-
-
-@app.post("/api/admin/avatar/all")
-async def generate_all_avatars(force: bool = Query(False)):
-    """[Admin] Generate avatars for all personas."""
-    service = _get_avatar_service()
-    results = await service.generate_all(force=force)
-
-    summary = []
-    for pid, r in results.items():
-        summary.append({
-            "persona_id": pid,
-            "success": r.success,
-            "error": r.error,
-        })
-
-    ok = sum(1 for r in results.values() if r.success)
-    return {"total": len(results), "success": ok, "details": summary}
-
-
-@app.post("/api/admin/avatar/{persona_id}")
-async def generate_avatar(persona_id: str, force: bool = Query(False)):
-    """[Admin] Generate avatar for a single persona."""
-    service = _get_avatar_service()
-    try:
-        result = await service.generate(persona_id, force=force)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-    if result.success:
-        return {
-            "persona_id": persona_id,
-            "avatar_path": result.image_path,
-            "provider": result.provider,
-            "latency_ms": round(result.latency_ms, 1),
-        }
-    else:
-        raise HTTPException(status_code=500, detail=result.error or "Avatar generation failed")
-
-
-@app.get("/api/admin/avatar/{persona_id}/config")
-async def get_avatar_config(persona_id: str):
-    """[Admin] Get current avatar config for a persona."""
-    service = _get_avatar_service()
-    try:
-        status = service.get_config(persona_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return {
-        "persona_id": status.persona_id,
-        "persona_name": status.persona_name,
-        "prompt_base": status.config.prompt_base,
-        "style": status.config.style,
-        "negative_prompt": status.config.negative_prompt,
-        "has_avatar": status.has_avatar,
-    }
-
-
-@app.put("/api/admin/avatar/{persona_id}/config")
-async def update_avatar_config(persona_id: str, request: dict = Body(...)):
-    """[Admin] Update avatar config → write back to PERSONA.md."""
-    service = _get_avatar_service()
-    try:
-        updated = service.update_config(
-            persona_id,
-            prompt_base=request.get("prompt_base"),
-            style=request.get("style"),
-            negative_prompt=request.get("negative_prompt"),
-        )
-    except (ValueError, FileNotFoundError) as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return {
-        "persona_id": persona_id,
-        "prompt_base": updated.prompt_base,
-        "style": updated.style,
-        "negative_prompt": updated.negative_prompt,
-    }
-
-
-@app.delete("/api/admin/avatar/{persona_id}")
-async def delete_avatar(persona_id: str):
-    """[Admin] Delete avatar for a persona."""
-    service = _get_avatar_service()
-    deleted = service.delete(persona_id)
-    return {"persona_id": persona_id, "deleted": deleted}
 
 
 @app.get("/api/avatar/{persona_id}")
 async def get_avatar(persona_id: str):
-    """Get avatar image for a persona."""
-    service = _get_avatar_service()
-    path = service.repo.get_avatar_path(persona_id)
-    if path:
+    """Get static avatar image for a persona."""
+    _personas_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "persona", "personas")
+    path = os.path.join(_personas_dir, persona_id, "avatar.png")
+    if os.path.isfile(path):
         return FileResponse(path, media_type="image/png", filename=f"{persona_id}_avatar.png")
-    raise HTTPException(status_code=404, detail="Avatar not found. Use POST /api/admin/avatar/{id} to generate.")
+    raise HTTPException(status_code=404, detail="Avatar not found")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -1127,7 +1034,16 @@ async def websocket_chat(ws: WebSocket):
                 text = msg.get("content", "")
                 if text and agent:
                     try:
-                        voice_preset = agent.persona.voice.voice_preset or "sweet_female"
+                        # Resolve voice from api.yaml voice_map (provider-agnostic)
+                        from providers.config import _load as _load_config
+                        _tts_cfg = _load_config().get("tts", {})
+                        _voice_map = _tts_cfg.get("voice_map", {})
+                        _default_voice = _tts_cfg.get("providers", {}).get(
+                            _tts_cfg.get("provider", ""), {}
+                        ).get("default_voice", "Cherry")
+                        voice_preset = _voice_map.get(
+                            agent.persona.persona_id, _default_voice
+                        )
                         result = await tts_engine.synthesize(
                             text=text,
                             voice_preset=voice_preset,

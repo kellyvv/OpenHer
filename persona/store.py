@@ -22,13 +22,9 @@ from typing import Optional, List
 
 @dataclass
 class VoiceProfile:
-    """角色声音配置"""
-    design_description: str = ""        # Qwen3 voice_design 描述
-    ref_audio_path: str = ""            # 生成的参考音频路径
+    """角色声音配置 (provider-agnostic)"""
+    description: str = ""               # Natural language voice description
     ref_text: str = ""                  # 参考音频对应的文本
-    minimax_voice_id: str = ""          # MiniMax 克隆后的 voice_id
-    qwen3_speaker: str = ""             # Qwen3 内置音色 (如用内置)
-    provider: str = "minimax"           # 日常 TTS 提供者
 
 
 @dataclass
@@ -45,7 +41,7 @@ class PersonaProfile:
     动态生成的角色配置
 
     与旧版 Persona 的区别:
-    - 不依赖静态 PERSONA.md 文件
+    - 不依赖静态 SOUL.md 文件
     - 由 LLM+SKILL 动态生成
     - 锁定后持久化为 JSON
     """
