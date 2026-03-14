@@ -169,6 +169,7 @@ class EverMemosMixin:
         # Concurrency guard: reject stale results from wrong turn
         expected_turn = self._turn_count - 1
         if self._search_turn_id != expected_turn:
+            self._search_task.cancel()
             self._search_task = None
             self._relevant_facts = ""
             self._relevant_episodes = ""

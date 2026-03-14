@@ -14,6 +14,7 @@ from typing import Optional
 from providers.llm.client import ChatMessage
 from engine.genome.genome_engine import DRIVES, DRIVE_LABELS
 from engine.genome.critic import critic_sense
+from agent.parser import extract_reply
 
 
 # Config defaults (from memory_config.yaml if available)
@@ -189,8 +190,6 @@ class ProactiveMixin:
         monologue = self._extract_monologue(feel_response.content)
 
         # ── Step 10b: Pass 2 — Express (monologue → reply + modality) ──
-        from agent.parser import extract_reply
-
         turn_lang = self._detect_turn_lang(stimulus)
         express_few_shot = self.style_memory.build_few_shot_prompt(
             context, top_k=2, monologue_only=False, lang=turn_lang,
