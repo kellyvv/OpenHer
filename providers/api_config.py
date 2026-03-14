@@ -112,6 +112,7 @@ def get_llm_config() -> dict:
         "moonshot": "moonshot-v1-auto",
         "ollama": "qwen3.5:9b",
         "gemini": "gemini-3.1-flash-lite-preview",
+        "stepfun": "step-3.5-flash",
     }
     model = (
         os.getenv("DEFAULT_MODEL")

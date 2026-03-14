@@ -6,7 +6,7 @@ icon: camera
 trigger: modality
 modality: 照片
 executor: handler
-handler_fn: skills.selfie_gen.handler.generate_selfie
+handler_fn: skills.modality.selfie_gen.handler.generate_selfie
 disabled: false
 hidden: false
 

@@ -190,6 +190,7 @@ struct AwakeningView: View {
                 let asset = AVURLAsset(url: videoURL)
                 let playerItem = AVPlayerItem(asset: asset)
                 let avPlayer = AVPlayer(playerItem: playerItem)
+                avPlayer.actionAtItemEnd = .pause  // prevent looping
                 self.player = avPlayer
                 self.hasVideo = true
 
@@ -266,6 +267,10 @@ struct AwakeningView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + interval * Double(i)) {
                 let volume = max(0, 1.0 - Float(i) / Float(steps))
                 player.volume = volume
+                // Hard stop when fade finishes
+                if i == steps {
+                    player.pause()
+                }
             }
         }
     }
@@ -313,6 +318,8 @@ struct AwakeningView: View {
     }
 
     private func fadeOutAndTransition() {
+        // Stop any remaining audio before transitioning
+        cleanupPlayer()
         // RootView handles the slide-up animation — just switch phase
         appState.completeAwakening()
     }

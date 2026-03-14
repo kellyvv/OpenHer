@@ -5,7 +5,7 @@ description: >
   根据角色当前的情绪状态，自动生成带情感指令的语音消息。
 trigger: modality
 modality: 语音
-handler_fn: skills.voice_msg.handler.generate_voice
+handler_fn: skills.modality.voice_msg.handler.generate_voice
 requires:
   - text
   - emotion_instruction

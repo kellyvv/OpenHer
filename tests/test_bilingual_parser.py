@@ -2,7 +2,7 @@
 
 import pytest
 from agent.chat_agent import extract_reply, _parse_modality, _SECTION_RE, _TAG_MAP, ChatAgent
-from output_router import parse_raw_output, _extract_primary_modality
+from agent.output_router import parse_raw_output, _extract_primary_modality
 
 
 # ── Chinese section headers (existing behavior) ──

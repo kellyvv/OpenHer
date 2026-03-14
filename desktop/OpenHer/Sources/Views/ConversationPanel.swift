@@ -9,6 +9,9 @@ struct ConversationPanel: View {
     @State private var showScrollButton = false
     @State private var scrollProxy: ScrollViewProxy?
 
+    // Image zoom state
+    @State private var zoomImageURL: URL? = nil
+
     var body: some View {
         ZStack {
             // Chat background image
@@ -31,6 +34,16 @@ struct ConversationPanel: View {
             } else {
                 emptyState
             }
+
+            // Image zoom overlay
+            if let url = zoomImageURL {
+                ImageZoomOverlay(url: url) {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        zoomImageURL = nil
+                    }
+                }
+                .zIndex(100)
+            }
         }
     }
 
@@ -43,7 +56,14 @@ struct ConversationPanel: View {
                 persona: appState.selectedPersona,
                 isConnected: appState.isConnected,
                 isTyping: appState.isTyping,
-                avatarURL: avatarURL
+                avatarURL: avatarURL,
+                onAvatarTap: {
+                    if let url = avatarURL {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            zoomImageURL = url
+                        }
+                    }
+                }
             )
 
             // Messages area with frequency indicator on left
@@ -64,9 +84,15 @@ struct ConversationPanel: View {
                                 ForEach(appState.messages) { message in
                                     MessageRow(
                                         message: message,
+                                        serverURL: appState.serverURL,
                                         onRetry: message.sendStatus == .failed ? {
                                             appState.retryMessage(id: message.id)
-                                        } : nil
+                                        } : nil,
+                                        onImageTap: { url in
+                                            withAnimation(.easeOut(duration: 0.2)) {
+                                                zoomImageURL = url
+                                            }
+                                        }
                                     )
                                     .id(message.id)
                                 }

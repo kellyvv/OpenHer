@@ -15,7 +15,7 @@ final class AppState: ObservableObject {
     @Published var appPhase: AppPhase = .discovery
     // MARK: - Connection
     @Published var isConnected: Bool = false
-    @Published var serverURL: String = "http://localhost:8800"
+    @Published var serverURL: String = "http://localhost:8000"
 
     // MARK: - Personas
     @Published var personas: [Persona] = []
@@ -60,7 +60,7 @@ final class AppState: ObservableObject {
 
     init() {
         // Read persisted URL before lazy services initialize
-        let savedURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://localhost:8800"
+        let savedURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://localhost:8000"
         serverURL = savedURL
 
         // DEBUG: Always start at discovery

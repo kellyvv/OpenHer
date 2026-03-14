@@ -6,7 +6,9 @@ import SwiftUI
 /// Timestamp shown on hover. Retry button on failed sends.
 struct MessageRow: View {
     let message: ChatMessage
+    let serverURL: String
     var onRetry: (() -> Void)?
+    var onImageTap: ((URL) -> Void)?
 
     @State private var isHovering = false
 
@@ -73,7 +75,7 @@ struct MessageRow: View {
         case "照片":
             VStack(alignment: .leading, spacing: 8) {
                 if let urlStr = message.imageURL,
-                   let url = URL(string: "http://localhost:8800" + urlStr) {
+                   let url = URL(string: serverURL + urlStr) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let image):
@@ -82,6 +84,8 @@ struct MessageRow: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(maxWidth: 200)
                                 .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .onTapGesture { onImageTap?(url) }
+                                .cursor(.pointingHand)
                         case .failure:
                             photoPlaceholder
                         case .empty:
@@ -124,5 +128,15 @@ struct MessageRow: View {
                 Image(systemName: "photo")
                     .foregroundStyle(Paper.faint)
             )
+    }
+}
+
+// MARK: - Cursor Helper
+
+extension View {
+    func cursor(_ cursor: NSCursor) -> some View {
+        self.onHover { inside in
+            if inside { cursor.push() } else { NSCursor.pop() }
+        }
     }
 }

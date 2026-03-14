@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Voice message player — play/pause button, waveform, duration.
+/// Falls back to text if audio data is missing (e.g. TTS failure).
 struct VoiceMessageView: View {
     let message: ChatMessage
     @ObservedObject private var player = AudioPlayerManager.shared
@@ -17,6 +18,19 @@ struct VoiceMessageView: View {
     }
 
     var body: some View {
+        if message.audioData == nil && !message.content.isEmpty {
+            // Fallback: show text when audio is unavailable
+            Text(message.content)
+                .font(Paper.bodyFont)
+                .foregroundStyle(Paper.herText)
+                .textSelection(.enabled)
+                .lineSpacing(4)
+        } else {
+            voicePlayer
+        }
+    }
+
+    private var voicePlayer: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 // Play / Pause button
@@ -70,3 +84,4 @@ struct VoiceMessageView: View {
         return "\(mins):\(String(format: "%02d", secs))"
     }
 }
+

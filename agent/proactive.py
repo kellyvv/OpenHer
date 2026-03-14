@@ -21,7 +21,7 @@ from agent.parser import extract_reply
 try:
     import yaml as _yaml
     from pathlib import Path as _Path
-    _cfg_path = _Path(__file__).parent.parent / "providers" / "memory" / "memory_config.yaml"
+    _cfg_path = _Path(__file__).parent.parent / "providers" / "memory" / "evermemos" / "memory_config.yaml"
     _cfg_data = _yaml.safe_load(_cfg_path.read_text()).get("evermemos", {}) if _cfg_path.exists() else {}
 except Exception:
     _cfg_data = {}
@@ -48,7 +48,7 @@ class ProactiveMixin:
             norm_frust = self.metabolism.frustration[d] / 5.0  # 0~1
             baseline = self.agent.drive_baseline[d]             # 0~1
             # Relative deviation from baseline
-            score = (norm_frust - baseline) / max(baseline, 0.05)
+            score = norm_frust * (1.0 + baseline)
             if score > max_score:
                 max_score = score
                 strongest = d

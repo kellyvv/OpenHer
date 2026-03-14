@@ -37,6 +37,8 @@ def _register_llm_providers():
     from .llm.ollama import OllamaLLMProvider
     from .llm.gemini import GeminiLLMProvider
     from .llm.claude import ClaudeLLMProvider
+    from .llm.stepfun import StepFunLLMProvider
+    from .llm.minimax import MiniMaxLLMProvider
 
     _LLM_PROVIDERS.update({
         "dashscope": DashScopeLLMProvider,
@@ -45,6 +47,8 @@ def _register_llm_providers():
         "ollama": OllamaLLMProvider,
         "gemini": GeminiLLMProvider,
         "claude": ClaudeLLMProvider,
+        "stepfun": StepFunLLMProvider,
+        "minimax": MiniMaxLLMProvider,
     })
 
 

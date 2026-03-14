@@ -8,6 +8,7 @@ struct AvatarHeader: View {
     let isConnected: Bool
     let isTyping: Bool
     let avatarURL: URL?
+    var onAvatarTap: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 6) {
@@ -44,6 +45,8 @@ struct AvatarHeader: View {
                     )
                 )
                 .rotationEffect(.degrees(-1.5))
+                .onTapGesture { onAvatarTap?() }
+                .cursor(.pointingHand)
             }
 
             Text(persona?.displayName ?? "")

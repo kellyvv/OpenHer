@@ -37,8 +37,8 @@ from engine.chat_log_store import ChatLogStore
 from memory.memory_store import MemoryStore
 from providers.memory.evermemos.evermemos_client import EverMemOSClient
 from providers.api_config import get_llm_config, get_tts_config, get_memory_config
-from cron_scheduler import CronScheduler
-from output_router import stream_to_ws as _stream_to_ws
+from agent.cron_scheduler import CronScheduler
+from agent.output_router import stream_to_ws as _stream_to_ws
 from engine.genome import DRIVE_LABELS
 
 # ──────────────────────────────────────────────────────────────
@@ -146,10 +146,9 @@ async def startup():
     )
 
     # 4. Load skills (dual engine architecture)
-    skills_dir = os.path.join(base_dir, "skills")
-    task_skill_engine = TaskSkillEngine(skills_dir)
+    task_skill_engine = TaskSkillEngine(os.path.join(base_dir, "skills", "task"))
     task_loaded = task_skill_engine.load_all()
-    modality_skill_engine = ModalitySkillEngine(skills_dir)
+    modality_skill_engine = ModalitySkillEngine(os.path.join(base_dir, "skills", "modality"))
     modality_loaded = modality_skill_engine.load_all()
     cron_skills = task_skill_engine.get_cron_skills()
     print(f"✓ 加载了 {len(task_loaded)}+{len(modality_loaded)} 个技能 (task+modality), {len(cron_skills)} 个定时任务")
@@ -1008,6 +1007,36 @@ async def websocket_chat(ws: WebSocket):
                             print(f"  [skill] 🔊 Audio delivered: {os.path.basename(audio_path)}")
                         except Exception as e:
                             print(f"  [skill] ⚠ Audio delivery failed: {e}")
+
+                    # ── Modality retry delivery (serial follow-up) ──
+                    retry = getattr(agent, '_pending_retry', None)
+                    if retry:
+                        await asyncio.sleep(5)  # natural pause like a real person
+                        print(f"  [skill] 🔄 Delivering retry {retry['modality']}...")
+                        retry_image_url = None
+                        if retry.get("image_path"):
+                            parts = retry["image_path"].replace("\\", "/").split("/")
+                            selfie_idx = parts.index("selfie") if "selfie" in parts else -1
+                            retry_image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else None
+                        await ws.send_json({
+                            "type": "chat_end",
+                            "reply": retry["reply"],
+                            "modality": retry["modality"],
+                            "image_url": retry_image_url,
+                        })
+                        if retry.get("audio_path") and os.path.isfile(retry["audio_path"]):
+                            try:
+                                with open(retry["audio_path"], "rb") as f:
+                                    audio_b64 = base64.b64encode(f.read()).decode()
+                                await ws.send_json({
+                                    "type": "tts_audio",
+                                    "audio": audio_b64,
+                                    "format": "wav",
+                                })
+                                print(f"  [skill] 🔊 Retry audio delivered: {os.path.basename(retry['audio_path'])}")
+                            except Exception as e:
+                                print(f"  [skill] ⚠ Retry audio delivery failed: {e}")
+                        agent._pending_retry = None
 
                     # Log conversation for debugging
                     print(f"  [chat] 👤 {text}")
