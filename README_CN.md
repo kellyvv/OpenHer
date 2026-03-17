@@ -6,7 +6,12 @@
 
 🇨🇳 中文文档 | [🇺🇸 English](README.md)
 
-# 🧬 OpenHer
+<table border="0" cellspacing="0" cellpadding="0"><tr>
+<td><img src="docs/assets/logo.png" alt="OpenHer Logo" height="80"></td>
+<td>&nbsp;&nbsp;</td>
+<td style="border-left: 2px dashed #ccc; height: 60px;">&nbsp;&nbsp;</td>
+<td><h1 style="margin:0;">OpenHer</h1></td>
+</tr></table>
 
 ### *如果《Her》里的 AI 是真的呢？*
 
