@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/logo.png" alt="OpenHer Logo" width="200">
+
 <img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
 🇨🇳 中文文档 | [🇺🇸 English](README.md)
