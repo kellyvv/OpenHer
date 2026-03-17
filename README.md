@@ -198,20 +198,16 @@ Memory retrieval is **async and two-stage**: search fires at the end of each tur
 
 ## 🏆 LLM Compatibility
 
-OpenHer works with multiple LLMs — but not all models are created equal. Personality emergence is *hard* for an LLM: it needs to stay in character, express layered emotions, and never leak internal prompt formats.
+OpenHer works with multiple LLMs — but not all models are created equal. Personality emergence is *hard* for an LLM: it needs to stay in character, express layered emotions, and never leak internal prompt formats. We benchmarked every supported model across 4 layers (persona quality, metabolism, Hebbian memory, robustness) so you don't have to guess.
 
-**Our recommendation:**
-
-- 🥇 **Claude Haiku 4.5** — Best overall. Characters feel the most *real*. Zero format leakage.
-- 🥈 **Gemini Flash Lite** — Nearly as good, and cheaper. Great default choice.
-- 🇨🇳 **Qwen3** — Best option for mainland China, no VPN needed.
-
-| Model | Persona Fidelity | Emotional Depth | Format | Overall |
-|-------|:---:|:---:|:---:|:---:|
-| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ | **10/10** |
-| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ✅ | **9/10** |
-| **Qwen3** | — | — | ✅ | *supported* |
-| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
+| Model | Overall | Highlight |
+|-------|:------:|----------|
+| 🥇 **Claude Haiku 4.5** | **10/10** | Persona fidelity + emotional depth best-in-class. Kelly says *"honestly, I don't really know you. I'm just listening."* Zero format leakage. |
+| 🥈 **Gemini Flash Lite** | **9/10** | Near-Claude quality at lower cost. Great default. Luna gets genuinely *excited*. |
+| 🥉 **StepFun step-3.5-flash** | **8/10** | Most extreme persona differentiation. Kai: *"嗯。有事快说。"* |
+| **Qwen Flash** | **7.5/10** | Best stage-direction control. Kelly ENTP standout. Best price. |
+| **MiniMax M2.5** | **7/10** | Most human-like chat style. Luna: *"咳…也没有啦 😳"* |
+| GPT-4o-mini | 5/10 | Persona homogenization. Not recommended. |
 
 **Supports:** Gemini · Claude · Qwen3 · GPT-4o · MiniMax · Moonshot · StepFun · Ollama (local)
 
