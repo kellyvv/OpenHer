@@ -217,18 +217,77 @@ OpenHer works with multiple LLMs — but not all models are created equal. Perso
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+- Python 3.11+
+- macOS 14.0+ (for desktop client, optional)
+- An API key from any supported LLM provider
+
+### 1. Clone & Install
+
 ```bash
 git clone https://github.com/kellyvv/OpenHer.git
 cd OpenHer
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-cp .env.example .env     # Add your LLM API key (GEMINI_API_KEY / ANTHROPIC_API_KEY / etc.)
-python main.py            # → http://localhost:8800/discover
 ```
 
-**Optional:** Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory.
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Set at least one LLM provider API key in `.env`:
+
+| Provider | Environment Variable | Model Example |
+|----------|---------------------|---------------|
+| **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash-lite |
+| **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
+| **Qwen** | `DASHSCOPE_API_KEY` | qwen3-max |
+| **OpenAI** | `OPENAI_API_KEY` | gpt-4o-mini |
+| **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
+| **Moonshot** | `MOONSHOT_API_KEY` | moonshot-v1-8k |
+| **StepFun** | `STEPFUN_API_KEY` | step-3.5-flash |
+| **Ollama** | *(no key needed)* | local models |
+
+Then set your default provider:
+
+```bash
+DEFAULT_PROVIDER=gemini           # or claude, dashscope, openai, minimax, moonshot, stepfun, ollama
+DEFAULT_MODEL=gemini-2.0-flash-lite
+```
+
+### 3. Start the Server
+
+```bash
+python main.py
+# → http://localhost:8800/discover
+```
+
+### 4. macOS Desktop Client (Optional)
+
+```bash
+cd desktop/OpenHer
+chmod +x run.sh
+./run.sh          # Builds SwiftUI app and launches OpenHer.app
+```
+
+> Requires macOS 14.0+ and Xcode Command Line Tools (`xcode-select --install`).
+
+### 5. Long-Term Memory (Optional)
+
+Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory:
+
+```bash
+cd vendor/EverMemOS && docker compose up -d && uv run python src/run.py
+```
+
+Set in `.env`:
+```bash
+EVERMEMOS_BASE_URL=http://localhost:1995/api/v1
+```
 
 ---
 

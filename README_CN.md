@@ -217,18 +217,77 @@ OpenHer 支持多种大模型——但不是所有模型都能胜任人格涌现
 
 ## 🚀 快速开始
 
+### 前置要求
+
+- Python 3.11+
+- macOS 14.0+（桌面客户端，可选）
+- 任一支持的 LLM 服务商 API 密钥
+
+### 一、克隆 & 安装
+
 ```bash
 git clone https://github.com/kellyvv/OpenHer.git
 cd OpenHer
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-cp .env.example .env     # 填入你的 LLM API 密钥 (GEMINI_API_KEY / ANTHROPIC_API_KEY 等)
-python main.py            # → http://localhost:8800/discover
 ```
 
-**可选：** 连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆。
+### 二、配置环境变量
+
+```bash
+cp .env.example .env
+```
+
+在 `.env` 中至少填入一个 LLM 服务商的 API 密钥：
+
+| 服务商 | 环境变量 | 模型示例 |
+|--------|---------|---------|
+| **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash-lite |
+| **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
+| **通义千问** | `DASHSCOPE_API_KEY` | qwen3-max |
+| **OpenAI** | `OPENAI_API_KEY` | gpt-4o-mini |
+| **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
+| **Moonshot** | `MOONSHOT_API_KEY` | moonshot-v1-8k |
+| **StepFun** | `STEPFUN_API_KEY` | step-3.5-flash |
+| **Ollama** | *（无需密钥）* | 本地模型 |
+
+设置默认服务商：
+
+```bash
+DEFAULT_PROVIDER=gemini           # 或 claude, dashscope, openai, minimax, moonshot, stepfun, ollama
+DEFAULT_MODEL=gemini-2.0-flash-lite
+```
+
+### 三、启动服务
+
+```bash
+python main.py
+# → http://localhost:8800/discover
+```
+
+### 四、macOS 桌面客户端（可选）
+
+```bash
+cd desktop/OpenHer
+chmod +x run.sh
+./run.sh          # 编译 SwiftUI 应用并启动 OpenHer.app
+```
+
+> 需要 macOS 14.0+ 和 Xcode 命令行工具（`xcode-select --install`）。
+
+### 五、长期记忆（可选）
+
+连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆：
+
+```bash
+cd vendor/EverMemOS && docker compose up -d && uv run python src/run.py
+```
+
+在 `.env` 中设置：
+```bash
+EVERMEMOS_BASE_URL=http://localhost:1995/api/v1
+```
 
 ---
 
