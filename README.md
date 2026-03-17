@@ -2,7 +2,6 @@
 
 <img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
-[🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
 
 <img src="docs/assets/logo_header.png" alt="OpenHer" height="80">
 
@@ -12,6 +11,8 @@
 [![EverMemOS](https://img.shields.io/badge/Memory-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
+
+[🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
 
 [Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Screenshots](#-screenshots) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
 
