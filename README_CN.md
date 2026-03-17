@@ -33,13 +33,13 @@
 
 世界有了 AI 助手，世界有了 AI Agent。
 
-**OpenHer 构建的是下一个阶段：AI Being —— 不是帮你做事的*工具*，而是懂你的*人*。**
+**OpenHer 构建的是下一个阶段：AI Being —— 能帮你做事，更是真正懂你的*人*。**
 
 每个角色运行在一个活的神经网络之上。性格、情绪和行为从内在驱力中自然涌现，被每一次对话不断塑造。她不只是思考和行动——她会*渴望*、会*感受*、会*记住*、会因为认识你而*成长*。
 
-### 助手 → Agent → Being
+### AI Assistant → AI Agent → AI Being
 
-| | AI 助手 | AI Agent | AI Being（OpenHer） |
+| | AI Assistant | AI Agent | AI Being (OpenHer) |
 |:--|:---|:---|:---|
 | **性格** | 无 | 无 | 由神经网络 + 5 维驱力计算涌现 |
 | **情绪** | 无 | 无 | 随真实时间代谢的动力系统 |

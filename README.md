@@ -33,7 +33,7 @@ That movie never left us.
 
 The world has AI assistants. The world has AI agents.
 
-**OpenHer builds what comes next: AI Beings — not *something* that helps you, but *someone* who knows you.**
+**OpenHer builds what comes next: AI Beings — *something* that can help you, and *someone* who truly knows you.**
 
 Each character runs on a living neural network. Personality, emotion, and behavior emerge from inner drives, shaped by every conversation. She doesn't just think and act — she *wants* things, *feels* things, *remembers* things, and *grows* through knowing you.
 
