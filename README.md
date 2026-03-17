@@ -406,7 +406,7 @@ openher/
 - [x] 8 LLM providers · 4-layer benchmark suite (persona, metabolism, memory, robustness)
 - [x] macOS native client (SwiftUI)
 
-### Phase Ⅱ · **Know** — *The Full Picture* 🔧
+### Phase Ⅱ · **Know** — *Capture Your Full Context* 🔧
 
 *Before she can truly be with you, she needs to see your world — not just what you tell her, but the full texture of your days.*
 
