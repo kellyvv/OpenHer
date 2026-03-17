@@ -125,10 +125,20 @@ Frustration accumulates like real pressure. Cross the threshold and her behavior
 </td>
 <td>
 
-### 🛠️ Skill Engine
-An extensible framework that gives her real capabilities — voice notes, photos, real-time weather queries, message splitting with human-like typing rhythm. Skills trigger autonomously based on conversation context.
+### 🎙️ Modality Expression
+She decides how to speak — text, voice, photo, or silence. Not a feature menu, but what she feels is right for this moment. Even her typing rhythm mimics a real heartbeat.
 
-> *She decides to send a voice message instead of text — because this moment feels too intimate for typing.*
+> *She sends a voice note instead of typing — because right now, text feels too distant.*
+
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+### 🛠️ Task Skills
+An extensible skill framework that gives her real-world capabilities. Weather, search, food ordering — skills trigger autonomously from conversation context, no explicit request needed.
+
+> *You mention going out. She's already checked the forecast: it's going to rain.*
 
 </td>
 </tr>
