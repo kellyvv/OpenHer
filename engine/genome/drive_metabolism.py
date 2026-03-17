@@ -20,6 +20,7 @@ from engine.genome.genome_engine import DRIVES
 
 
 # ── Global defaults (used when engine_params not specified) ──
+# ⚠ Overridable per-persona via SOUL.md engine_params — see persona/personas/*/SOUL.md
 FRUSTRATION_DECAY_LAMBDA = 0.08   # Decay rate (per hour): ~8.7h half-life
 CONNECTION_HUNGER_K = 0.15        # Loneliness accumulation rate (per hour)
 NOVELTY_HUNGER_K = 0.05           # Boredom accumulation rate (per hour)
@@ -147,7 +148,7 @@ class DriveMetabolism:
         return {
             'frustration': dict(self.frustration),
             'total': round(total, 2),
-            'temperature': round(total * self.temp_coeff + self.temp_floor, 3),
+            'temperature': round(self.temperature(), 3),
         }
 
     # ── Serialization ──

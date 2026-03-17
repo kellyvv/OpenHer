@@ -164,8 +164,11 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         self._turn_used_fallback: bool = False  # Per-turn flag, reset each turn
 
         evermemos_status = "ON" if (evermemos and evermemos.available) else "OFF"
+        m = self.metabolism
         print(f"✓ ChatAgent(Genome v10+EverMemOS) 初始化: {persona.name} ↔ {user_name or user_id} "
               f"(seed={genome_seed}, memories={self.style_memory.total_memories}, evermemos={evermemos_status})")
+        print(f"  [metabolism] conn_k={m.connection_hunger_k}, nov_k={m.novelty_hunger_k}, "
+              f"decay={m.decay_lambda}, temp_coeff={m.temp_coeff}, temp_floor={m.temp_floor}")
 
 
     def pre_warm(self, scenarios: list | None = None, steps_per_scenario: int = 20) -> None:
