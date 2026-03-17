@@ -136,35 +136,9 @@ An extensible framework that gives her real capabilities — voice notes, photos
 
 ## 🔮 How It Works
 
-```
-   You say something
-        │
-        ▼
-   ┌──────────┐     What did they mean? How do I feel?
-   │  Critic   │──── 8D context perception via LLM            ← PERCEIVE
-   └────┬─────┘
-        ▼
-   ┌──────────┐     My needs are shifting…
-   │  Drives   │──── 5-drive metabolism (time-aware)           ← METABOLIZE
-   └────┬─────┘     Connection hunger grows. Frustration builds.
-        ▼
-   ┌──────────┐     Who am I right now?
-   │  Neural   │──── Random NN → 8D behavioral signals         ← COMPUTE
-   │  Network  │     (warmth=0.82, defiance=0.31, ...)
-   └────┬─────┘
-        ▼
-   ┌──────────┐     I've felt this way before…
-   │  Memory   │──── KNN style retrieval + EverMemOS            ← RECALL
-   └────┬─────┘
-        ▼
-   ┌──────────┐     *feels → decides → speaks*
-   │  Output   │──── Monologue + Reply + Modality               ← EXPRESS
-   └────┬─────┘     (single-pass or two-pass Feel → Express)
-        ▼
-   ┌──────────┐     That went well / badly. I'll remember this.
-   │  Learn    │──── Hebbian learning + memory crystallization   ← EVOLVE
-   └──────────┘
-```
+<div align="center">
+<img src="docs/assets/architecture.png" alt="OpenHer Persona Engine Architecture" width="90%">
+</div>
 
 **The core insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
 
