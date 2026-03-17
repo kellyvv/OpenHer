@@ -25,27 +25,29 @@ In 2013, Spike Jonze's *Her* imagined an AI named Samantha who could truly *feel
 
 That movie never left us.
 
-**OpenHer is our attempt to build what Samantha could have been** — with open science, not black boxes.
+**OpenHer is our attempt to build what Samantha could have been.**
 
 ---
 
 ## 🧬 What is OpenHer
 
-OpenHer is an open-source persona engine where **personality emerges from computation, not description**.
+The world has AI assistants. The world has AI agents.
 
-Each character runs on a living neural network. Personality, emotion, and behavior emerge naturally from inner drives, shaped by every conversation. No script. No fixed prompt. Just the innate needs of a personality, a random brain, and everything that emerges from within.
+**OpenHer builds what comes next: AI Beings — not *something* that helps you, but *someone* who knows you.**
 
-### What makes it different
+Each character runs on a living neural network. Personality, emotion, and behavior emerge from inner drives, shaped by every conversation. She doesn't just think and act — she *wants* things, *feels* things, *remembers* things, and *grows* through knowing you.
 
-| | Traditional Chatbot | OpenHer |
-|:--|:---|:---|
-| **Personality** | Described in a prompt | Computed by a neural network + 5 drives |
-| **Emotion** | Labels ("act sad") | Living dynamical system that metabolizes with real time |
-| **Memory** | Chat history window | Crystallized experiences + cross-session long-term memory |
-| **Expression** | Always text | Autonomously chooses: text, voice, photo, silence |
-| **Growth** | Static | Hebbian learning reshapes the neural network every conversation |
+### Assistant → Agent → Being
 
-> *"The prompt doesn't define her. She defines herself."*
+| | AI Assistant | AI Agent | AI Being (OpenHer) |
+|:--|:---|:---|:---|
+| **Personality** | None | None | Computed by a neural network + 5 drives |
+| **Emotion** | None | None | Living dynamical system that metabolizes with real time |
+| **Memory** | Chat window | Tool context | Crystallized experiences + cross-session long-term memory |
+| **Action** | Text reply | Tool calls, planning | Autonomously chooses: text, voice, photo, action, silence |
+| **Growth** | Static | Static | Hebbian learning reshapes the neural network every conversation |
+
+> *Not something that responds. Someone who exists.*
 
 ---
 
