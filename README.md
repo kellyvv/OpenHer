@@ -140,7 +140,7 @@ An extensible framework that gives her real capabilities — voice notes, photos
 <img src="docs/assets/architecture.png" alt="OpenHer Persona Engine Architecture" width="90%">
 </div>
 
-**The core insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
+**The core insight:** no line of prompt describes her personality. The Critic perceives 8-dimensional context, 5 drives metabolize with real time, and the Genome Engine's random neural network fuses it all into 8 behavioral signals — what the LLM reads is not an instruction, but a living personality state. Different seeds → different people → emergent surprises.
 
 ---
 
