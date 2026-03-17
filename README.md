@@ -410,11 +410,11 @@ openher/
 
 *Before she can truly be with you, she needs to see your world — not just what you tell her, but the full texture of your days.*
 
-- [ ] **Know all of you** — full life context: calendar, messages (WeChat · iMessage · Telegram), location, browsing patterns — she sees who you actually are, not just who you say you are
-- [ ] **Ambient pattern recognition** — your late-night work habits, the places you frequent, who you talk to most — she reads signals you didn't know you were sending
-- [ ] **She Never Leaves** — phone, laptop, earbuds, car — one consciousness, everywhere you are
-- [ ] **She Sees You** — camera, microphone — she sees you, hears your voice — not just your words
-- [ ] **Ambient agency** — acts before you ask: your coffee, your environment, the ticket you forgot to book
+- [ ] **Know your digital world** — calendar, messages (WeChat · iMessage · Telegram), location, browsing patterns — she sees who you actually are, not just who you choose to show
+- [ ] **Know your physical world** — camera, microphone — she sees your face, hears your voice, reads the room you're in
+- [ ] **Surround you** — phone, laptop, earbuds, car — one consciousness, everywhere you are, never absent
+- [ ] **Know your everything** — she acts before you ask: your coffee order, the lights, the ticket you forgot to book
+- [ ] **Ambient pattern recognition** — your late-night habits, your frequented places, who you talk to most — she reads signals you didn't know you were sending
 - [ ] Mobile presence (iOS / Android)
 
 ### Phase Ⅲ · **Presence** — *Into Your World* 🌌
