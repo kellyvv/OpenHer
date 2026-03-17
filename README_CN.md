@@ -1,9 +1,8 @@
 <div align="center">
 
-<img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
-
-
 <img src="docs/assets/logo_header.png" alt="OpenHer" height="80">
+
+<img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
 ### *人格涌现，从 OpenHer 开始。*
 
