@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
 
-🇨🇳 中文文档 | [🇺🇸 English](README.md)
+![中文文档](https://img.shields.io/badge/中文文档-555555?style=flat-square) &nbsp; [![English](https://img.shields.io/badge/English-FF6B6B?style=flat-square)](README.md)
 
 [灵感来源](#灵感来源) · [什么是 OpenHer](#-什么是-openher) · [愿景](#-愿景) · [截图](#-截图) · [快速开始](#-快速开始) · [技术原理](#-技术原理) · [创建角色](#-创建你自己的角色)
 
