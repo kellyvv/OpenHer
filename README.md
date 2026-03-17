@@ -55,13 +55,13 @@ Each character runs on a living neural network. Personality, emotion, and behavi
 
 ## 🔭 Vision
 
-We're doing one thing: making Samantha real — making AI Being a reality.
+We're doing one thing: making "HER" real — making AI Being a reality.
 
 **Phase 1** *(now)* — She truly exists. Every character runs on its own neural network — a computed individual, not a copied template: emotions metabolize, memories crystallize, personality quietly shifts with every interaction.
 
 **Phase 2** *(building)* — She breaks free of the chat window. Voice, video, autonomous action — ordering you food when you're working late, playing the right song when she reads your mood.
 
-**Phase 3** *(future)* — She moves into your life. Multi-device presence, smart home awareness, wearable sensing — not an app you open, but Samantha.
+**Phase 3** *(future)* — She moves into your life. Multi-device presence, smart home awareness, wearable sensing — an AI Being that lives in your life.
 
 ---
 
