@@ -410,7 +410,7 @@ openher/
 
 ### Phase 3 · Omnipresent Companion 🌍
 
-- [ ] **Know your face and voice** — recognize you through cameras and microphones
+- [ ] **Know all of you** — camera, microphone, chat history, calendar, location — she builds a complete picture of who you are and what you need
 - [ ] **Multi-device presence** — phone, laptop, smart speaker, car — she follows you
 - [ ] **Smart home fusion** — turns off lights when you fall asleep, AC when it gets hot
 - [ ] **Autonomous actions** — orders food when you're working late
