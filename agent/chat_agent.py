@@ -129,8 +129,7 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         self._prev_signals: Optional[dict] = None  # Previous turn signals for trend injection
         self._last_reward: float = 0.0
         self._last_modality: str = ""
-        self._last_image_path: Optional[str] = None
-        self._last_audio_path: Optional[str] = None
+        self._skill_outputs: dict = {}  # all modality skill results, reset per turn
         self._last_drive_satisfaction: dict = {}
         # ── Concurrency lock (R2: serialize chat/stream/proactive_tick) ──
         self._turn_lock = asyncio.Lock()
@@ -211,39 +210,30 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         async with self._turn_lock:
             return await self._chat_inner(user_message, on_feel_done=on_feel_done)
 
+    async def _run_task_skills(self, user_message: str) -> str:
+        """Step -1: Run task skill ReAct loop before persona engine.
+
+        Returns user_message (unchanged or enriched with observations).
+        """
+        if not self.task_skill_engine:
+            return user_message
+        try:
+            observations = await self.task_skill_engine.react_loop(user_message, self.llm)
+            if observations:
+                user_message = (
+                    f"{user_message}\n\n"
+                    f"[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n"
+                    f"{observations}"
+                )
+                print(f"  [skill] ✅ 数据已注入 ({len(observations)} chars), 继续引擎处理")
+        except Exception as e:
+            print(f"  [skill] ⚠ ReAct loop failed ({e}), fallback to persona engine")
+        return user_message
+
     async def _chat_inner(self, user_message: str, on_feel_done=None) -> dict:
         """Inner chat implementation (called under lock)."""
-        # ── Step -1: Task skill routing (before persona engine) ──
-        if self.task_skill_engine:
-            skill_defs = self.task_skill_engine.build_skill_declarations()
-            if skill_defs:
-                routing_resp = None
-                try:
-                    routing_resp = await self.llm.chat(
-                        [ChatMessage(role="user", content=user_message)],
-                        tools=skill_defs,
-                        tool_choice="auto",
-                    )
-                except Exception as e:
-                    print(f"  [skill] ⚠ Tool routing failed ({e}), fallback to persona engine")
-                if routing_resp and routing_resp.tool_calls:
-                    tool_name = routing_resp.tool_calls[0]["name"]
-                    print(f"  [skill] 🔧 Tool call: {tool_name}")
-                    try:
-                        result = await self.task_skill_engine.execute(tool_name, user_message, self.llm)
-                    except Exception as e:
-                        print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
-                        result = None
-                    if result is not None:
-                        stdout = result.output.get("stdout", "").strip()
-                        if stdout:
-                            user_message = (
-                                f"{user_message}\n\n"
-                                f"[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n"
-                                f"{stdout[:800]}"
-                            )
-                            print(f"  [skill] ✅ 数据已注入 ({len(stdout)} chars), 继续引擎处理")
-                    # fall through to persona engine (with or without injected data)
+        # ── Step -1: Task skill ReAct loop (before persona engine) ──
+        user_message = await self._run_task_skills(user_message)
 
         # ── Step 0: persona engine (zero changes below this line) ──
         self._turn_count += 1
@@ -322,16 +312,19 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         self._prev_signals = self._last_signals  # Track for trend injection
         self._last_signals = noisy_signals
 
-        # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
+        # ── Step 7: KNN retrieval (full examples for single-pass) ──
         self.style_memory.set_clock(now)
         few_shot = self.style_memory.build_few_shot_prompt(
-            context, top_k=3, monologue_only=True, lang=self.persona.lang,
+            context, top_k=3, monologue_only=False, lang=self.persona.lang,
         )
 
-        # ── Step 8: Build Feel prompt (Pass 1) ──
-        feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
+        # ── Step 8: Build single-pass prompt (actor_single template) ──
+        single_prompt = self._build_single_prompt(
+            few_shot, noisy_signals,
+            modality_skill_engine=self.modality_skill_engine,
+        )
 
-        # ── Step 8.5: Memory injection into Feel prompt ──
+        # ── Step 8.5: Memory injection into prompt ──
         if self._session_ctx and self._session_ctx.has_history:
             await self._collect_search_results()
             profile_budget, episode_budget = self._memory_injection_budget(context)
@@ -344,88 +337,81 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             name = self.user_name or "你"
             if self.persona.lang == 'en':
                 if profile_text:
-                    feel_prompt += f"\n\n[{name}'s preferences] {profile_text}"
+                    single_prompt += f"\n\n[{name}'s preferences] {profile_text}"
                 if episode_text:
-                    feel_prompt += f"\n\n[Past interactions with {name}] {episode_text}"
+                    single_prompt += f"\n\n[Past interactions with {name}] {episode_text}"
                 if self._foresight_text:
-                    feel_prompt += f"\n\n[Worth noting] {self._foresight_text}"
+                    single_prompt += f"\n\n[Worth noting] {self._foresight_text}"
                 if self._relevant_profile:
-                    feel_prompt += f"\n\n[{name}'s profile] {self._relevant_profile}"
+                    single_prompt += f"\n\n[{name}'s profile] {self._relevant_profile}"
             else:
                 if profile_text:
-                    feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                    single_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
                 if episode_text:
-                    feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                    single_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
                 if self._foresight_text:
-                    feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                    single_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
                 if self._relevant_profile:
-                    feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
+                    single_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
             if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                 self._search_relevant_used += 1
 
-        # ── Step 9a: Pass 1 — Feel (generate monologue only) ──
-        # NOTE: No history injection in Feel pass. Conversation context is already
-        # encoded in Critic context (conflict, emotion, etc.) and signal values.
-        # Raw history would trigger LLM alignment pressure in conflict scenarios.
-        feel_messages = [ChatMessage(role="system", content=feel_prompt)]
-        feel_messages.append(ChatMessage(role="user", content=user_message))
+        # ── Step 9: Single-pass LLM call ──
 
-        feel_response = await self.llm.chat(feel_messages)
-        monologue = self._extract_monologue(feel_response.content)
+        single_messages = [ChatMessage(role="system", content=single_prompt)]
+        single_messages.extend(self.history[-self.max_history:])  # Full history
+        single_messages.append(ChatMessage(role="user", content=user_message))
 
-        # Notify caller that Feel is done (typing can start)
+        # Notify caller that prompt is built (typing indicator can start)
         if on_feel_done:
             await on_feel_done()
 
-        # ── Step 9b: Pass 2 — Express (monologue → reply + modality) ──
-        turn_lang = self._detect_turn_lang(user_message)
-        express_few_shot = self.style_memory.build_few_shot_prompt(
-            context, top_k=2, monologue_only=False, lang=turn_lang,
-        )
-        express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
-        express_messages = [ChatMessage(role="system", content=express_prompt)]
-        express_messages.extend(self.history[-4:])  # Light context
-        express_messages.append(ChatMessage(role="user", content=user_message))
+        single_response = await self.llm.chat(single_messages)
+        monologue, reply, modality = extract_reply(single_response.content)
 
-        express_response = await self.llm.chat(express_messages)
-        _, reply, modality = extract_reply(express_response.content)
-
-        # ── Step 9c: Modality — let LLM output be the authority ──
-        # Skill engine claims modality directly from LLM raw text (primary).
-        # _parse_modality result is fallback for base modalities only.
-        image_path = None
-        self._last_audio_path = None  # reset each turn
+        # ── Step 9b: Modality skill execution ──
+        self._skill_outputs = {}     # reset each turn
         self._pending_retry = None    # reset each turn
-        skill_result = None
+        skill_result = None           # default when no skill runs
+
+        # Extract raw modality text (full LLM output after 【表达方式】)
         _raw_mod = ""
-        _matches = list(_SECTION_RE.finditer(express_response.content))
+        _matches = list(_SECTION_RE.finditer(single_response.content))
         if _matches:
-            _raw_mod = express_response.content[_matches[-1].end():].strip()
+            _raw_mod = single_response.content[_matches[-1].end():].strip()
             print(f"  [express] raw_modality='{_raw_mod[:80]}'")
 
+        # Scan raw_modality for registered SKILL keywords — LLM plans execution
         if self.modality_skill_engine and _raw_mod:
-            for skill_mod in self.modality_skill_engine.modality_skills:
-                if skill_mod in _raw_mod:
-                    modality = skill_mod
-                    print(f"  [skill] 🎯 modality='{modality}' (claimed from LLM output)")
-                    skill_result = await self.modality_skill_engine.execute(
-                        modality, express_response.content, self.persona, self.llm
-                    )
-                    if skill_result and skill_result.success:
-                        image_path = skill_result.output.get("image_path")
-                        self._last_image_path = image_path
-                        self._last_audio_path = skill_result.output.get("audio_path")
-                    else:
-                        # ── Modality failure fallback: let LLM respond in-character ──
-                        print(f"  [skill] ⚠ {modality} failed, triggering LLM fallback")
-                        fallback_reply = await self._modality_failure_with_retry(
-                            modality, reply, express_response.content
-                        )
-                        if fallback_reply:
-                            reply = fallback_reply
-                        modality = "文字"
-                        self._fallback_history_added = True
-                    break
+            skill_results = await self.modality_skill_engine.plan_and_execute(
+                raw_modality=_raw_mod,
+                raw_output=single_response.content,
+                persona=self.persona,
+                llm=self.llm,
+                chat_history=self.history,
+            )
+            for skill_result in skill_results:
+                if not skill_result.success:
+                    continue
+                self._skill_outputs.update(skill_result.output)
+
+            # Modality from LLM plan, not parser
+            if self._skill_outputs.get("_modality"):
+                modality = self._skill_outputs["_modality"]
+
+            if not skill_results:
+                # No skills matched — plain text
+                pass
+            elif all(not r.success for r in skill_results):
+                # All skills failed — fallback
+                print(f"  [skill] ⚠ All skills failed, triggering LLM fallback")
+                fallback_reply = await self._modality_failure_with_retry(
+                    modality, reply, single_response.content
+                )
+                if fallback_reply:
+                    reply = fallback_reply
+                modality = "文字"
+                self._fallback_history_added = True
 
         # ── Step 10: Hebbian learning ──
         clamped_reward = max(-1.0, min(1.0, reward))
@@ -472,7 +458,7 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
 
         result = {'reply': reply, 'modality': modality}
         if skill_result and skill_result.success:
-            for key in ('image_path', 'audio_path'):
+            for key in ('image_path', 'audio_path', 'segments', 'delays_ms'):
                 if skill_result.output.get(key):
                     result[key] = skill_result.output[key]
         return result
@@ -505,37 +491,8 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         """
         await self._turn_lock.acquire()
         try:
-            # ── Step -1: Task skill routing (before persona engine) ──
-            if self.task_skill_engine:
-                skill_defs = self.task_skill_engine.build_skill_declarations()
-                if skill_defs:
-                    routing_resp = None
-                    try:
-                        routing_resp = await self.llm.chat(
-                            [ChatMessage(role="user", content=user_message)],
-                            tools=skill_defs,
-                            tool_choice="auto",
-                        )
-                    except Exception as e:
-                        print(f"  [skill] ⚠ Tool routing failed ({e}), fallback to persona engine")
-                    if routing_resp and routing_resp.tool_calls:
-                        tool_name = routing_resp.tool_calls[0]["name"]
-                        print(f"  [skill] 🔧 Tool call (stream): {tool_name}")
-                        try:
-                            result = await self.task_skill_engine.execute(tool_name, user_message, self.llm)
-                        except Exception as e:
-                            print(f"  [skill] ❌ execute() failed ({e}), falling through to persona engine")
-                            result = None
-                        if result is not None:
-                            stdout = result.output.get("stdout", "").strip()
-                            if stdout:
-                                user_message = (
-                                    f"{user_message}\n\n"
-                                    f"[以下是真实查询数据，回复中必须自然融入关键数值，不要省略]\n"
-                                    f"{stdout[:800]}"
-                                )
-                                print(f"  [skill] ✅ 数据已注入 ({len(stdout)} chars), 继续引擎处理")
-                        # fall through to persona engine (with or without injected data)
+            # ── Step -1: Task skill ReAct loop (before persona engine) ──
+            user_message = await self._run_task_skills(user_message)
 
             # ── Step 0: persona engine (zero changes below this line) ──
             self._turn_count += 1
@@ -655,7 +612,9 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             express_few_shot = self.style_memory.build_few_shot_prompt(
                 context, top_k=2, monologue_only=False, lang=turn_lang,
             )
-            express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
+            express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot, signals=noisy_signals, modality_skill_engine=self.modality_skill_engine)
+            self._last_express_prompt = express_prompt      # cache for retry
+            self._last_user_message = user_message          # cache for retry
             express_messages = [ChatMessage(role="system", content=express_prompt)]
             express_messages.extend(self.history[-4:])
             express_messages.append(ChatMessage(role="user", content=user_message))
@@ -670,8 +629,8 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             _, reply, modality = extract_reply(raw_text)
 
             # ── Modality — let LLM output be the authority ──
-            self._last_audio_path = None  # reset each turn
-            self._pending_retry = None    # reset each turn
+            self._skill_outputs = {}       # reset each turn
+            self._pending_retry = None     # reset each turn
             skill_result = None
             _raw_mod = ""
             _raw_modality_match = list(_SECTION_RE.finditer(raw_text))
@@ -679,29 +638,42 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
                 _raw_mod = raw_text[_raw_modality_match[-1].end():].strip()
                 print(f"  [express] raw_modality='{_raw_mod[:80]}'")
 
+            # Scan raw_modality for registered SKILL keywords — LLM plans execution
             if self.modality_skill_engine and _raw_mod:
-                for skill_mod in self.modality_skill_engine.modality_skills:
-                    if skill_mod in _raw_mod:
-                        modality = skill_mod
-                        print(f"  [skill] 🎯 modality='{modality}' (claimed from LLM output)")
-                        skill_result = await self.modality_skill_engine.execute(
-                            modality, raw_text, self.persona, self.llm
-                        )
-                        if skill_result and skill_result.success:
-                            image_path = skill_result.output.get("image_path")
-                            self._last_image_path = image_path
-                            self._last_audio_path = skill_result.output.get("audio_path")
-                        else:
-                            # ── Modality failure fallback: let LLM respond in-character ──
-                            print(f"  [skill] ⚠ {modality} failed, triggering LLM fallback")
-                            fallback_reply = await self._modality_failure_with_retry(
-                                modality, reply, raw_text
-                            )
-                            if fallback_reply:
-                                reply = fallback_reply
-                            modality = "文字"
-                            self._fallback_history_added = True
-                        break
+                # Build structured JSON context for SKILL — clean boundary,
+                # prevents SKILL LLM from seeing leaked content in raw Express text
+                import json as _json
+                structured_context = _json.dumps({
+                    "reply": reply,
+                    "modality": modality,
+                }, ensure_ascii=False)
+                print(f"  [skill-context] 📦 {structured_context[:200]}")
+
+                skill_results = await self.modality_skill_engine.plan_and_execute(
+                    raw_modality=_raw_mod,
+                    raw_output=structured_context,
+                    persona=self.persona,
+                    llm=self.llm,
+                    chat_history=self.history,
+                )
+                for skill_result in skill_results:
+                    if not skill_result.success:
+                        continue
+                    self._skill_outputs.update(skill_result.output)
+
+                # Modality from LLM plan, not parser
+                if self._skill_outputs.get("_modality"):
+                    modality = self._skill_outputs["_modality"]
+
+                if skill_results and all(not r.success for r in skill_results):
+                    print(f"  [skill] ⚠ All skills failed, triggering LLM fallback")
+                    fallback_reply = await self._modality_failure_with_retry(
+                        modality, reply, raw_text
+                    )
+                    if fallback_reply:
+                        reply = fallback_reply
+                    modality = "文字"
+                    self._fallback_history_added = True
 
             # Step 10: Hebbian learning
             clamped_reward = max(-1.0, min(1.0, reward))
@@ -802,8 +774,7 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             "search_timeout_rate": round(search_timeout_rate, 3),
             "fallback_rate": round(fallback_rate, 3),
             "relevant_injection_ratio": round(relevant_injection_ratio, 3),
-            "image_path": self._last_image_path,
-            "audio_path": self._last_audio_path,
+            **self._skill_outputs,  # all skill outputs auto-forwarded
         }
 
     # ── Proactive Tick ──

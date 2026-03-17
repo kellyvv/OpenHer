@@ -15,22 +15,20 @@ import re
 
 
 # -- Modality Parsing --
-MODALITY_MAP = {
-    "静默": "静默", "silence": "静默",
-    "文字": "文字", "text": "文字",
-    "语音": "语音", "voice": "语音",
-    "表情": "表情", "emoji": "表情",
-    "多条拆分": "多条拆分", "split": "多条拆分",
-    "照片": "照片", "photo": "照片",
-}
+# No hardcoded map — registered SKILLs are the source of truth.
+# Parser only extracts the raw modality keyword from LLM output.
 
 def _parse_modality(raw: str) -> str:
-    """Extract primary modality from Actor output. Supports Chinese and English tokens."""
-    cleaned = raw.strip().lstrip("\uff1a: \n").lower()
-    for token, canonical in MODALITY_MAP.items():
-        if cleaned.startswith(token):
-            return canonical
-    return "文字"
+    """Extract primary modality keyword from Actor output.
+
+    Returns the first token before any punctuation/space.
+    Skill engine decides if it maps to a registered skill.
+    """
+    import re
+    cleaned = raw.strip().lstrip("\uff1a: \n")
+    # Take first token before punctuation (。.，,、/ or whitespace)
+    match = re.match(r'[\w\u4e00-\u9fff]+', cleaned)
+    return match.group(0) if match else "文字"
 
 
 # -- Section header regex: Chinese 【】 and English [] formats --
@@ -75,6 +73,12 @@ def extract_reply(raw: str) -> tuple[str, str, str]:
         # Fallback: strip action descriptions
         reply = re.sub(r'[(（(][^)）)]*[)）)]', '', raw).strip()
         reply = re.sub(r'\*[^*]+\*', '', reply).strip()
+        if not reply:
+            reply = "..."
+    else:
+        # Normal path: strip action tags like *顿了顿* / ＊顿了顿＊ and （沉默） from reply
+        reply = re.sub(r'[*＊][^*＊]+[*＊]', '', reply).strip()
+        reply = re.sub(r'[（(][^（(）)]{1,40}[）)]', '', reply).strip()
         if not reply:
             reply = "..."
 

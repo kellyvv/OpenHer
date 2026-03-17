@@ -65,6 +65,24 @@ final class WebSocketManager: ObservableObject {
         }
     }
 
+    /// Notify the server whether the user is actively typing.
+    /// This enables message debounce — the server buffers rapid messages
+    /// and processes them as one turn once typing stops.
+    func sendTypingIndicator(active: Bool) {
+        let payload: [String: Any] = [
+            "type": "typing",
+            "active": active,
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload),
+              let text = String(data: data, encoding: .utf8) else { return }
+
+        webSocketTask?.send(.string(text)) { error in
+            if let error = error {
+                print("[WS] Typing indicator send error: \(error)")
+            }
+        }
+    }
+
     // MARK: - Receive
 
     private func listenForMessages() {
@@ -152,6 +170,16 @@ final class WebSocketManager: ObservableObject {
 
                 print("[mood] valence=\(valence) reward=\(reward) temp=\(temp) → \(newMood)")
             }
+
+        case "silence":
+            // Persona chose not to reply — dismiss typing bubble, show nothing
+            appState?.isTyping = false
+            streamingContent = ""
+            // Remove any streaming placeholder that was created during Express
+            if let idx = appState?.messages.lastIndex(where: { $0.id == "streaming_current" }) {
+                appState?.messages.remove(at: idx)
+            }
+            print("[silence] 🤫 persona chose silence")
 
         case "proactive":
             let content = json["content"] as? String ?? ""

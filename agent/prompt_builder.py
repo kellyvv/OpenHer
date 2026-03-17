@@ -88,13 +88,15 @@ class PromptBuilderMixin:
             signal_injection=combined_injection,
         )
 
-    def _build_express_prompt(self, monologue: str, few_shot: str = "") -> str:
+    def _build_express_prompt(self, monologue: str, few_shot: str = "",
+                               signals: dict = None,
+                               modality_skill_engine=None) -> str:
         """
         Build Pass 2 (Express) prompt — monologue → reply + modality.
 
-        Identity + monologue + optional reply few-shot from genesis seeds.
-        When few_shot is provided, it's prepended so LLM sees how the
-        character speaks before seeing the current monologue.
+        Identity + signals + monologue + optional reply few-shot.
+        Signals give Express the same behavioral calibration as Feel,
+        enabling emergent length/modality decisions from persona state.
         """
         persona = self.persona
         is_en = persona.lang == 'en'
@@ -113,11 +115,22 @@ class PromptBuilderMixin:
                 identity += f"，{persona.gender}"
             identity += "。"
 
+        # Signal injection — same source as Feel pass
+        signal_text = ""
+        if signals:
+            signal_text = self.agent.to_prompt_injection_from_signals(
+                signals,
+                signal_overrides=self.persona.signal_overrides,
+                frustration=self.metabolism.frustration,
+                lang=self.persona.lang,
+            )
+
         template_name = "actor_express_en" if is_en else "actor_express"
         rendered = render_prompt(
             template_name,
             identity=identity,
             monologue=monologue,
+            signal_injection=signal_text,
         )
 
         # Prepend reply few-shot when available (LLM sees speech examples first)
@@ -125,9 +138,88 @@ class PromptBuilderMixin:
             header = "[Character speech reference]" if is_en else "[角色说话参考]"
             rendered = f"{header}\n{few_shot}\n\n{rendered}"
 
-        # Inject modality skill L1 descriptions (语音/照片 etc)
-        if self.modality_skill_engine:
-            skill_prompt = self.modality_skill_engine.build_prompt()
+        # Inject modality skill descriptions — LLM knows what capabilities exist
+        if modality_skill_engine:
+            skill_prompt = modality_skill_engine.build_prompt()
+            if skill_prompt:
+                rendered += "\n\n" + skill_prompt
+
+        return rendered
+
+    def _build_single_prompt(self, few_shot: str, signals: dict,
+                              modality_skill_engine=None) -> str:
+        """
+        Build single-pass prompt — generates monologue + reply + modality in one call.
+
+        Combines Feel and Express into one template with full context.
+        """
+        import datetime as _dt
+
+        persona = self.persona
+        is_en = persona.lang == 'en'
+
+        # Identity anchor
+        if is_en:
+            identity = f"[Character]\n{persona.name}"
+            if persona.age:
+                identity += f", {persona.age} years old"
+            if persona.gender:
+                identity += f", {persona.gender}"
+            identity += "."
+        else:
+            identity = f"【角色】\n{persona.name}"
+            if persona.age:
+                identity += f"，{persona.age}岁"
+            if persona.gender:
+                identity += f"，{persona.gender}"
+            identity += "。"
+
+        # Signal injection
+        signal_injection = self.agent.to_prompt_injection_from_signals(
+            signals,
+            signal_overrides=self.persona.signal_overrides,
+            frustration=self.metabolism.frustration,
+            lang=self.persona.lang,
+        )
+
+        # Trend injection
+        if self._prev_signals:
+            trend_lines = []
+            for sig in SIGNALS:
+                delta = signals[sig] - self._prev_signals.get(sig, 0.5)
+                if abs(delta) > self.trend_delta:
+                    direction = ("trending up" if delta > 0 else "trending down") if is_en else ("上升" if delta > 0 else "下降")
+                    from engine.genome.genome_engine import SIGNAL_LABELS as _FB_LABELS
+                    sig_config = load_signal_config()
+                    sig_info = sig_config.get('signals', {}).get(sig, {})
+                    label = sig_info.get('emoji_label', _FB_LABELS.get(sig, sig))
+                    trend_word = "noticeably" if is_en else "明显"
+                    trend_lines.append(
+                        f"- {label}{trend_word} {direction} "
+                        f"({self._prev_signals[sig]:.2f} → {signals[sig]:.2f})"
+                    )
+            if trend_lines:
+                trend_header = "【Trend】" if is_en else "【变化趋势】"
+                signal_injection += f"\n{trend_header}\n" + "\n".join(trend_lines[:3])
+
+        now = _dt.datetime.now()
+        if is_en:
+            signal_injection += f"\n\n【Time】{now.strftime('%Y-%m-%d')} {now.strftime('%H:%M')}"
+        else:
+            signal_injection += f"\n\n【当前时间】{now.strftime('%Y年%m月%d日')} {now.strftime('%H:%M')}"
+
+        combined_injection = identity + "\n\n" + signal_injection
+
+        template_name = "actor_single"
+        rendered = render_prompt(
+            template_name,
+            few_shot=few_shot,
+            signal_injection=combined_injection,
+        )
+
+        # Inject modality skill descriptions
+        if modality_skill_engine:
+            skill_prompt = modality_skill_engine.build_prompt()
             if skill_prompt:
                 rendered += "\n\n" + skill_prompt
 

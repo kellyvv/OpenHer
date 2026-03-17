@@ -32,6 +32,10 @@ from providers.llm import LLMClient
 from agent.chat_agent import ChatAgent
 from providers.media.tts_engine import TTSEngine, TTSProvider
 from agent.skills import TaskSkillEngine, ModalitySkillEngine
+from agent.skills.tool_registry import ToolRegistry
+from agent.skills.tools.photo_tools import register_photo_tools
+from agent.skills.tools.voice_tools import register_voice_tools
+from agent.skills.tools.split_tools import register_split_tools
 from engine.state_store import StateStore
 from engine.chat_log_store import ChatLogStore
 from memory.memory_store import MemoryStore
@@ -146,9 +150,18 @@ async def startup():
     )
 
     # 4. Load skills (dual engine architecture)
-    task_skill_engine = TaskSkillEngine(os.path.join(base_dir, "skills", "task"))
+    tool_registry = ToolRegistry()
+    register_photo_tools(tool_registry)
+    register_voice_tools(tool_registry)
+    register_split_tools(tool_registry)
+    print(f"✓ 注册了 {len(tool_registry.tool_names)} 个工具: {tool_registry.tool_names}")
+
+    task_skill_engine = TaskSkillEngine(os.path.join(base_dir, "skills", "task"), tool_registry=tool_registry)
     task_loaded = task_skill_engine.load_all()
-    modality_skill_engine = ModalitySkillEngine(os.path.join(base_dir, "skills", "modality"))
+    modality_skill_engine = ModalitySkillEngine(
+        os.path.join(base_dir, "skills", "modality"),
+        tool_registry=tool_registry,
+    )
     modality_loaded = modality_skill_engine.load_all()
     cron_skills = task_skill_engine.get_cron_skills()
     print(f"✓ 加载了 {len(task_loaded)}+{len(modality_loaded)} 个技能 (task+modality), {len(cron_skills)} 个定时任务")
@@ -215,7 +228,6 @@ async def startup():
     print(f"✓ 主动消息心跳已启动 (cooldown={_proactive_cfg['cooldown_hours']}h, ttl={_proactive_cfg['lock_ttl']}s)")
 
     print("✓ OpenHer 服务启动完成 (v0.5.0 — Genome v10 Hybrid Engine)")
-    print("  → 演示页面: http://localhost:8800/discover")
 
 
 @app.on_event("shutdown")
@@ -887,6 +899,229 @@ async def websocket_chat(ws: WebSocket):
     session_id = None
     agent = None
 
+    # ── Typing debounce state ──
+    _msg_buffer: list[dict] = []        # buffered chat messages
+    _typing_active: bool = False        # client is typing
+    _debounce_task: asyncio.Task | None = None  # grace period timer
+    DEBOUNCE_GRACE_SEC = 2.0            # wait after cursor leaves input
+    DEBOUNCE_FALLBACK_SEC = 3.0         # fallback if no typing signal
+
+    async def _flush_buffer():
+        """Merge buffered messages and process as single turn."""
+        nonlocal _msg_buffer, _debounce_task, agent, session_id
+        if not _msg_buffer:
+            return
+
+        # Take all buffered messages
+        msgs = _msg_buffer
+        _msg_buffer = []
+        _debounce_task = None
+
+        # Use metadata from the first message
+        first = msgs[0]
+        merged_text = "\n".join(m.get("content", "").strip() for m in msgs)
+        persona_id = first.get("persona_id", "")
+        user_name = first.get("user_name")
+        ws_client_id = first.get("client_id")
+
+        if not persona_id or not merged_text.strip():
+            return
+
+        try:
+            session_id, agent = get_or_create_session(
+                session_id or first.get("session_id"),
+                persona_id,
+                user_name,
+            )
+        except ValueError as e:
+            await ws.send_json({"type": "error", "content": str(e)})
+            return
+
+        if len(msgs) > 1:
+            print(f"  [debounce] 📦 merged {len(msgs)} messages into one turn")
+
+        # Display-only greeting (only from first message)
+        greeting = first.get("greeting")
+        if greeting and agent and len(agent.history) == 0:
+
+            print(f"  [greeting] display-only (not in model state): {greeting[:40]}")
+            if chat_log_store and ws_client_id:
+                try:
+                    chat_log_store._conn.execute(
+                        "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        (ws_client_id, persona_id, "assistant", greeting, "文字", time.time()),
+                    )
+                    chat_log_store._conn.commit()
+                except Exception as e:
+                    print(f"  [greeting] chat_log save error: {e}")
+
+        # Register WS connection for proactive push
+        _ws_connections[session_id] = ws
+
+        # ── Process the merged message (same as original chat handling) ──
+        stream_error = False
+        _clean_reply_text = ""
+        try:
+            async def _ws_send(msg: dict):
+                await ws.send_json(msg)
+
+            async def _on_feel_done():
+                await ws.send_json({
+                    "type": "chat_start",
+                    "session_id": session_id,
+                })
+
+            async def _on_complete(reply: str, modality: str):
+                nonlocal _clean_reply_text
+                _clean_reply_text = reply
+
+            await _stream_to_ws(
+                agent.chat_stream(merged_text),
+                _ws_send,
+                on_feel_done=_on_feel_done,
+                on_reply_complete=_on_complete,
+            )
+        except Exception as e:
+            stream_error = True
+            print(f"[ws] stream 错误: {e}")
+            try:
+                await ws.send_json({
+                    "type": "error",
+                    "content": f"LLM 响应异常: {type(e).__name__}: {str(e)[:200]}",
+                })
+            except Exception:
+                return  # WS broken, stop processing
+
+        if not stream_error:
+            status = agent.get_status()
+            image_path = status.pop("image_path", None)
+            audio_path = status.pop("audio_path", None)
+            if image_path:
+                parts = image_path.replace("\\", "/").split("/")
+                selfie_idx = parts.index("selfie") if "selfie" in parts else -1
+                image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else f"/api/selfie/{os.path.basename(image_path)}"
+                print(f"  [delivery] 📷 image_path={image_path}, image_url={image_url}")
+            else:
+                image_url = None
+
+            segments = status.pop("segments", None)
+            delays_ms = status.pop("delays_ms", None)
+            modality = status.get("modality", "文字")
+
+            # ── Silence: suppress reply, notify client ──
+            if modality == "静默":
+                await ws.send_json({
+                    "type": "silence",
+                    "session_id": session_id,
+                    **{k: v for k, v in status.items()},
+                })
+                print(f"  [silence] 🤫 角色选择静默，客户端不显示消息")
+            elif segments and isinstance(segments, list) and len(segments) > 1:
+                for i, seg in enumerate(segments):
+                    delay = delays_ms[i] if delays_ms and i < len(delays_ms) else 0
+                    if delay > 0:
+                        # Show "typing" indicator during delay
+                        await ws.send_json({
+                            "type": "chat_start",
+                            "session_id": session_id,
+                        })
+                        await asyncio.sleep(delay / 1000.0)
+                    await ws.send_json({
+                        "type": "chat_end",
+                        "reply": seg,
+                        "modality": modality,
+                        "image_url": image_url if i == 0 else None,
+                        **{k: v for k, v in status.items()},
+                    })
+                print(f"  [skill] ✂️ Delivered {len(segments)} segments")
+            else:
+                await ws.send_json({
+                    "type": "chat_end",
+                    "reply": _clean_reply_text,
+                    "modality": modality,
+                    "image_url": image_url,
+                    **{k: v for k, v in status.items()},
+                })
+
+            if audio_path and os.path.isfile(audio_path):
+                try:
+                    with open(audio_path, "rb") as f:
+                        audio_b64 = base64.b64encode(f.read()).decode()
+                    await ws.send_json({
+                        "type": "tts_audio",
+                        "audio": audio_b64,
+                        "format": "wav",
+                    })
+                    print(f"  [skill] 🔊 Audio delivered: {os.path.basename(audio_path)}")
+                except Exception as e:
+                    print(f"  [skill] ⚠ Audio delivery failed: {e}")
+
+            # Retry content (if any) already delivered via _skill_outputs → get_status().
+            # Clear _pending_retry to prevent duplicate delivery through the follow-up path.
+            if hasattr(agent, '_pending_retry') and agent._pending_retry:
+                print(f"  [skill] 🧹 Cleared _pending_retry (already delivered via status)")
+                agent._pending_retry = None
+
+            retry = getattr(agent, '_pending_retry', None)
+            if retry:
+                await asyncio.sleep(5)
+                print(f"  [skill] 🔄 Delivering retry {retry['modality']}...")
+                retry_image_url = None
+                if retry.get("image_path"):
+                    parts = retry["image_path"].replace("\\", "/").split("/")
+                    selfie_idx = parts.index("selfie") if "selfie" in parts else -1
+                    retry_image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else None
+                await ws.send_json({
+                    "type": "chat_end",
+                    "reply": retry["reply"],
+                    "modality": retry["modality"],
+                    "image_url": retry_image_url,
+                })
+                if retry.get("audio_path") and os.path.isfile(retry["audio_path"]):
+                    try:
+                        with open(retry["audio_path"], "rb") as f:
+                            audio_b64 = base64.b64encode(f.read()).decode()
+                        await ws.send_json({
+                            "type": "tts_audio",
+                            "audio": audio_b64,
+                            "format": "wav",
+                        })
+                        print(f"  [skill] 🔊 Retry audio delivered: {os.path.basename(retry['audio_path'])}")
+                    except Exception as e:
+                        print(f"  [skill] ⚠ Retry audio delivery failed: {e}")
+                agent._pending_retry = None
+
+            # Log conversation for debugging
+            print(f"  [chat] 👤 {merged_text[:60]}")
+            print(f"  [chat] 🤖 {_clean_reply_text[:120]}")
+
+            # Persist to display-layer chat log
+            if chat_log_store and ws_client_id:
+                _persona_id = first.get("persona_id", "")
+                now = time.time()
+                try:
+                    chat_log_store._conn.execute(
+                        "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        (ws_client_id, _persona_id, "user", merged_text, "文字", now),
+                    )
+                    chat_log_store._conn.execute(
+                        "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        (ws_client_id, _persona_id, "assistant", _clean_reply_text, modality, now),
+                    )
+                    chat_log_store._conn.commit()
+                except Exception as e:
+                    print(f"  [chat_log] save error: {e}")
+
+    async def _schedule_flush(delay: float):
+        """Schedule a flush after delay, cancelling any existing timer."""
+        nonlocal _debounce_task
+        if _debounce_task and not _debounce_task.done():
+            _debounce_task.cancel()
+        async def _wait_and_flush():
+            await asyncio.sleep(delay)
+            await _flush_buffer()
+        _debounce_task = asyncio.create_task(_wait_and_flush())
+
     try:
         while True:
             raw = await ws.receive_text()
@@ -898,165 +1133,30 @@ async def websocket_chat(ws: WebSocket):
 
             msg_type = msg.get("type", "")
 
+            # ── Typing indicator (informational only) ──
+            if msg_type == "typing":
+                _typing_active = msg.get("active", False)
+                print(f"  [debounce] typing={'active' if _typing_active else 'inactive'}, buffer={len(_msg_buffer)}")
+                # When user explicitly leaves input and buffer has messages,
+                # schedule a faster flush (2s instead of 3s fallback)
+                if not _typing_active and _msg_buffer:
+                    await _schedule_flush(DEBOUNCE_GRACE_SEC)
+                    print(f"  [debounce] ⏱ scheduled flush in {DEBOUNCE_GRACE_SEC}s")
+                continue
+
             # ── Chat message ──
             if msg_type == "chat":
                 text = msg.get("content", "").strip()
                 if not text:
                     continue
 
-                persona_id = msg.get("persona_id", "")
-                if not persona_id:
-                    await ws.send_json({"type": "error", "content": "persona_id is required"})
-                    continue
-                user_name = msg.get("user_name")
-                ws_client_id = msg.get("client_id")  # display-layer identity
+                # Buffer the message and schedule flush
+                _msg_buffer.append(msg)
+                print(f"  [debounce] 📥 buffered msg #{len(_msg_buffer)}: '{text[:30]}', typing_active={_typing_active}")
 
-                try:
-                    session_id, agent = get_or_create_session(
-                        session_id or msg.get("session_id"),
-                        persona_id,
-                        user_name,
-                    )
-                except ValueError as e:
-                    await ws.send_json({"type": "error", "content": str(e)})
-                    continue
-
-                # Display-only greeting: store in chat_log for frontend history reload,
-                # but do NOT inject into agent.history (preserves emergence purity).
-                # Greeting in history[-4:] would seed Express positive-feedback drift from turn 0.
-                greeting = msg.get("greeting")
-                if greeting and agent and len(agent.history) == 0:
-                    print(f"  [greeting] display-only (not in model state): {greeting[:40]}")
-                    # Persist to display-layer chat log
-                    if chat_log_store and ws_client_id:
-                        try:
-                            chat_log_store._conn.execute(
-                                "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                                (ws_client_id, persona_id, "assistant", greeting, "文字", time.time()),
-                            )
-                            chat_log_store._conn.commit()
-                        except Exception as e:
-                            print(f"  [greeting] chat_log save error: {e}")
-
-                # Register WS connection for proactive push (Bug 1)
-                _ws_connections[session_id] = ws
-
-                stream_error = False
-                _clean_reply_text = ""
-                try:
-                    async def _ws_send(msg: dict):
-                        await ws.send_json(msg)
-
-                    async def _on_feel_done():
-                        """Send chat_start after Feel pass — triggers 正在输入 at the right time."""
-                        await ws.send_json({
-                            "type": "chat_start",
-                            "session_id": session_id,
-                        })
-
-                    async def _on_complete(reply: str, modality: str):
-                        nonlocal _clean_reply_text
-                        _clean_reply_text = reply
-
-                    await _stream_to_ws(
-                        agent.chat_stream(text),
-                        _ws_send,
-                        on_feel_done=_on_feel_done,
-                        on_reply_complete=_on_complete,
-                    )
-                except Exception as e:
-                    stream_error = True
-                    print(f"[ws] stream 错误: {e}")
-                    try:
-                        await ws.send_json({
-                            "type": "error",
-                            "content": f"LLM 响应异常: {type(e).__name__}: {str(e)[:200]}",
-                        })
-                    except Exception:
-                        break
-
-                if not stream_error:
-                    status = agent.get_status()
-                    image_path = status.pop("image_path", None)
-                    audio_path = status.pop("audio_path", None)
-                    if image_path:
-                        # Extract persona_id/filename from .cache/selfie/persona_id/hash.png
-                        parts = image_path.replace("\\", "/").split("/")
-                        selfie_idx = parts.index("selfie") if "selfie" in parts else -1
-                        image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else f"/api/selfie/{os.path.basename(image_path)}"
-                    else:
-                        image_url = None
-                    await ws.send_json({
-                        "type": "chat_end",
-                        "reply": _clean_reply_text,   # clean full reply for frontend
-                        "modality": status.get("modality", ""),
-                        "image_url": image_url,
-                        **status,
-                    })
-
-                    # Deliver modality skill audio via existing tts_audio channel
-                    if audio_path and os.path.isfile(audio_path):
-                        try:
-                            with open(audio_path, "rb") as f:
-                                audio_b64 = base64.b64encode(f.read()).decode()
-                            await ws.send_json({
-                                "type": "tts_audio",
-                                "audio": audio_b64,
-                                "format": "wav",
-                            })
-                            print(f"  [skill] 🔊 Audio delivered: {os.path.basename(audio_path)}")
-                        except Exception as e:
-                            print(f"  [skill] ⚠ Audio delivery failed: {e}")
-
-                    # ── Modality retry delivery (serial follow-up) ──
-                    retry = getattr(agent, '_pending_retry', None)
-                    if retry:
-                        await asyncio.sleep(5)  # natural pause like a real person
-                        print(f"  [skill] 🔄 Delivering retry {retry['modality']}...")
-                        retry_image_url = None
-                        if retry.get("image_path"):
-                            parts = retry["image_path"].replace("\\", "/").split("/")
-                            selfie_idx = parts.index("selfie") if "selfie" in parts else -1
-                            retry_image_url = "/api/selfie/" + "/".join(parts[selfie_idx + 1:]) if selfie_idx >= 0 else None
-                        await ws.send_json({
-                            "type": "chat_end",
-                            "reply": retry["reply"],
-                            "modality": retry["modality"],
-                            "image_url": retry_image_url,
-                        })
-                        if retry.get("audio_path") and os.path.isfile(retry["audio_path"]):
-                            try:
-                                with open(retry["audio_path"], "rb") as f:
-                                    audio_b64 = base64.b64encode(f.read()).decode()
-                                await ws.send_json({
-                                    "type": "tts_audio",
-                                    "audio": audio_b64,
-                                    "format": "wav",
-                                })
-                                print(f"  [skill] 🔊 Retry audio delivered: {os.path.basename(retry['audio_path'])}")
-                            except Exception as e:
-                                print(f"  [skill] ⚠ Retry audio delivery failed: {e}")
-                        agent._pending_retry = None
-
-                    # Log conversation for debugging
-                    print(f"  [chat] 👤 {text}")
-                    print(f"  [chat] 🤖 {_clean_reply_text[:120]}")
-
-                _persist_agent(agent)
-
-                # Chat log: display-layer persistence (no engine impact)
-                if chat_log_store and ws_client_id and not stream_error:
-                    try:
-                        chat_log_store.save_turn(
-                            client_id=ws_client_id,
-                            persona_id=persona_id,
-                            user_msg=text,
-                            agent_reply=_clean_reply_text,
-                            modality=status.get("modality", "文字") if not stream_error else "文字",
-                            image_url=image_url,
-                        )
-                    except Exception as e:
-                        print(f"  [chat_log] save error: {e}")
+                # Always use 3s debounce for chat messages.
+                # The faster 1s flush only triggers via explicit typing:false signal.
+                await _schedule_flush(DEBOUNCE_FALLBACK_SEC)
 
             # ── TTS request ──
             elif msg_type == "tts_request":
