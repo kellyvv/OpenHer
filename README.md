@@ -105,8 +105,8 @@ Powered by [EverMemOS](https://evermind.ai). Your preferences, your stories, her
 </td>
 <td>
 
-### 🎭 Feel-First Architecture
-Every reply starts with feeling. Whether via two-pass (inner monologue → expression) or single-pass (unified generation), the persona engine always processes *emotion before words*.
+### 🎭 Feel-First
+Every reply starts with feeling. Before she chooses words, she processes *emotion* — what does this moment mean to her? What does she want to say vs. what she'll actually say?
 
 > *You say "I'm so tired." Her instinct: "He's overworking again…" — so she just sends a hug.*
 
@@ -176,11 +176,18 @@ An extensible framework that gives her real capabilities — voice notes, photos
 |:--|:----------|:-----|:----------|
 | 🌸 | **Luna** (陆暖) · 22 | ENFP | Freelance illustrator with an orange cat named Mochi. Curious about literally everything. |
 | 📝 | **Iris** (苏漫) · 20 | INFP | Literature major who writes poetry. Notices what everyone else misses. Quiet but devastatingly perceptive. |
-| 💼 | **Vivian** (顾霆微) · 28 | INTJ | Tech executive. Logic 10/10, emotional availability 2/10. Her stillness creates pressure. Remembers everything. |
+| 💼 | **Vivian** (顾霆微) · 28 | INTJ | Tech executive. Logic 10/10, emotional availability 2/10. Her stillness creates pressure. |
+| 🔧 | **Kai** (沈凯) · 24 | ISTP | Few words, reliable hands. Fixes things — machines and people. |
+| 🗡️ | **Kelly** (柯砺) · 26 | ENTP | Sharp-tongued, restless, endlessly curious. Will debate you on anything. |
+| 🔥 | **Ember** · 22 | INFP | Quiet observer with a warm core. Speaks through silence and poetry. |
+| 🌊 | **Sora** (顾清) · 27 | INFJ | Insightful and gently firm. Sees through you before you finish the sentence. |
+| 🎉 | **Mia** · 23 | ESFP | Pure energy, spontaneous warmth. Drags you out of your shell. |
+| 👑 | **Rex** · 30 | ENTJ | Decisive, commanding, strategic. The room changes when he walks in. |
+| ✨ | **Nova** (诺瓦) · 24 | ENFP | Creative and whimsical. Her mind works in colors you haven't seen. |
 
 > *Their personalities are not described to the AI — they emerge from each character's unique drive baseline and neural network seed. This means they can surprise even us.*
 
-→ More characters available. Create your own: [Persona Creation Guide](docs/persona_creation_guide.md)
+→ Create your own: [Persona Creation Guide](docs/persona_creation_guide.md)
 
 ---
 
@@ -263,6 +270,12 @@ DEFAULT_MODEL=gemini-2.0-flash-lite
 
 ```bash
 python main.py
+```
+
+You should see:
+```
+INFO:     Uvicorn running on http://0.0.0.0:8800
+✓ GenomeEngine loaded · 10 personas available
 ```
 
 ### 4. Launch the Desktop Client
@@ -384,12 +397,12 @@ openher/
 - [x] Drive-based proactive messaging
 - [x] Multi-LLM provider support (8 providers)
 - [x] Extensible skill framework (voice, selfie, split_msg, weather)
+- [x] Task skill engine — ReAct-based tool execution
+- [x] macOS native desktop client (SwiftUI)
 - [x] LLM benchmark suite (4-layer: persona quality, metabolism, memory, robustness)
 
 ### Phase 2 · Into the Real World 🔧
 
-- [x] Task skill engine — ReAct-based tool execution
-- [x] macOS native desktop client (SwiftUI)
 - [ ] Voice conversation mode — real-time voice chat
 - [ ] Video calls — see her expressions change in real time
 - [ ] Multi-agent social interactions
@@ -410,7 +423,16 @@ openher/
 
 [Apache License 2.0](LICENSE) — free for everything, including commercial use.
 
-## 🤝 Acknowledgments
+## 🤝 Contributing
+
+We welcome contributions! Whether it's a new persona, a skill plugin, a bug fix, or documentation improvements — every PR matters.
+
+1. Fork the repo
+2. Create your branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push and open a Pull Request
+
+## 🙏 Acknowledgments
 
 - **[Her](https://en.wikipedia.org/wiki/Her_(film))** (2013) — The vision that started it all
 - **[EverMemOS](https://evermind.ai)** — Long-term memory infrastructure
@@ -425,5 +447,13 @@ openher/
 *Personality is not a prompt. It's a living process.*
 
 ⭐ If OpenHer resonates with you, a star helps more people discover it.
+
+<a href="https://star-history.com/#kellyvv/OpenHer&type=Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=kellyvv/OpenHer&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=kellyvv/OpenHer&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kellyvv/OpenHer&type=Date" width="600" />
+  </picture>
+</a>
 
 </div>
