@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
 
-[![中文文档](https://img.shields.io/badge/中文文档-FF6B6B?style=flat-square)](README_CN.md) &nbsp; ![English](https://img.shields.io/badge/English-555555?style=flat-square)
+[![中文文档](https://img.shields.io/badge/中文文档-FF6B6B?style=flat-square)](README_CN.md) &nbsp; [![English](https://img.shields.io/badge/English-555555?style=flat-square)](README.md)
 
 [Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Screenshots](#-screenshots) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
 
