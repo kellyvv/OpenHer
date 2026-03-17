@@ -4,11 +4,9 @@
 
 🇨🇳 中文文档 | [🇺🇸 English](README.md)
 
-<table align="center"><tr>
-<td align="center" valign="middle"><img src="docs/assets/logo.png" alt="OpenHer Logo" height="64"></td>
-<td align="center" valign="middle"><img src="https://img.shields.io/badge/%20-%20-lightgrey?style=flat-square" width="1" height="48"></td>
-<td align="center" valign="middle"><h1>OpenHer</h1></td>
-</tr></table>
+<img src="docs/assets/logo.png" alt="OpenHer Logo" height="80">
+
+# OpenHer
 
 ### *如果《Her》里的 AI 是真的呢？*
 
