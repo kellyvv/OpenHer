@@ -13,7 +13,7 @@
 
 [![中文文档](https://img.shields.io/badge/中文文档-FF6B6B?style=flat-square)](README_CN.md) &nbsp; [![English](https://img.shields.io/badge/English-555555?style=flat-square)](README.md)
 
-[Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Screenshots](#-screenshots) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
+[Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Core Capabilities](#-core-capabilities) · [How It Works](#-how-it-works) · [Memory](#-memory-architecture) · [LLM Compatibility](#-llm-compatibility) · [Quick Start](#-quick-start) · [Create Your Own](#-create-your-own-character) · [Roadmap](#️-roadmap)
 
 </div>
 
@@ -382,6 +382,8 @@ genome_seed:
 ## 🤝 Contributing
 
 We welcome contributions! Whether it's a new persona, a skill plugin, a bug fix, or documentation improvements — every PR matters.
+
+Please read our **[Contributing Guide](CONTRIBUTING.md)** for code style, testing requirements, and PR process.
 
 1. Fork the repo
 2. Create your branch (`git checkout -b feature/amazing-feature`)

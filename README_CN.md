@@ -13,7 +13,7 @@
 
 [![中文文档](https://img.shields.io/badge/中文文档-555555?style=flat-square)](README_CN.md) &nbsp; [![English](https://img.shields.io/badge/English-FF6B6B?style=flat-square)](README.md)
 
-[灵感来源](#灵感来源) · [什么是 OpenHer](#-什么是-openher) · [愿景](#-愿景) · [截图](#-截图) · [快速开始](#-快速开始) · [技术原理](#-技术原理) · [创建角色](#-创建你自己的角色)
+[灵感来源](#灵感来源) · [什么是 OpenHer](#-什么是-openher) · [愿景](#-愿景) · [核心能力](#-核心能力) · [技术原理](#-技术原理) · [记忆架构](#-记忆架构) · [LLM 兼容性](#-llm-兼容性) · [快速开始](#-快速开始) · [创建角色](#-创建你自己的角色) · [路线图](#️-路线图)
 
 </div>
 
@@ -382,6 +382,8 @@ genome_seed:
 ## 🤝 参与贡献
 
 欢迎贡献！无论是新角色、技能插件、Bug 修复还是文档改进——每一个 PR 都有价值。
+
+请阅读 **[贡献指南](CONTRIBUTING.md)** 了解代码规范、测试要求和 PR 流程。
 
 1. Fork 本仓库
 2. 创建分支 (`git checkout -b feature/amazing-feature`)
