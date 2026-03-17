@@ -160,7 +160,7 @@ OpenHer 支持多种大模型——但不是所有模型都能胜任人格涌现
 | **Qwen3** | — | — | ✅ | *已支持* |
 | GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
 
-→ 测试方法（3 层测试 + 原始数据）：[基准测试报告](docs/benchmark/llm_comparison_report.md)
+→ 测试方法：[LLM 对比报告](docs/benchmark/llm_comparison_report.md) · [Layer 4 鲁棒性报告](docs/benchmark/gemini_layer4_report.md)
 
 ---
 
@@ -257,7 +257,6 @@ genome_seed:
 | LLM | Gemini, Claude, Qwen3, GPT-4o, Moonshot, Ollama |
 | 记忆 | **EverMemOS**（自部署 / 云端）+ SQLite 本地状态 |
 | 桌面端 | SwiftUI (macOS 原生) |
-| 网页端 | React + Vite |
 | 语音 | DashScope · OpenAI · MiniMax |
 | 图像 | Gemini Imagen |
 | 技能 | 可扩展技能框架（语音、自拍、天气） |
@@ -269,16 +268,17 @@ genome_seed:
 ### Phase 1 · 人格涌现引擎 ✅
 
 - [x] 人格涌现引擎 (Genome v10)
-- [x] 两阶段 感受 → 表达 架构
+- [x] 两阶段 感受 → 表达 + 单 pass 架构
 - [x] EverMemOS 长期记忆集成
 - [x] 驱力驱动的主动消息
 - [x] 多 LLM 服务商支持（7 家）
 - [x] 自拍生成（表达方式路由）
-- [x] LLM 基准测试套件（3 层测试）
+- [x] LLM 基准测试套件（4 层：人格品质、代谢引擎、记忆结晶、鲁棒性）
 
 ### Phase 2 · 任务技能引擎 🔧
 
 - [x] 可扩展技能框架 —— 语音、自拍、天气技能
+- [x] 任务技能引擎 —— 基于 ReAct 的工具执行（天气、搜索）
 - [x] 语音短信 —— 发语音给你，像真人朋友一样
 - [x] macOS 原生桌面客户端 (SwiftUI)
 - [ ] 语音对话模式 —— 实时语音聊天

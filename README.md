@@ -160,7 +160,7 @@ OpenHer works with multiple LLMs — but not all models are created equal. Perso
 | **Qwen3** | — | — | ✅ | *supported* |
 | GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
 
-→ How we test (3-layer methodology + raw data): [Benchmark Report](docs/benchmark/llm_comparison_report.md)
+→ How we test: [LLM Comparison Report](docs/benchmark/llm_comparison_report.md) · [Layer 4 Robustness Report](docs/benchmark/gemini_layer4_report.md)
 
 ---
 
@@ -257,7 +257,6 @@ genome_seed:
 | LLM | Gemini, Claude, Qwen3, GPT-4o, Moonshot, Ollama |
 | Memory | **EverMemOS** (self-hosted / cloud) + SQLite local state |
 | Desktop | SwiftUI (macOS native) |
-| Web | React + Vite |
 | Voice | DashScope · OpenAI · MiniMax |
 | Image | Gemini Imagen |
 | Skills | Extensible skill framework (voice, selfie, weather) |
@@ -269,16 +268,17 @@ genome_seed:
 ### Phase 1 · Personality Emergence Engine ✅
 
 - [x] Personality Emergence Engine (Genome v10)
-- [x] Two-pass Feel → Express architecture
+- [x] Two-pass Feel → Express + single-pass architecture
 - [x] EverMemOS long-term memory integration
 - [x] Drive-based proactive messaging
 - [x] Multi-LLM provider support (7 providers)
 - [x] Selfie generation via modality routing
-- [x] LLM benchmark suite (3-layer testing)
+- [x] LLM benchmark suite (4-layer: persona quality, metabolism, memory, robustness)
 
 ### Phase 2 · Task & Skill Engine 🔧
 
 - [x] Extensible skill framework — voice, selfie, weather skills
+- [x] Task skill engine — ReAct-based tool execution (weather, search)
 - [x] Voice messages — she sends you voice notes, like a real friend
 - [x] macOS native desktop client (SwiftUI)
 - [ ] Voice conversation mode — real-time voice chat
