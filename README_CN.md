@@ -1,15 +1,14 @@
 <div align="center">
 
-<table border="0" cellspacing="0" cellpadding="0">
-<tr>
-<td><img src="docs/assets/logo.png" alt="OpenHer Logo" height="120"></td>
-<td><img src="docs/assets/logo_text.png" alt="OpenHer" height="80"></td>
-</tr>
-</table>
+<img src="docs/assets/logo.png" alt="OpenHer Logo" width="200">
 
-### *如果《Her》里的 AI 是真的呢？*
+<img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
 🇨🇳 中文文档 | [🇺🇸 English](README.md)
+
+# 🧬 OpenHer
+
+### *如果《Her》里的 AI 是真的呢？*
 
 **人格涌现，从 OpenHer 开始。**
 

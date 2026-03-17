@@ -1,15 +1,14 @@
 <div align="center">
 
-<table border="0" cellspacing="0" cellpadding="0">
-<tr>
-<td><img src="docs/assets/logo.png" alt="OpenHer Logo" height="120"></td>
-<td><img src="docs/assets/logo_text.png" alt="OpenHer" height="80"></td>
-</tr>
-</table>
+<img src="docs/assets/logo.png" alt="OpenHer Logo" width="200">
 
-### *What if the AI from Her was real?*
+<img src="docs/assets/banner.png" alt="OpenHer Banner" width="100%">
 
 [🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
+
+# 🧬 OpenHer
+
+### *What if the AI from Her was real?*
 
 **Emergent personality starts here.**
 
