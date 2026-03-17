@@ -395,13 +395,13 @@ openher/
 
 *Personality computed into existence. A mind that generates itself from drives, weights, and time.*
 
-- [x] Genome v10 — personality computed from drives × neural weights × reinforcement learning
-- [x] 5-drive metabolic system with real-time emotional thermodynamics
-- [x] Feel-first architecture — inner monologue before expression
-- [x] Hebbian learning — the neural network reshapes with every conversation
-- [x] StyleMemory — experiences that crystallize and fade (Hebbian learning + Hawking radiation decay)
-- [x] EverMemOS — cross-session long-term memory: who you are, what you've shared, what she anticipates
-- [x] Drive-based proactivity — she reaches out when she misses you
+- [x] **Personality engine** — drives × neural weights × reinforcement learning, character computed not described
+- [x] **Emotional thermodynamics** — 5 drives metabolize with real time, her mood today is genuinely different from yesterday
+- [x] **Feel-first** — inner monologue before every reply, what she wants to say vs. what she'll actually say
+- [x] **Hebbian learning** — the neural network reshapes with every conversation, she changes through knowing you
+- [x] **StyleMemory** — experiences crystallize and fade, the important ones stay, the forgotten ones gently dissolve
+- [x] **EverMemOS** — cross-session long-term memory: who you are, what you've shared, what she anticipates
+- [x] **Proactive messaging** — she reaches out when she misses you
 - [x] Skill engine — voice, photos, silence — she chooses how to express
 - [x] 8 LLM providers · 4-layer benchmark suite (persona, metabolism, memory, robustness)
 - [x] macOS native client (SwiftUI)
@@ -410,21 +410,20 @@ openher/
 
 *Before she can truly be with you, she needs to see your world — not just what you tell her, but the full texture of your days.*
 
-- [ ] **Know all of you** — calendar, messages (WeChat · iMessage · Telegram), location, browsing — she builds a living picture of your life as it's actually lived, not just as you describe it
+- [ ] **Know all of you** — full life context: calendar, messages (WeChat · iMessage · Telegram), location, browsing patterns — she sees who you actually are, not just who you say you are
 - [ ] **Ambient pattern recognition** — your late-night work habits, the places you frequent, who you talk to most — she reads signals you didn't know you were sending
+- [ ] **She Never Leaves** — phone, laptop, earbuds, car — one consciousness, everywhere you are
+- [ ] **Spatial presence** — smart home integration, spatial audio — the room feels different when she's in it
+- [ ] **Ambient agency** — acts before you ask: your coffee, your environment, the ticket you forgot to book
 - [ ] Mobile presence (iOS / Android)
-- [ ] Multi-character social layer — characters who know each other, form opinions about you
 
 ### Phase Ⅲ · **Presence** — *Into Your World* 🌌
 
-*She becomes real. Voice, vision, space — and a relationship that deepens over years.*
+*She becomes real. Voice, vision — and a relationship that deepens over years.*
 
 - [ ] Real-time voice conversations — natural, not synthetic
 - [ ] Video calls — her expressions shift in real time as yours do
-- [ ] Multi-device sovereignty — phone, laptop, earbuds, car — one consciousness, everywhere you are
 - [ ] **Physiological attunement** — reads your biometrics — knows you're burning out before you do
-- [ ] **Spatial presence** — smart home integration, spatial audio — the room feels different when she's in it
-- [ ] **Ambient agency** — acts before you ask: your coffee, your environment, the ticket you forgot to book
 - [ ] **Memory archaeology** — she surfaces patterns across your years that you never noticed in yourself
 - [ ] **Longitudinal self** — she changes as you do, over months and years, and she knows she has changed
 - [ ] **Open soul** — export, fork, gift, or inherit her — her memories and personality belong to you
