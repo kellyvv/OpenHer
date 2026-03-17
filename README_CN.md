@@ -259,14 +259,13 @@ DEFAULT_PROVIDER=gemini           # 或 claude, dashscope, openai, minimax, moon
 DEFAULT_MODEL=gemini-2.0-flash-lite
 ```
 
-### 三、启动服务
+### 三、启动后端
 
 ```bash
 python main.py
-# → http://localhost:8800/discover
 ```
 
-### 四、macOS 桌面客户端（可选）
+### 四、启动桌面客户端
 
 ```bash
 cd desktop/OpenHer
@@ -278,7 +277,17 @@ chmod +x run.sh
 
 ### 五、长期记忆（可选）
 
-连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆：
+连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆。
+
+**方案 A — 云端 API：**
+
+在 [evermind.ai](https://evermind.ai) 注册，然后在 `.env` 中设置：
+```bash
+EVERMEMOS_BASE_URL=https://api.evermind.ai/v1
+EVERMEMOS_API_KEY=your_api_key
+```
+
+**方案 B — 自部署：**
 
 ```bash
 cd vendor/EverMemOS && docker compose up -d && uv run python src/run.py

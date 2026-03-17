@@ -259,14 +259,13 @@ DEFAULT_PROVIDER=gemini           # or claude, dashscope, openai, minimax, moons
 DEFAULT_MODEL=gemini-2.0-flash-lite
 ```
 
-### 3. Start the Server
+### 3. Start the Backend
 
 ```bash
 python main.py
-# → http://localhost:8800/discover
 ```
 
-### 4. macOS Desktop Client (Optional)
+### 4. Launch the Desktop Client
 
 ```bash
 cd desktop/OpenHer
@@ -278,7 +277,17 @@ chmod +x run.sh
 
 ### 5. Long-Term Memory (Optional)
 
-Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory:
+Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory.
+
+**Option A — Cloud API:**
+
+Register at [evermind.ai](https://evermind.ai) and set in `.env`:
+```bash
+EVERMEMOS_BASE_URL=https://api.evermind.ai/v1
+EVERMEMOS_API_KEY=your_api_key
+```
+
+**Option B — Self-Hosted:**
 
 ```bash
 cd vendor/EverMemOS && docker compose up -d && uv run python src/run.py
