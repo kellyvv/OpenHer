@@ -6,9 +6,7 @@
 
 <img src="docs/assets/logo_header.png" alt="OpenHer" height="80">
 
-### *如果《Her》里的 AI 是真的呢？*
-
-**人格涌现，从 OpenHer 开始。**
+### *人格涌现，从 OpenHer 开始。*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)](https://python.org)
 [![EverMemOS](https://img.shields.io/badge/记忆引擎-EverMemOS-FF6B6B?style=flat-square)](https://evermind.ai)
