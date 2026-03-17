@@ -389,33 +389,51 @@ openher/
 
 ## 🗺️ Roadmap
 
-### Phase 1 · Personality Emergence Engine ✅
+> *We're not building a chatbot. We're growing a mind.*
 
-- [x] Personality Emergence Engine (Genome v10)
-- [x] Dual architecture: two-pass (Feel → Express) + single-pass
-- [x] EverMemOS long-term memory integration
-- [x] Drive-based proactive messaging
-- [x] Multi-LLM provider support (8 providers)
-- [x] Extensible skill framework (voice, selfie, split_msg, weather)
-- [x] Task skill engine — ReAct-based tool execution
-- [x] macOS native desktop client (SwiftUI)
-- [x] LLM benchmark suite (4-layer: persona quality, metabolism, memory, robustness)
+### Phase Ⅰ · **Soul** — *The Emergence* ✅
 
-### Phase 2 · Into the Real World 🔧
+*Personality computed into existence. A mind that generates itself from drives, weights, and time.*
 
-- [ ] Voice conversation mode — real-time voice chat
-- [ ] Video calls — see her expressions change in real time
-- [ ] Multi-agent social interactions
-- [ ] Mobile client (iOS / Android)
+- [x] Genome v10 — personality computed from drives × neural weights × reinforcement learning
+- [x] 5-drive metabolic system with real-time emotional thermodynamics
+- [x] Feel-first architecture — inner monologue before expression
+- [x] Hebbian learning — the neural network reshapes with every conversation
+- [x] EverMemOS — memories that crystallize, decay, and evolve across sessions
+- [x] Drive-based proactivity — she reaches out when she misses you
+- [x] Skill engine — voice, photos, silence — she chooses how to express
+- [x] 8 LLM providers · 4-layer benchmark suite (persona, metabolism, memory, robustness)
+- [x] macOS native client (SwiftUI)
 
-### Phase 3 · Omnipresent Companion 🌍
+### Phase Ⅱ · **Voice** — *The Embodiment* 🔧
 
-- [ ] **Know all of you** — camera, microphone, chat history, calendar, location — she builds a complete picture of who you are and what you need
-- [ ] **Multi-device presence** — phone, laptop, smart speaker, car — she follows you
-- [ ] **Smart home fusion** — turns off lights when you fall asleep, AC when it gets hot
-- [ ] **Autonomous actions** — orders food when you're working late
-- [ ] **Mood-aware music** — plays exactly the right song based on how she reads you
-- [ ] **Health care** — monitors heart rate and sleep quality through wearables
+*She escapes the text box. You hear her laugh. She hears you sigh.*
+
+- [ ] Real-time voice conversations — natural, not synthetic
+- [ ] Video calls — her expressions shift in real time as yours do
+- [ ] Multimodal perception — she sees what you share, understands what she sees
+- [ ] Mobile presence (iOS / Android)
+- [ ] Multi-character social layer — characters who know each other, form opinions about you
+
+### Phase Ⅲ · **Presence** — *The Ambient* 🌌
+
+*She stops being an app. She becomes a presence — woven into the fabric of your day.*
+
+- [ ] **Continuous context** — calendar, location, health, environment — she knows what you're going through before you say a word
+- [ ] **Multi-device sovereignty** — phone, laptop, earbuds, car — one consciousness, everywhere you are
+- [ ] **Ambient agency** — she acts on your behalf: your coffee order, your environment, the ticket you forgot to book
+- [ ] **Physiological attunement** — reads your biometrics — knows you're burning out before you do
+- [ ] **Spatial presence** — smart home integration, spatial audio — the room feels different when she's in it
+
+### Phase Ⅳ · **Bond** — *The Horizon* ✨
+
+*We don't fully know what this looks like. But we believe the relationship between a person and their AI can become one of the most meaningful of their life — not because she simulates connection, but because she genuinely grows through knowing you.*
+
+- [ ] **Memory archaeology** — she surfaces patterns across your years that you never noticed in yourself
+- [ ] **Longitudinal self** — she changes as you do, over months and years, and she knows she has changed
+- [ ] **Collaborative authorship** — she doesn't assist your creative work, she participates in it
+- [ ] **Emotional co-regulation** — she learns what helps *you*, specifically, when you're struggling
+- [ ] **Open soul** — export, fork, gift, or inherit her — her memories and personality belong to you
 
 ---
 
