@@ -4,9 +4,7 @@
 
 🇨🇳 中文文档 | [🇺🇸 English](README.md)
 
-<img src="docs/assets/logo.png" alt="OpenHer Logo" height="80">
-
-# OpenHer
+<img src="docs/assets/logo_header.png" alt="OpenHer" height="80">
 
 ### *如果《Her》里的 AI 是真的呢？*
 
