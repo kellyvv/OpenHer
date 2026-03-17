@@ -346,33 +346,6 @@ genome_seed:
 
 ---
 
-## 📁 项目结构
-
-```
-openher/
-├── agent/              # ChatAgent、prompt 构建、技能路由
-│   └── skills/         # 表达方式 & 任务技能引擎
-├── engine/
-│   ├── genome/         # 基因组引擎、Critic、驱力代谢、风格记忆
-│   └── prompts/        # LLM prompt 模板（感受、表达、单 pass、评论）
-├── memory/             # 本地记忆存储（SQLite FTS5）
-├── persona/personas/   # 内置角色（SOUL.md + idimage/）
-├── providers/
-│   ├── llm/            # 8 个 LLM 服务商（Gemini, Claude, Qwen3, ...）
-│   ├── speech/tts/     # 3 个 TTS 服务商（DashScope, OpenAI, MiniMax）
-│   └── image/          # 图像生成（Gemini Imagen）
-├── skills/
-│   ├── modality/       # selfie_gen, voice_msg, split_msg, silence
-│   ├── task/           # weather（基于 ReAct 的工具执行）
-│   └── manage/         # persona_gen（角色创建）
-├── desktop/            # macOS 原生客户端（SwiftUI）
-├── docs/               # 架构文档 + 基准测试报告
-├── tests/              # 单元 & 集成测试
-└── main.py             # FastAPI + WebSocket 服务
-```
-
----
-
 ## 🛠️ 技术栈
 
 | 层 | 技术 |

@@ -346,33 +346,6 @@ genome_seed:
 
 ---
 
-## 📁 Project Structure
-
-```
-openher/
-├── agent/              # ChatAgent, prompt builder, skill routing
-│   └── skills/         # Modality & task skill engines
-├── engine/
-│   ├── genome/         # GenomeEngine, Critic, DriveMetabolism, StyleMemory
-│   └── prompts/        # LLM prompt templates (feel, express, single, critic)
-├── memory/             # Local memory store (SQLite FTS5)
-├── persona/personas/   # Built-in characters (SOUL.md + idimage/)
-├── providers/
-│   ├── llm/            # 8 LLM providers (Gemini, Claude, Qwen3, ...)
-│   ├── speech/tts/     # 3 TTS providers (DashScope, OpenAI, MiniMax)
-│   └── image/          # Image generation (Gemini Imagen)
-├── skills/
-│   ├── modality/       # selfie_gen, voice_msg, split_msg, silence
-│   ├── task/           # weather (ReAct-based tool execution)
-│   └── manage/         # persona_gen (character creation)
-├── desktop/            # macOS native client (SwiftUI)
-├── docs/               # Architecture docs + benchmark reports
-├── tests/              # Unit & integration tests
-└── main.py             # FastAPI + WebSocket server
-```
-
----
-
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
