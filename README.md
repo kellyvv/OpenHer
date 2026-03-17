@@ -6,12 +6,9 @@
 
 [🇨🇳 中文文档](README_CN.md) | 🇺🇸 English
 
-<table border="0" cellspacing="0" cellpadding="0"><tr>
-<td><img src="docs/assets/logo.png" alt="OpenHer Logo" height="80"></td>
-<td>&nbsp;&nbsp;</td>
-<td style="border-left: 2px dashed #ccc; height: 60px;">&nbsp;&nbsp;</td>
-<td><h1 style="margin:0;">OpenHer</h1></td>
-</tr></table>
+<img src="docs/assets/logo.png" alt="OpenHer Logo" height="80"> &nbsp; ┆ &nbsp; <strong style="font-size:2em;">OpenHer</strong>
+
+# OpenHer
 
 ### *What if the AI from Her was real?*
 
