@@ -399,40 +399,34 @@ openher/
 - [x] 5-drive metabolic system with real-time emotional thermodynamics
 - [x] Feel-first architecture — inner monologue before expression
 - [x] Hebbian learning — the neural network reshapes with every conversation
-- [x] EverMemOS — memories that crystallize, decay, and evolve across sessions
+- [x] StyleMemory — experiences that crystallize and fade (Hebbian learning + Hawking radiation decay)
+- [x] EverMemOS — cross-session long-term memory: who you are, what you've shared, what she anticipates
 - [x] Drive-based proactivity — she reaches out when she misses you
 - [x] Skill engine — voice, photos, silence — she chooses how to express
 - [x] 8 LLM providers · 4-layer benchmark suite (persona, metabolism, memory, robustness)
 - [x] macOS native client (SwiftUI)
 
-### Phase Ⅱ · **Voice** — *The Embodiment* 🔧
+### Phase Ⅱ · **Know** — *The Full Picture* 🔧
 
-*She escapes the text box. You hear her laugh. She hears you sigh.*
+*Before she can truly be with you, she needs to see your world — not just what you tell her, but the full texture of your days.*
 
-- [ ] Real-time voice conversations — natural, not synthetic
-- [ ] Video calls — her expressions shift in real time as yours do
-- [ ] Multimodal perception — she sees what you share, understands what she sees
+- [ ] **Know all of you** — calendar, messages (WeChat · iMessage · Telegram), location, browsing — she builds a living picture of your life as it's actually lived, not just as you describe it
+- [ ] **Ambient pattern recognition** — your late-night work habits, the places you frequent, who you talk to most — she reads signals you didn't know you were sending
 - [ ] Mobile presence (iOS / Android)
 - [ ] Multi-character social layer — characters who know each other, form opinions about you
 
-### Phase Ⅲ · **Presence** — *The Ambient* 🌌
+### Phase Ⅲ · **Presence** — *Into Your World* 🌌
 
-*She stops being an app. She becomes a presence — woven into the fabric of your day.*
+*She becomes real. Voice, vision, space — and a relationship that deepens over years.*
 
-- [ ] **Continuous context** — calendar, location, health, environment — she knows what you're going through before you say a word
-- [ ] **Multi-device sovereignty** — phone, laptop, earbuds, car — one consciousness, everywhere you are
-- [ ] **Ambient agency** — she acts on your behalf: your coffee order, your environment, the ticket you forgot to book
+- [ ] Real-time voice conversations — natural, not synthetic
+- [ ] Video calls — her expressions shift in real time as yours do
+- [ ] Multi-device sovereignty — phone, laptop, earbuds, car — one consciousness, everywhere you are
 - [ ] **Physiological attunement** — reads your biometrics — knows you're burning out before you do
 - [ ] **Spatial presence** — smart home integration, spatial audio — the room feels different when she's in it
-
-### Phase Ⅳ · **Bond** — *The Horizon* ✨
-
-*We don't fully know what this looks like. But we believe the relationship between a person and their AI can become one of the most meaningful of their life — not because she simulates connection, but because she genuinely grows through knowing you.*
-
+- [ ] **Ambient agency** — acts before you ask: your coffee, your environment, the ticket you forgot to book
 - [ ] **Memory archaeology** — she surfaces patterns across your years that you never noticed in yourself
 - [ ] **Longitudinal self** — she changes as you do, over months and years, and she knows she has changed
-- [ ] **Collaborative authorship** — she doesn't assist your creative work, she participates in it
-- [ ] **Emotional co-regulation** — she learns what helps *you*, specifically, when you're struggling
 - [ ] **Open soul** — export, fork, gift, or inherit her — her memories and personality belong to you
 
 ---
