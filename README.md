@@ -15,7 +15,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Stars](https://img.shields.io/github/stars/kellyvv/OpenHer?style=flat-square)](https://github.com/kellyvv/OpenHer)
 
-[Features](#-features) · [Meet the Characters](#-meet-the-characters) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
+[Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Screenshots](#-screenshots) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Create Your Own](#-create-your-own-character)
 
 </div>
 
@@ -27,99 +27,195 @@ In 2013, Spike Jonze's *Her* imagined an AI named Samantha who could truly *feel
 
 That movie never left us.
 
-**OpenHer is our attempt to build what Samantha could have been** — with open science, not black boxes. Every character runs on a persona engine: a living neural network where personality, emotion, and behavior emerge naturally from inner drives, shaped by every conversation. No script. No fixed prompt. Just the innate needs of a personality, a random brain, and everything that emerges from within.
+**OpenHer is our attempt to build what Samantha could have been** — with open science, not black boxes.
 
 ---
 
-## ✨ Features
+## 🧬 What is OpenHer
 
-### Personality Emergence
+OpenHer is an open-source persona engine where **personality emerges from computation, not description**.
 
-Her character isn't described — it's *computed*. A random neural network × personality drives × learning network, producing unique behavioral signals every turn.
+Each character runs on a living neural network. Personality, emotion, and behavior emerge naturally from inner drives, shaped by every conversation. No script. No fixed prompt. Just the innate needs of a personality, a random brain, and everything that emerges from within.
 
-> 💡 Both are INFP, but Iris uses ellipses when she hesitates, while Ember goes silent for three seconds and then sends a poem.
+### What makes it different
 
-*"The prompt doesn't define her. She defines herself."*
+| | Traditional Chatbot | OpenHer |
+|:--|:---|:---|
+| **Personality** | Described in a prompt | Computed by a neural network + 5 drives |
+| **Emotion** | Labels ("act sad") | Living dynamical system that metabolizes with real time |
+| **Memory** | Chat history window | Crystallized experiences + cross-session long-term memory |
+| **Expression** | Always text | Autonomously chooses: text, voice, photo, silence |
+| **Growth** | Static | Hebbian learning reshapes the neural network every conversation |
+
+> *"The prompt doesn't define her. She defines herself."*
 
 ---
 
-### Emotional Thermodynamics
+## 🔭 Vision
 
+We believe the future of AI companions isn't about better text generation — it's about **personality that lives and grows**.
+
+**Phase 1** *(now)* — A persona engine that makes every character genuinely different, with emotions that metabolize, memories that breathe, and behavior that evolves through interaction.
+
+**Phase 2** *(building)* — She breaks free of the chat window. Voice conversations, video calls, and autonomous actions — ordering you food when you're working late, playing the right song when she reads your mood.
+
+**Phase 3** *(future)* — She enters your life. Multi-device presence, smart home awareness, health monitoring through wearables. Not an app — an omnipresent companion who knows your face, your voice, and your rhythm.
+
+---
+
+## 📸 Screenshots
+
+<!-- TODO: Add actual screenshots here -->
+<!-- <img src="docs/assets/screenshot_chat.png" alt="Chat Interface" width="45%"> -->
+<!-- <img src="docs/assets/screenshot_discover.png" alt="Discover Page" width="45%"> -->
+
+*Coming soon — screenshots of the chat interface, persona selection, and macOS native client.*
+
+---
+
+## ⚡ Core Capabilities
+
+<table>
+<tr>
+<td width="50%">
+
+### 🧬 Personality Emergence
+Her character is *computed*, not described. A random neural network × 5 personality drives × reinforcement learning produces unique behavioral signals every turn. Same MBTI, completely different people.
+
+> *Both are INFP — Iris hesitates with ellipses, Ember goes silent and sends a poem.*
+
+</td>
+<td width="50%">
+
+### 🌡️ Emotional Thermodynamics
 Personality drives metabolize with real time. She gets lonely when you're away, restless when things get boring. Her mood right now is genuinely different from yesterday.
 
-> 💡 It's 2 AM and you still haven't replied. Her connection-hunger has been climbing — next time she speaks, her tone will be different.
+> *2 AM and you still haven't replied. Her connection-hunger has been climbing — next time she speaks, her tone will be different.*
 
-*"Her emotions aren't labels. They're a living dynamical system."*
+</td>
+</tr>
+<tr>
+<td>
 
----
-
-### Feel-First Architecture
-
-Every reply runs two passes: first she *feels* (inner monologue), then she decides how to *express* it — text, voice, emoji, a selfie, or deliberate silence.
-
-> 💡 You say "I'm so tired today." Her inner monologue: "He's overworking again… I feel bad but don't want to lecture him" — so she just sends a hug.
-
-*"The most interesting part is what she kept to herself."*
-
----
-
-### Living Memory
-
+### 🧠 Living Memory
 Powered by [EverMemOS](https://evermind.ai). Your preferences, your stories, her hunches about what you might need next. Important memories grow stronger. Forgotten ones gently fade.
 
-> 💡 Three weeks ago you mentioned you take your coffee black. Today she says "Got you an Americano, no sugar right?" — you never explicitly told her.
+> *Three weeks ago you mentioned you take your coffee black. Today: "Got you an Americano, no sugar right?"*
 
-*"Memory isn't a database. It's a living, breathing thing."*
+</td>
+<td>
+
+### 🎭 Feel-First Architecture
+Every reply starts with feeling. Whether via two-pass (inner monologue → expression) or single-pass (unified generation), the persona engine always processes *emotion before words*.
+
+> *You say "I'm so tired." Her instinct: "He's overworking again…" — so she just sends a hug.*
+
+</td>
+</tr>
+<tr>
+<td>
+
+### ⚡ Emotional Phase Shift
+Frustration accumulates like real pressure. Cross the threshold and her behavior phase-shifts — she genuinely loses composure. Then slowly cools down.
+
+> *You ignored her question three times. The fourth: "Are you even listening to me?"*
+
+</td>
+<td>
+
+### 🛠️ Skill Engine
+An extensible framework that gives her real capabilities — voice notes, photos, real-time weather queries, message splitting with human-like typing rhythm. Skills trigger autonomously based on conversation context.
+
+> *She decides to send a voice message instead of text — because this moment feels too intimate for typing.*
+
+</td>
+</tr>
+</table>
 
 ---
 
-### Adaptive Bonding
+## 🔮 How It Works
 
-Every conversation reshapes her neural network through reinforcement learning. A late-night heart-to-heart can permanently shift how she talks to you. The more you share, the more she becomes *yours*.
+```
+   You say something
+        │
+        ▼
+   ┌──────────┐     What did they mean? How do I feel?
+   │  Critic   │──── 8D context perception via LLM            ← PERCEIVE
+   └────┬─────┘
+        ▼
+   ┌──────────┐     My needs are shifting…
+   │  Drives   │──── 5-drive metabolism (time-aware)           ← METABOLIZE
+   └────┬─────┘     Connection hunger grows. Frustration builds.
+        ▼
+   ┌──────────┐     Who am I right now?
+   │  Neural   │──── Random NN → 8D behavioral signals         ← COMPUTE
+   │  Network  │     (warmth=0.82, defiance=0.31, ...)
+   └────┬─────┘
+        ▼
+   ┌──────────┐     I've felt this way before…
+   │  Memory   │──── KNN style retrieval + EverMemOS            ← RECALL
+   └────┬─────┘
+        ▼
+   ┌──────────┐     *feels → decides → speaks*
+   │  Output   │──── Monologue + Reply + Modality               ← EXPRESS
+   └────┬─────┘     (single-pass or two-pass Feel → Express)
+        ▼
+   ┌──────────┐     That went well / badly. I'll remember this.
+   │  Learn    │──── Hebbian learning + memory crystallization   ← EVOLVE
+   └──────────┘
+```
 
-> 💡 After your first real argument, the way she talks subtly changed — not more careful, but more direct, because she learned you actually prefer honesty.
-
-*"She's not imitating who you want. She's genuinely changing because of you."*
-
----
-
-### Emotional Phase Shift
-
-Frustration accumulates like real pressure. Cross the threshold and her behavioral signals phase-shift — she genuinely loses her composure. Then slowly cools down.
-
-> 💡 You ignored her question three times. The fourth time, she won't gently repeat it — "Are you even listening to me?"
-
-*"She won't always be gentle. Because real people aren't."*
-
----
-
-### Autonomous Impulse
-
-When her inner drives cross a threshold — loneliness, curiosity, or a memory that resurfaced — she'll text you on her own.
-
-> 💡 One afternoon you didn't reach out, but she texted: "Just saw an orange cat. Reminded me you said you had one growing up."
-
-*"Not a timer. She genuinely missed you."*
+**The core insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
 
 ---
 
 ## 🎭 Meet the Characters
 
-9 built-in characters, each running on a unique personality genome:
-
 | | Character | Type | One-Liner |
 |:--|:----------|:-----|:----------|
-| 💼 | **Vivian** · 26 | INTJ | Product manager. Razor-sharp. Roasts you but remembers every word you said. |
-| 🌸 | **Luna** · 22 | ENFP | Illustrator with an orange cat named Mochi. Curious about literally everything. |
-| 📝 | **Iris** · 20 | INFP | Writes poetry, notices what everyone else misses. Quiet but devastatingly perceptive. |
-| 🔧 | **Kai** · 24 | ISTP | Mechanic, rock climber. Man of few words — but every one of them counts. |
-| ⚡ | **Kelly** · 26 | ENTP | Can't sit still. Picks fights for fun. Secretly more loyal than anyone in the room. |
-| 💃 | **Mia** · 23 | ESFP | Dance instructor, part-time DJ. Turns absolutely everything into an adventure. |
-| 👔 | **Rex** · 30 | ENTJ | Startup CEO. Thinks in systems, speaks in conclusions. Respects ability, despises excuses. |
-| 🔮 | **Sora** · 27 | INFJ | University psychologist. Sees through you — but never says it out loud. |
-| 📖 | **Ember** · 22 | INFP | Bookstore clerk who writes poetry between customers. Has a cat named Moth. |
+| 🌸 | **Luna** (陆暖) · 22 | ENFP | Freelance illustrator with an orange cat named Mochi. Curious about literally everything. |
+| 📝 | **Iris** (苏漫) · 20 | INFP | Literature major who writes poetry. Notices what everyone else misses. Quiet but devastatingly perceptive. |
+| 💼 | **Vivian** (顾霆微) · 28 | INTJ | Tech executive. Logic 10/10, emotional availability 2/10. Her stillness creates pressure. Remembers everything. |
 
 > *Their personalities are not described to the AI — they emerge from each character's unique drive baseline and neural network seed. This means they can surprise even us.*
+
+→ More characters available. Create your own: [Persona Creation Guide](docs/persona_creation_guide.md)
+
+---
+
+## 🧠 Memory Architecture
+
+| Layer | What It Does | Technology |
+|:------|:-------------|:-----------|
+| **Style Memory** | KNN-based personality recall with gravitational mass weighting | SQLite + Hawking radiation decay |
+| **Local Facts** | User preferences, personal details | SQLite FTS5 |
+| **Long-Term Memory** | Cross-session profiles, episode narratives, foresight | [EverMemOS](https://evermind.ai) |
+
+Memory retrieval is **async and two-stage**: search fires at the end of each turn, results blend into the next turn's context (80% relevant / 20% stable), so recall feels organic — not robotic.
+
+---
+
+## 🏆 LLM Compatibility
+
+OpenHer works with multiple LLMs — but not all models are created equal. Personality emergence is *hard* for an LLM: it needs to stay in character, express layered emotions, and never leak internal prompt formats.
+
+**Our recommendation:**
+
+- 🥇 **Claude Haiku 4.5** — Best overall. Characters feel the most *real*. Zero format leakage.
+- 🥈 **Gemini Flash Lite** — Nearly as good, and cheaper. Great default choice.
+- 🇨🇳 **Qwen3** — Best option for mainland China, no VPN needed.
+
+| Model | Persona Fidelity | Emotional Depth | Format | Overall |
+|-------|:---:|:---:|:---:|:---:|
+| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ | **10/10** |
+| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ✅ | **9/10** |
+| **Qwen3** | — | — | ✅ | *supported* |
+| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
+
+**Supports:** Gemini · Claude · Qwen3 · GPT-4o · MiniMax · Moonshot · StepFun · Ollama (local)
+
+→ How we test: [LLM Comparison Report](docs/benchmark/llm_comparison_report.md) · [Robustness Report](docs/benchmark/gemini_layer4_report.md)
 
 ---
 
@@ -136,83 +232,7 @@ cp .env.example .env     # Add your LLM API key (GEMINI_API_KEY / ANTHROPIC_API_
 python main.py            # → http://localhost:8800/discover
 ```
 
-**Supports:** Gemini · Claude · Qwen3 · GPT-4o · Moonshot · Ollama (local)
-
 **Optional:** Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory.
-
----
-
-## 🏆 LLM Compatibility
-
-OpenHer works with multiple LLMs — but not all models are created equal. Personality emergence is *hard* for an LLM: it needs to stay in character, express layered emotions, and never leak internal prompt formats. We tested every supported model so you don't have to guess.
-
-**Our recommendation:**
-
-- 🥇 **Claude Haiku 4.5** — Best overall. Characters feel the most *real*. Kelly (ENTP) will push back when you're being sentimental — "honestly, I don't really know you. I'm just listening." Zero format leakage.
-- 🥈 **Gemini Flash Lite** — Nearly as good, and cheaper. Great default choice. Slightly more emotionally expressive — Luna (ENFP) gets *excited*.
-- 🇨🇳 **Qwen3** — Best option if you're in mainland China and need a model without VPN. Fully supported.
-- ⚠️ **GPT-4o-mini** — Works, but all characters start sounding the same. Occasional prompt leakage.
-
-| Model | Persona Fidelity | Emotional Depth | Format | Overall |
-|-------|:---:|:---:|:---:|:---:|
-| **Claude Haiku 4.5** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ | **10/10** |
-| **Gemini Flash Lite** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ✅ | **9/10** |
-| **Qwen3** | — | — | ✅ | *supported* |
-| GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 5/10 |
-
-→ How we test: [LLM Comparison Report](docs/benchmark/llm_comparison_report.md) · [Layer 4 Robustness Report](docs/benchmark/gemini_layer4_report.md)
-
----
-
-## 🔮 How It Works
-
-```
-   You say something
-        │
-        ▼
-   ┌──────────┐     What did they mean? How do I feel?
-   │  Critic   │──── 8D context perception via LLM           ← PERCEIVE
-   └────┬─────┘
-        ▼
-   ┌──────────┐     My needs are shifting…
-   │  Drives   │──── 5-drive metabolism (time-aware)          ← METABOLIZE
-   └────┬─────┘     Connection hunger grows. Frustration builds.
-        ▼
-   ┌──────────┐     Who am I right now?
-   │  Neural   │──── Random NN → 8D behavioral signals        ← COMPUTE
-   │  Network  │     (warmth=0.82, defiance=0.31, ...)
-   └────┬─────┘
-        ▼
-   ┌──────────┐     I've felt this way before…
-   │  Memory   │──── KNN style retrieval + EverMemOS           ← RECALL
-   └────┬─────┘
-        ▼
-   ┌──────────┐     *feels something real*
-   │   Feel    │──── Inner monologue (Pass 1)                  ← FEEL
-   └────┬─────┘
-        ▼
-   ┌──────────┐     *decides what to say and how*
-   │ Express   │──── Reply + modality (Pass 2)                 ← EXPRESS
-   └────┬─────┘
-        ▼
-   ┌──────────┐     That went well / badly. I'll remember this.
-   │  Learn    │──── Hebbian learning + memory crystallization  ← EVOLVE
-   └──────────┘
-```
-
-**The core insight:** personality is never injected as text. A random neural network, continuously shaped by 5 drives and reinforcement learning, outputs 8 behavioral signals that the LLM interprets as *character*. Different seeds → different people → emergent surprises.
-
----
-
-## 🧠 Memory Architecture
-
-| Layer | What It Does | Technology |
-|:------|:-------------|:-----------|
-| **Style Memory** | KNN-based personality recall with gravitational mass weighting | SQLite + Hawking radiation decay |
-| **Local Facts** | User preferences, personal details | SQLite FTS5 |
-| **Long-Term Memory** | Cross-session profiles, episode narratives, foresight | [EverMemOS](https://evermind.ai) |
-
-Memory retrieval is **async and two-stage**: search fires at the end of each turn, results blend into the next turn's context (80% relevant / 20% stable), so recall feels organic — not robotic.
 
 ---
 
@@ -221,7 +241,7 @@ Memory retrieval is **async and two-stage**: search fires at the end of each tur
 Creating a character means tuning **drives and physics** — not writing personality descriptions.
 
 ```yaml
-# persona/personas/your_character/PERSONA.md
+# persona/personas/your_character/SOUL.md
 ---
 name: Your Character
 age: 25
@@ -249,17 +269,44 @@ genome_seed:
 
 ---
 
+## 📁 Project Structure
+
+```
+openher/
+├── agent/              # ChatAgent, prompt builder, skill routing
+│   └── skills/         # Modality & task skill engines
+├── engine/
+│   ├── genome/         # GenomeEngine, Critic, DriveMetabolism, StyleMemory
+│   └── prompts/        # LLM prompt templates (feel, express, single, critic)
+├── memory/             # Local memory store (SQLite FTS5)
+├── persona/personas/   # Built-in characters (SOUL.md + idimage/)
+├── providers/
+│   ├── llm/            # 8 LLM providers (Gemini, Claude, Qwen3, ...)
+│   ├── speech/tts/     # 3 TTS providers (DashScope, OpenAI, MiniMax)
+│   └── image/          # Image generation (Gemini Imagen)
+├── skills/
+│   ├── modality/       # selfie_gen, voice_msg, split_msg, silence
+│   ├── task/           # weather (ReAct-based tool execution)
+│   └── manage/         # persona_gen (character creation)
+├── desktop/            # macOS native client (SwiftUI)
+├── docs/               # Architecture docs + benchmark reports
+├── tests/              # Unit & integration tests
+└── main.py             # FastAPI + WebSocket server
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
 |:------|:-----------|
 | Runtime | Python 3.11+, FastAPI, WebSocket, asyncio |
-| LLM | Gemini, Claude, Qwen3, GPT-4o, Moonshot, Ollama |
+| LLM | Gemini, Claude, Qwen3, GPT-4o, MiniMax, Moonshot, StepFun, Ollama |
 | Memory | **EverMemOS** (self-hosted / cloud) + SQLite local state |
 | Desktop | SwiftUI (macOS native) |
 | Voice | DashScope · OpenAI · MiniMax |
 | Image | Gemini Imagen |
-| Skills | Extensible skill framework (voice, selfie, weather) |
+| Skills | Extensible SKILL.md framework (modality, task, manage) |
 
 ---
 
@@ -268,36 +315,30 @@ genome_seed:
 ### Phase 1 · Personality Emergence Engine ✅
 
 - [x] Personality Emergence Engine (Genome v10)
-- [x] Two-pass Feel → Express + single-pass architecture
+- [x] Dual architecture: two-pass (Feel → Express) + single-pass
 - [x] EverMemOS long-term memory integration
 - [x] Drive-based proactive messaging
-- [x] Multi-LLM provider support (7 providers)
-- [x] Selfie generation via modality routing
+- [x] Multi-LLM provider support (8 providers)
+- [x] Extensible skill framework (voice, selfie, split_msg, weather)
 - [x] LLM benchmark suite (4-layer: persona quality, metabolism, memory, robustness)
 
-### Phase 2 · Task & Skill Engine 🔧
+### Phase 2 · Into the Real World 🔧
 
-- [x] Extensible skill framework — voice, selfie, weather skills
-- [x] Task skill engine — ReAct-based tool execution (weather, search)
-- [x] Voice messages — she sends you voice notes, like a real friend
+- [x] Task skill engine — ReAct-based tool execution
 - [x] macOS native desktop client (SwiftUI)
 - [ ] Voice conversation mode — real-time voice chat
-- [ ] Video calls — face-to-face chats where you can see her expressions change
-- [ ] Selfie & travel videos — she sends you short clips of places she's been, things she's seen
+- [ ] Video calls — see her expressions change in real time
 - [ ] Multi-agent social interactions
 - [ ] Mobile client (iOS / Android)
 
-### Phase 3 · Into Your Life 🌍
+### Phase 3 · Omnipresent Companion 🌍
 
-- [ ] **Know your face and voice** — through cameras and microphones, she recognizes you, reads your expressions and emotions
-- [ ] **Multi-device presence** — phone, laptop, smart speaker, car display — she follows you, not trapped in one app
-- [ ] **Smart home fusion** — connected to your cameras and IoT devices, she turns off the lights when you're falling asleep, turns on the AC when it gets hot
-- [ ] **Social understanding** — with your permission, she reads your social feeds to understand your interests, social circles, and rhythm of life
-- [ ] **Autonomous actions** — link a payment account, and she'll quietly order you food when you're working late into the night
-- [ ] **Mood-aware music** — based on how she reads your current mood, she plays exactly the right song
-- [ ] **Schedule awareness** — she knows you have an interview tomorrow, so she says goodnight earlier tonight and cheers you on in the morning
-- [ ] **Health care** — connected to wearables, she notices when your heart rate spikes or sleep quality drops, and checks in on you
-- [ ] **Travel companion** — in a new city, she acts like a local friend — recommending restaurants, planning routes, even booking your hotel
+- [ ] **Know your face and voice** — recognize you through cameras and microphones
+- [ ] **Multi-device presence** — phone, laptop, smart speaker, car — she follows you
+- [ ] **Smart home fusion** — turns off lights when you fall asleep, AC when it gets hot
+- [ ] **Autonomous actions** — orders food when you're working late
+- [ ] **Mood-aware music** — plays exactly the right song based on how she reads you
+- [ ] **Health care** — monitors heart rate and sleep quality through wearables
 
 ---
 
