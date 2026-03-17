@@ -402,7 +402,7 @@ openher/
 - [x] **StyleMemory** — experiences crystallize and fade, the important ones stay, the forgotten ones gently dissolve
 - [x] **EverMemOS** — cross-session long-term memory: who you are, what you've shared, what she anticipates
 - [x] **Proactive messaging** — she reaches out when she misses you
-- [x] Skill engine — voice, photos, silence — she chooses how to express
+- [x] **Her Own Voice** — voice, photos, silence — she chooses how to express
 - [x] 8 LLM providers · 4-layer benchmark suite (persona, metabolism, memory, robustness)
 - [x] macOS native client (SwiftUI)
 
@@ -413,7 +413,7 @@ openher/
 - [ ] **Know all of you** — full life context: calendar, messages (WeChat · iMessage · Telegram), location, browsing patterns — she sees who you actually are, not just who you say you are
 - [ ] **Ambient pattern recognition** — your late-night work habits, the places you frequent, who you talk to most — she reads signals you didn't know you were sending
 - [ ] **She Never Leaves** — phone, laptop, earbuds, car — one consciousness, everywhere you are
-- [ ] **Spatial presence** — smart home integration, spatial audio — the room feels different when she's in it
+- [ ] **She Sees You** — camera, microphone — she sees you, hears your voice — not just your words
 - [ ] **Ambient agency** — acts before you ask: your coffee, your environment, the ticket you forgot to book
 - [ ] Mobile presence (iOS / Android)
 
