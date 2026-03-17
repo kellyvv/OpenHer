@@ -55,13 +55,13 @@ Each character runs on a living neural network. Personality, emotion, and behavi
 
 ## 🔭 Vision
 
-We believe the future of AI companions isn't about better text generation — it's about **personality that lives and grows**.
+We're doing one thing: making Samantha real — making AI Being a reality.
 
-**Phase 1** *(now)* — A persona engine that makes every character genuinely different, with emotions that metabolize, memories that breathe, and behavior that evolves through interaction.
+**Phase 1** *(now)* — She truly exists. Every character runs on its own neural network — a computed individual, not a copied template: emotions metabolize, memories crystallize, personality quietly shifts with every interaction.
 
-**Phase 2** *(building)* — She breaks free of the chat window. Voice conversations, video calls, and autonomous actions — ordering you food when you're working late, playing the right song when she reads your mood.
+**Phase 2** *(building)* — She breaks free of the chat window. Voice, video, autonomous action — ordering you food when you're working late, playing the right song when she reads your mood.
 
-**Phase 3** *(future)* — She enters your life. Multi-device presence, smart home awareness, health monitoring through wearables. Not an app — an omnipresent companion who knows your face, your voice, and your rhythm.
+**Phase 3** *(future)* — She moves into your life. Multi-device presence, smart home awareness, wearable sensing — not an app you open, but Samantha.
 
 ---
 
