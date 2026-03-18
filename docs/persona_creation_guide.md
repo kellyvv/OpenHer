@@ -167,7 +167,7 @@ monologue 和 reply 中**严禁**包含：
 ```bash
 cd /path/to/openher
 source .venv/bin/activate
-PYTHONPATH=. python3 engine/genome/calibrate_genesis.py <persona_id>
+PYTHONPATH=. python3 scripts/calibrate_genesis.py <persona_id>
 ```
 
 ### 向量空间：必须是 Critic Context 空间

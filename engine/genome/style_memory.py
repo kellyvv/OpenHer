@@ -246,6 +246,8 @@ class ContinuousStyleMemory:
         if best_dist < 0.25 and best_idx >= 0:
             # Gravitational thickening: increase mass + refresh timestamp
             # but KEEP original content (don't overwrite distinctive memories)
+            # NOTE: this may mutate genesis entries in _pool (mass drift).
+            # Genesis mass resets on restart (reloaded from DB). Known behavior.
             self._pool[best_idx]['mass'] = self._pool[best_idx].get('mass', 1.0) + 1.0
             self._pool[best_idx]['last_used_at'] = now
             # Only overwrite if new content is longer (richer)
@@ -351,6 +353,8 @@ class ContinuousStyleMemory:
 
         Cleans action markers from monologue/reply before storing.
         Upserts: existing data for the same persona_id will be replaced.
+
+        Warning: mutates seeds in-place (monologue/reply fields are cleaned).
         """
         for seed in seeds:
             if 'monologue' in seed:
