@@ -84,7 +84,7 @@
 
 <div align="center">
 
-<video src="docs/assets/demo.mp4" width="600" controls autoplay muted loop></video>
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="600">
 
 *唤醒 → 聊天 · macOS 原生客户端*
 

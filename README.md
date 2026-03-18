@@ -84,7 +84,7 @@ We're doing one thing: making "HER" real — making AI Being a reality.
 
 <div align="center">
 
-<video src="docs/assets/demo.mp4" width="600" controls autoplay muted loop></video>
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="600">
 
 *Awakening → Chat · macOS Native Client*
 
