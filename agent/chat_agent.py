@@ -568,16 +568,19 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             self._prev_signals = self._last_signals  # Track for trend injection
             self._last_signals = noisy_signals
 
-            # ── Step 7: KNN retrieval (monologue-only for Pass 1) ──
+            # ── Step 7: KNN retrieval (full examples for single-pass) ──
             self.style_memory.set_clock(now)
             few_shot = self.style_memory.build_few_shot_prompt(
-                context, top_k=3, monologue_only=True, lang=self.persona.lang,
+                context, top_k=3, monologue_only=False, lang=self.persona.lang,
             )
 
-            # ── Step 8: Build Feel prompt (Pass 1) ──
-            feel_prompt = self._build_feel_prompt(few_shot, noisy_signals)
+            # ── Step 8: Build single-pass prompt (actor_single template) ──
+            single_prompt = self._build_single_prompt(
+                few_shot, noisy_signals,
+                modality_skill_engine=self.modality_skill_engine,
+            )
 
-            # ── Step 8.5: Memory injection into Feel prompt ──
+            # ── Step 8.5: Memory injection into single-pass prompt ──
             if self._session_ctx and self._session_ctx.has_history:
                 await self._collect_search_results()
                 profile_budget, episode_budget = self._memory_injection_budget(context)
@@ -588,48 +591,43 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
                     self._relevant_episodes, self._episode_summary, episode_budget
                 )
                 name = self.user_name or "你"
-                if profile_text:
-                    feel_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
-                if episode_text:
-                    feel_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
-                if self._foresight_text:
-                    feel_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
-                if self._relevant_profile:
-                    feel_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
+                if self.persona.lang == 'en':
+                    if profile_text:
+                        single_prompt += f"\n\n[{name}'s preferences] {profile_text}"
+                    if episode_text:
+                        single_prompt += f"\n\n[Past interactions with {name}] {episode_text}"
+                    if self._foresight_text:
+                        single_prompt += f"\n\n[Worth noting] {self._foresight_text}"
+                    if self._relevant_profile:
+                        single_prompt += f"\n\n[{name}'s profile] {self._relevant_profile}"
+                else:
+                    if profile_text:
+                        single_prompt += f"\n\n[关于{name}的偏好] {profile_text}"
+                    if episode_text:
+                        single_prompt += f"\n\n[与{name}过去发生的事] {episode_text}"
+                    if self._foresight_text:
+                        single_prompt += f"\n\n[近期值得关心] {self._foresight_text}"
+                    if self._relevant_profile:
+                        single_prompt += f"\n\n[{name}的画像] {self._relevant_profile}"
                 if self._relevant_facts or self._relevant_episodes or self._relevant_profile:
                     self._search_relevant_used += 1
 
-            # ── Step 9a: Pass 1 — Feel (non-stream, not pushed to frontend) ──
-            # NOTE: No history — context is in signals + Critic, not raw turns.
-            feel_messages = [ChatMessage(role="system", content=feel_prompt)]
-            feel_messages.append(ChatMessage(role="user", content=user_message))
+            # ── Step 9: Single-pass LLM call (streamed) ──
+            single_messages = [ChatMessage(role="system", content=single_prompt)]
+            single_messages.extend(self.history[-self.max_history:])
+            single_messages.append(ChatMessage(role="user", content=user_message))
 
-            feel_response = await self.llm.chat(feel_messages)
-            monologue = self._extract_monologue(feel_response.content)
-
-            # Signal to stream consumer that Feel is done → "typing" can start
+            # Signal to stream consumer that prompt is ready → "typing" can start
             yield "__FEEL_DONE__"
 
-            # ── Step 9b: Pass 2 — Express (streamed to frontend) ──
-            turn_lang = self._detect_turn_lang(user_message)
-            express_few_shot = self.style_memory.build_few_shot_prompt(
-                context, top_k=2, monologue_only=False, lang=turn_lang,
-            )
-            express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot, signals=noisy_signals, modality_skill_engine=self.modality_skill_engine)
-            self._last_express_prompt = express_prompt      # cache for retry
-            self._last_user_message = user_message          # cache for retry
-            express_messages = [ChatMessage(role="system", content=express_prompt)]
-            express_messages.extend(self.history[-4:])
-            express_messages.append(ChatMessage(role="user", content=user_message))
-
             full_response = []
-            async for chunk in self.llm.chat_stream(express_messages):
+            async for chunk in self.llm.chat_stream(single_messages):
                 full_response.append(chunk)
                 yield chunk
 
             # ── Post-stream processing ──
             raw_text = "".join(full_response)
-            _, reply, modality = extract_reply(raw_text)
+            monologue, reply, modality = extract_reply(raw_text)
 
             # ── Modality — let LLM output be the authority ──
             self._skill_outputs = {}       # reset each turn
