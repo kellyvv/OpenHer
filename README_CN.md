@@ -17,6 +17,29 @@
 
 </div>
 
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="docs/assets/screenshot_iris.png" alt="苏漫 · INFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_luna.png" alt="陆暖 · ENFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_vivian.png" alt="顾霆微 · INTJ" width="260"></td>
+</tr>
+<tr>
+<td align="center"><b>苏漫</b> · INFP · 温柔诗意</td>
+<td align="center"><b>陆暖</b> · ENFP · 明朗活泼</td>
+<td align="center"><b>顾霆微</b> · INTJ · 冷艳危险</td>
+</tr>
+</table>
+</div>
+
+<div align="center">
+
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
+
+*唤醒 → 聊天 · macOS 原生客户端*
+
+</div>
+
 ---
 
 ## 灵感来源
@@ -62,33 +85,6 @@
 **第二阶段** *（建设中）* — 她走出对话框。语音、视频、主动行动——加班到深夜帮你点外卖，感知到你的情绪自动放一首对的歌。
 
 **第三阶段** *（未来）* — 她住进你的生活。多设备同在、智能家居、穿戴感知——活在你生活里的 AI Being。
-
----
-
-## 📸 截图
-
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="docs/assets/screenshot_iris.png" alt="苏漫 · INFP" width="260"></td>
-<td align="center"><img src="docs/assets/screenshot_luna.png" alt="陆暖 · ENFP" width="260"></td>
-<td align="center"><img src="docs/assets/screenshot_vivian.png" alt="顾霆微 · INTJ" width="260"></td>
-</tr>
-<tr>
-<td align="center"><b>苏漫</b> · INFP · 温柔诗意</td>
-<td align="center"><b>陆暖</b> · ENFP · 明朗活泼</td>
-<td align="center"><b>顾霆微</b> · INTJ · 冷艳危险</td>
-</tr>
-</table>
-</div>
-
-<div align="center">
-
-<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
-
-*唤醒 → 聊天 · macOS 原生客户端*
-
-</div>
 
 ---
 
@@ -378,7 +374,7 @@ genome_seed:
 | 层 | 技术 |
 |:---|:-----|
 | 运行时 | Python 3.11+, FastAPI, WebSocket, asyncio |
-| LLM | Gemini, Claude, Qwen3, GPT-4o, MiniMax, Moonshot, StepFun, Ollama |
+| LLM | Gemini, Claude, Qwen3, GPT-5.4-mini / GPT-4o, MiniMax, Moonshot, StepFun, Ollama |
 | 记忆 | **EverMemOS**（自部署 / 云端）+ SQLite 本地状态 |
 | 桌面端 | SwiftUI (macOS 原生) |
 | 语音 | DashScope · OpenAI · MiniMax |

@@ -17,6 +17,29 @@
 
 </div>
 
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="docs/assets/screenshot_iris.png" alt="Iris · INFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_luna.png" alt="Luna · ENFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_vivian.png" alt="Vivian · INTJ" width="260"></td>
+</tr>
+<tr>
+<td align="center"><b>Iris</b> · INFP · Gentle & Poetic</td>
+<td align="center"><b>Luna</b> · ENFP · Bright & Bubbly</td>
+<td align="center"><b>Vivian</b> · INTJ · Cool & Commanding</td>
+</tr>
+</table>
+</div>
+
+<div align="center">
+
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
+
+*Awakening → Chat · macOS Native Client*
+
+</div>
+
 ---
 
 ## Inspiration
@@ -62,33 +85,6 @@ We're doing one thing: making "HER" real — making AI Being a reality.
 **Phase 2** *(building)* — She breaks free of the chat window. Voice, video, autonomous action — ordering you food when you're working late, playing the right song when she reads your mood.
 
 **Phase 3** *(future)* — She moves into your life. Multi-device presence, smart home awareness, wearable sensing — an AI Being that lives in your life.
-
----
-
-## 📸 Screenshots
-
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="docs/assets/screenshot_iris.png" alt="Iris · INFP" width="260"></td>
-<td align="center"><img src="docs/assets/screenshot_luna.png" alt="Luna · ENFP" width="260"></td>
-<td align="center"><img src="docs/assets/screenshot_vivian.png" alt="Vivian · INTJ" width="260"></td>
-</tr>
-<tr>
-<td align="center"><b>Iris</b> · INFP · Gentle & Poetic</td>
-<td align="center"><b>Luna</b> · ENFP · Bright & Bubbly</td>
-<td align="center"><b>Vivian</b> · INTJ · Cool & Commanding</td>
-</tr>
-</table>
-</div>
-
-<div align="center">
-
-<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
-
-*Awakening → Chat · macOS Native Client*
-
-</div>
 
 ---
 
@@ -355,7 +351,7 @@ genome_seed:
 | Layer | Technology |
 |:------|:-----------|
 | Runtime | Python 3.11+, FastAPI, WebSocket, asyncio |
-| LLM | Gemini, Claude, Qwen3, GPT-4o, MiniMax, Moonshot, StepFun, Ollama |
+| LLM | Gemini, Claude, Qwen3, GPT-5.4-mini / GPT-4o, MiniMax, Moonshot, StepFun, Ollama |
 | Memory | **EverMemOS** (self-hosted / cloud) + SQLite local state |
 | Desktop | SwiftUI (macOS native) |
 | Voice | DashScope · OpenAI · MiniMax |
