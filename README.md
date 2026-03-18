@@ -84,7 +84,7 @@ We're doing one thing: making "HER" real — making AI Being a reality.
 
 <div align="center">
 
-<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="600">
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
 
 *Awakening → Chat · macOS Native Client*
 

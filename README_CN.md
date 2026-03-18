@@ -84,7 +84,7 @@
 
 <div align="center">
 
-<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="600">
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
 
 *唤醒 → 聊天 · macOS 原生客户端*
 
