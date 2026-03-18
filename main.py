@@ -923,6 +923,7 @@ async def websocket_chat(ws: WebSocket):
         persona_id = first.get("persona_id", "")
         user_name = first.get("user_name")
         ws_client_id = first.get("client_id")
+        debug_mode = first.get("debug", False)  # Developer mode: include engine internals
 
         if not persona_id or not merged_text.strip():
             return
@@ -994,6 +995,9 @@ async def websocket_chat(ws: WebSocket):
 
         if not stream_error:
             status = agent.get_status()
+            # Developer mode: attach full engine state for visualization
+            if debug_mode:
+                status["debug"] = agent.get_debug_status()
             image_path = status.pop("image_path", None)
             audio_path = status.pop("audio_path", None)
             if image_path:

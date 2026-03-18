@@ -780,6 +780,58 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
             **self._skill_outputs,  # all skill outputs auto-forwarded
         }
 
+    def get_debug_status(self) -> dict:
+        """Get full engine state for developer visualization (Plan B: activations only).
+
+        Returns comprehensive debug data for the neural network visualization
+        panel. Only called when client sends debug: true.
+        """
+        # 25D input vector
+        input_vec = self.agent._last_input or [0.0] * 25
+
+        # 24D hidden layer activations
+        hidden_vec = self.agent._last_hidden or [0.0] * 24
+
+        # 8D behavioral signals (after noise)
+        sig = {}
+        if self._last_signals:
+            sig = {s: round(v, 4) for s, v in self._last_signals.items()}
+
+        # 12D context vector (from Critic, after relationship merge)
+        ctx = {}
+        if self._last_critic:
+            ctx = {k: round(v, 4) if isinstance(v, float) else v
+                   for k, v in self._last_critic.items()}
+
+        drive_st = {d: round(self.agent.drive_state[d], 4) for d in DRIVES}
+        sig_str = ' '.join(f'{k[:3]}={v:.2f}' for k, v in sig.items())
+        drv_str = ' '.join(f'{k[:3]}={v:.2f}' for k, v in drive_st.items())
+        mono_preview = (self._last_action.get("monologue", "") if self._last_action else "")[:40]
+        print(f"  [debug-viz] signals: {sig_str}")
+        print(f"  [debug-viz] drives:  {drv_str}")
+        print(f"  [debug-viz] mono:    {mono_preview}")
+
+        return {
+            "context_vector": ctx,
+            "signals": sig,
+            "hidden_activations": [round(h, 4) for h in hidden_vec],
+            "input_vector": [round(v, 4) for v in input_vec],
+            "drive_state": drive_st,
+            "drive_baseline": {d: round(self.agent.drive_baseline[d], 4) for d in DRIVES},
+            "frustration": round(self.metabolism.total(), 4),
+            "temperature": round(self.metabolism.temperature(), 4),
+            "monologue": self._last_action.get("monologue", "") if self._last_action else "",
+            "style_recall": self.style_memory.last_recall_info(),
+            "relationship": {
+                k: round(v, 4) if isinstance(v, (int, float)) else v
+                for k, v in self._relationship_ema.items()
+            },
+            "reward": round(self._last_reward, 4),
+            "age": self.agent.age,
+            "turn_count": self._turn_count,
+            "phase_transition": getattr(self.agent, '_last_phase_transition', False),
+        }
+
     # ── Proactive Tick ──
     # See agent/proactive.py (ProactiveMixin)
 

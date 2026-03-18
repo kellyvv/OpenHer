@@ -43,6 +43,14 @@ final class AppState: ObservableObject {
     @Published var emotionTemperature: Double = 0.0  // metabolism temperature (0...1)
     @Published var crystalCount: Int = 0       // personal_memories count
 
+    // MARK: - Developer Mode
+    /// Developer mode: shows EngineDebugPanel with neural network visualization.
+    /// Stored in UserDefaults (not @AppStorage, per review feedback).
+    @Published var developerMode: Bool = false {
+        didSet { UserDefaults.standard.set(developerMode, forKey: "developerMode") }
+    }
+    @Published var engineDebug: EngineDebugState = EngineDebugState()
+
     // MARK: - Image Cache (shared between PersonaCard → AwakeningView)
     /// Front images cached after first download, keyed by personaId.
     var cachedFrontImages: [String: NSImage] = [:]
@@ -62,9 +70,10 @@ final class AppState: ObservableObject {
         // Read persisted URL before lazy services initialize
         let savedURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://localhost:8000"
         serverURL = savedURL
+        developerMode = UserDefaults.standard.bool(forKey: "developerMode")
 
-        // DEBUG: Always start at discovery
-        // let savedPersonaId = UserDefaults.standard.string(forKey: "selectedPersonaId")
+        // In non-developer mode, attempt to restore last conversation
+        let savedPersonaId = developerMode ? nil : UserDefaults.standard.string(forKey: "selectedPersonaId")
 
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3s
@@ -75,8 +84,18 @@ final class AppState: ObservableObject {
                 // Backend offline — load preview data
                 loadPreviewData()
             }
-            // Always start at discovery during debugging
-            appPhase = .discovery
+
+            if let personaId = savedPersonaId,
+               personas.contains(where: { $0.personaId == personaId }) {
+                // Non-developer mode: restore last conversation directly
+                selectedPersonaId = personaId
+                appPhase = .conversation
+                await loadHistory(for: personaId)
+                wsManager.connect()
+            } else {
+                // Developer mode or no saved persona: start at discovery
+                appPhase = .discovery
+            }
         }
     }
 

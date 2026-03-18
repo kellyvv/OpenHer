@@ -223,7 +223,25 @@ class ContinuousStyleMemory:
                 'lang': mem.get('lang', ''),
             })
 
+        self._last_retrieve_results = results
         return results
+
+    def last_recall_info(self):
+        """Return simplified info about the last KNN recall for debug visualization.
+
+        Returns list of {text, distance, mass} dicts, or empty list if no recall yet.
+        """
+        results = getattr(self, '_last_retrieve_results', None)
+        if not results:
+            return []
+        return [
+            {
+                'text': r.get('user_input', r.get('monologue', ''))[:50],
+                'distance': r['distance'],
+                'mass': r.get('mass_eff', 1.0),
+            }
+            for r in results
+        ]
 
     def crystallize(self, context, monologue, reply, user_input=""):
         """

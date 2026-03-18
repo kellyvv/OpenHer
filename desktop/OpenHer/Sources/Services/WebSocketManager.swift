@@ -55,6 +55,11 @@ final class WebSocketManager: ObservableObject {
             payload["greeting"] = greetingMsg.content
         }
 
+        // Developer mode: request full engine debug data
+        if appState?.developerMode == true {
+            payload["debug"] = true
+        }
+
         guard let data = try? JSONSerialization.data(withJSONObject: payload),
               let text = String(data: data, encoding: .utf8) else { return }
 
@@ -166,6 +171,23 @@ final class WebSocketManager: ObservableObject {
                         print("[crystal] ✨ new crystal! \(appState?.crystalCount ?? 0) → \(memories)")
                     }
                     appState?.crystalCount = memories
+                }
+
+                // Developer mode: update engine debug visualization
+                if var debugJson = json["debug"] as? [String: Any] {
+                    // Enrich debug dict with fields that live in the main json
+                    if let tc = json["turn_count"] as? Int  { debugJson["turn_count"]  = tc }
+                    if let rw = json["last_reward"] as? Double { debugJson["reward"]   = rw }
+                    appState?.engineDebug.update(from: debugJson)
+                    // ── Verify: print key values so we can compare with backend logs ──
+                    let sigs = debugJson["signals"] as? [String: Any] ?? [:]
+                    let drives = debugJson["drive_state"] as? [String: Any] ?? [:]
+                    let mono = (debugJson["monologue"] as? String ?? "").prefix(50)
+                    let age  = debugJson["age"] as? Int ?? -1
+                    print("[debug] ✅ turn=\(json["turn_count"] ?? "?") age=\(age)")
+                    print("[debug]  signals: dir=\(sigs["directness"] ?? "?") vul=\(sigs["vulnerability"] ?? "?") play=\(sigs["playfulness"] ?? "?") warm=\(sigs["warmth"] ?? "?")")
+                    print("[debug]  drives:  conn=\(drives["connection"] ?? "?") nov=\(drives["novelty"] ?? "?") expr=\(drives["expression"] ?? "?")")
+                    print("[debug]  monologue: \(mono)")
                 }
 
                 print("[mood] valence=\(valence) reward=\(reward) temp=\(temp) → \(newMood)")

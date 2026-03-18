@@ -2,7 +2,6 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Persona Engine — Neural Network Visualization</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -21,35 +20,34 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  width: 100%; height: 100%;
+body {
   background: var(--bg);
   color: var(--text-1);
   font-family: 'Inter', -apple-system, sans-serif;
   overflow: hidden;
+  height: 100vh;
 }
 
 /* ── Layout ── */
 .container {
   display: flex;
-  width: 100%; height: 100%;
+  height: 100vh;
 }
 .panel-network {
   flex: 1;
-  min-width: 0;
   position: relative;
   background: linear-gradient(150deg, #f5ead4 0%, #ede0c8 45%, #e8d5be 100%);
 }
 .panel-sidebar {
-  width: clamp(240px, 26%, 320px);
+  width: 284px;
   background: var(--bg-sidebar);
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 28px 20px 28px 22px;
-  gap: 22px;
+  padding: 22px 18px;
+  gap: 16px;
   overflow-y: auto;
-  box-shadow: inset 4px 0 24px rgba(100,60,20,0.07);
+  box-shadow: inset 4px 0 20px rgba(100,60,20,0.06);
 }
 
 /* ── Canvas ── */
@@ -62,47 +60,45 @@ html, body {
 /* ── Header overlay ── */
 .header-overlay {
   position: absolute;
-  top: 28px;
-  left: 30px;
+  top: 22px;
+  left: 26px;
   z-index: 10;
 }
 .header-overlay h1 {
   font-size: 9px;
   font-weight: 400;
   color: var(--gold);
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  opacity: 0.55;
+  opacity: 0.65;
 }
 .header-overlay .persona-name {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--accent);
-  margin-top: 6px;
-  letter-spacing: 0.2px;
-  line-height: 1.1;
+  margin-top: 3px;
+  letter-spacing: 0.3px;
 }
 .header-overlay .meta {
   font-size: 10px;
   color: var(--text-3);
-  margin-top: 8px;
+  margin-top: 4px;
   font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.3px;
 }
 
 /* ── Status indicator ── */
 .status-dot {
   position: absolute;
-  top: 30px;
-  right: calc(clamp(220px, 26%, 320px) + 20px);
+  top: 26px;
+  right: 304px;
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 10px;
   color: var(--text-3);
   font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
 }
 .status-dot .dot {
   width: 5px;
@@ -120,47 +116,47 @@ html, body {
 /* ── Sidebar sections ── */
 .section-title {
   font-size: 9px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--gold);
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid rgba(184,140,50,0.30);
-  opacity: 0.80;
+  opacity: 0.75;
 }
 
 /* Signals output */
 .signal-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 9px;
+  margin-bottom: 7px;
 }
 .signal-label {
-  width: 86px;
+  width: 82px;
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: 11px;
   flex-shrink: 0;
 }
 .signal-bar-bg {
   flex: 1;
-  height: 6px;
+  height: 7px;
   background: var(--bar-bg);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: visible;
   position: relative;
 }
 .signal-bar {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .signal-val {
-  width: 34px;
+  width: 32px;
   text-align: right;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-2);
   flex-shrink: 0;
 }
@@ -169,13 +165,13 @@ html, body {
 .drive-row {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 9px;
 }
-.drive-icon { font-size: 14px; width: 20px; flex-shrink: 0; }
+.drive-icon { font-size: 13px; width: 18px; flex-shrink: 0; }
 .drive-name {
-  width: 62px;
-  font-size: 11.5px;
+  width: 56px;
+  font-size: 11px;
   color: var(--text-2);
   flex-shrink: 0;
 }
@@ -200,26 +196,26 @@ html, body {
   background: rgba(61,35,24,0.28);
 }
 .drive-val {
-  width: 32px;
+  width: 28px;
   text-align: right;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-3);
   flex-shrink: 0;
 }
 
 /* Monologue */
 .monologue-box {
-  background: rgba(200,112,90,0.05);
-  border: 1px solid rgba(200,112,90,0.16);
-  border-radius: 10px;
-  padding: 16px 18px;
+  background: rgba(200,112,90,0.06);
+  border: 1px solid rgba(200,112,90,0.18);
+  border-radius: 8px;
+  padding: 12px 14px;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 13.5px;
+  font-size: 13px;
   font-style: italic;
-  color: rgba(61,35,24,0.72);
-  line-height: 1.85;
-  min-height: 80px;
+  color: rgba(61,35,24,0.70);
+  line-height: 1.7;
+  min-height: 64px;
 }
 
 /* Style recall */
@@ -227,17 +223,15 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(184,140,50,0.12);
-  font-size: 11.5px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(184,140,50,0.14);
+  font-size: 11px;
 }
 .recall-text { color: var(--text-2); }
 .recall-dist {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
-  margin-left: 8px;
-  flex-shrink: 0;
 }
 
 /* Frustration meter */
@@ -246,7 +240,6 @@ html, body {
   background: var(--bar-bg);
   border-radius: 3px;
   overflow: visible;
-  margin-top: 4px;
 }
 .frustration-bar {
   height: 100%;
@@ -259,9 +252,8 @@ html, body {
   justify-content: space-between;
   font-size: 10px;
   color: var(--text-3);
-  margin-top: 7px;
+  margin-top: 5px;
   font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.3px;
 }
 
 /* Trigger button — 唤醒 style */
@@ -314,7 +306,8 @@ html, body {
       <span id="statusText">IDLE</span>
     </div>
     <canvas id="networkCanvas"></canvas>
-    <div class="turn-counter" style="display:none">Turn #<span id="turnCount">0</span></div>
+    <button class="trigger-btn" onclick="triggerCompute()">⚡ Compute Step</button>
+    <div class="turn-counter">Turn #<span id="turnCount">0</span></div>
   </div>
 
   <div class="panel-sidebar">
@@ -535,45 +528,39 @@ const MAX_IDLE_P = 22;
 
 // ── Node positions ──
 const MARGIN_L = 120;
-const TOP_OFFSET = 130;  // clearance below header
 
 function getNodePositions() {
-  const lx = [MARGIN_L, W * 0.42, W - 80 - 280];
+  // Output column: closer in (W*0.68 instead of W-440) to reduce dead space
+  const lx = [MARGIN_L, W * 0.40, W * 0.68];
   const nodes = { input: [], hidden: [], output: [] };
 
-  // Usable area center — each column centers independently on this line
-  const centerY = TOP_OFFSET + (H - TOP_OFFSET) / 2;
-  const maxH    = H - TOP_OFFSET - 48;  // max total spread
-
-  // ── Input: 25 nodes ──
-  const inputSpacing  = Math.min(26, maxH / (INPUT_SIZE - 1));
-  const inputTotalH   = (INPUT_SIZE - 1) * inputSpacing;
-  const inputStartY   = centerY - inputTotalH / 2;
+  const inputSpacing = (H - 160) / (INPUT_SIZE + 2);
   let idx = 0;
   [
     { n: N_DRIVES,       color: '#c9863c', group: 'drives' },
-    { n: N_CONTEXT,      color: '#b87878', group: 'perception' },
+    { n: N_PERCEPTION,   color: '#b87878', group: 'perception' },
+    { n: N_RELATIONSHIP, color: '#7aaa88', group: 'relationship' },
     { n: RECURRENT_SIZE, color: '#9b80b8', group: 'recurrent' },
   ].forEach(g => {
     for (let i = 0; i < g.n; i++) {
-      nodes.input.push({ x: lx[0], y: inputStartY + idx * inputSpacing, color: g.color, group: g.group });
+      nodes.input.push({ x: lx[0], y: 90 + idx * inputSpacing, color: g.color, group: g.group });
       idx++;
     }
   });
 
-  // ── Hidden: 24 nodes ──
-  const hiddenSpacing = Math.min(26, maxH / (HIDDEN_SIZE - 1));
-  const hiddenTotalH  = (HIDDEN_SIZE - 1) * hiddenSpacing;
-  const hiddenStartY  = centerY - hiddenTotalH / 2;
+  const hiddenSpacing = (H - 160) / (HIDDEN_SIZE + 1);
   for (let i = 0; i < HIDDEN_SIZE; i++)
-    nodes.hidden.push({ x: lx[1], y: hiddenStartY + i * hiddenSpacing, color: '#8b7050' });
+    nodes.hidden.push({ x: lx[1], y: 80 + i * hiddenSpacing, color: '#8b7050' });
 
-  // ── Output: 8 nodes, wider spacing ──
-  const outputSpacing = Math.min(72, maxH / (N_SIGNALS - 1));
-  const outputTotalH  = (N_SIGNALS - 1) * outputSpacing;
-  const outputStartY  = centerY - outputTotalH / 2;
-  for (let i = 0; i < N_SIGNALS; i++)
-    nodes.output.push({ x: lx[2], y: outputStartY + i * outputSpacing, color: SIGNAL_COLORS[i] });
+  // Output: 3 semantic groups separated by extra 12px gap
+  // [0,1,2] emotion-expression | [3,4,5] depth-agency | [6,7] stance
+  const outputSpacing = (H - 120) / (N_SIGNALS + 1);
+  const groupBreaks = [3, 6]; // add gap before these indices
+  const groupGap = 14;
+  for (let i = 0; i < N_SIGNALS; i++) {
+    const extra = groupBreaks.filter(b => i >= b).length * groupGap;
+    nodes.output.push({ x: lx[2], y: 60 + (i + 1) * outputSpacing + extra, color: SIGNAL_COLORS[i] });
+  }
 
   return nodes;
 }
@@ -653,88 +640,127 @@ function drawNode(x, y, radius, color, activation) {
 // ── Output gauge node ──
 // Brass instrument bezel + dark face + cold blue arc = the HER contrast
 function drawOutputGauge(x, y, val, animActivation, signalName, semantics) {
-  const baseR = 12;
-  const outerR = baseR + 3.5;
+  const baseR = 26;
+  const outerR = baseR + 5;
 
-  // === Brass outer bezel ===
+  // === Outer shadow (depth) ===
+  const shadowG = ctx.createRadialGradient(x, y + 2, baseR, x, y + 2, outerR + 8);
+  shadowG.addColorStop(0, 'rgba(40,25,10,0.12)');
+  shadowG.addColorStop(1, 'rgba(40,25,10,0)');
+  ctx.beginPath();
+  ctx.arc(x, y + 2, outerR + 8, 0, Math.PI * 2);
+  ctx.fillStyle = shadowG;
+  ctx.fill();
+
+  // === Brass outer bezel (double ring) ===
   ctx.beginPath();
   ctx.arc(x, y, outerR, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(184,140,50,${0.38 + animActivation * 0.22})`;
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = `rgba(184,140,50,${0.50 + animActivation * 0.25})`;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  // Inner bezel ring
+  ctx.beginPath();
+  ctx.arc(x, y, outerR - 3, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(184,140,50,${0.22 + animActivation * 0.12})`;
+  ctx.lineWidth = 0.6;
   ctx.stroke();
 
-  // === 12 tick marks like analog gauge ===
-  for (let t = 0; t < 12; t++) {
-    const angle = (t / 12) * Math.PI * 2 - Math.PI / 2;
-    const isMajor = t % 3 === 0;
-    const inner = outerR - (isMajor ? 4.5 : 2.5);
+  // === 24 tick marks like precision instrument ===
+  for (let t = 0; t < 24; t++) {
+    const angle = (t / 24) * Math.PI * 2 - Math.PI / 2;
+    const isMajor = t % 6 === 0;
+    const isMid = t % 3 === 0;
+    const inner = outerR - 3 - (isMajor ? 7 : isMid ? 4.5 : 2.5);
     ctx.beginPath();
     ctx.moveTo(x + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
-    ctx.lineTo(x + Math.cos(angle) * outerR, y + Math.sin(angle) * outerR);
-    ctx.strokeStyle = `rgba(184,140,50,${isMajor ? 0.52 : 0.22})`;
-    ctx.lineWidth = isMajor ? 0.8 : 0.4;
+    ctx.lineTo(x + Math.cos(angle) * (outerR - 3), y + Math.sin(angle) * (outerR - 3));
+    ctx.strokeStyle = `rgba(184,140,50,${isMajor ? 0.62 : isMid ? 0.35 : 0.18})`;
+    ctx.lineWidth = isMajor ? 1.2 : 0.5;
     ctx.stroke();
   }
 
-  // === Dark gauge face (the "interior" — cold tech zone) ===
+  // === Dark gauge face ===
+  const faceG = ctx.createRadialGradient(x, y - 3, 0, x, y, baseR);
+  faceG.addColorStop(0, 'rgba(18,14,8,0.82)');
+  faceG.addColorStop(1, 'rgba(8,6,3,0.88)');
   ctx.beginPath();
   ctx.arc(x, y, baseR, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(10,6,2,0.75)';
+  ctx.fillStyle = faceG;
   ctx.fill();
 
   // === Cold blue-white signal arc ===
-  const startA = -Math.PI * 0.9;
-  const arcSpan = val * Math.PI * 1.8;
+  const startA = -Math.PI * 0.85;
+  const arcSpan = val * Math.PI * 1.7;
   const animArc = arcSpan * animActivation;
 
   if (animActivation > 0.02) {
-    // Filled sector (dark blue tint)
+    // Background track (dim)
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.arc(x, y, baseR * 0.78, startA, startA + animArc);
-    ctx.closePath();
-    ctx.fillStyle = `rgba(110,185,255,${0.08 + animActivation * 0.16})`;
-    ctx.fill();
-
-    // Arc edge — bright cold rim
-    ctx.beginPath();
-    ctx.arc(x, y, baseR * 0.78, startA, startA + animArc);
-    ctx.strokeStyle = `rgba(175,220,255,${0.55 + animActivation * 0.38})`;
-    ctx.lineWidth = 1.4;
+    ctx.arc(x, y, baseR * 0.72, startA, startA + Math.PI * 1.7);
+    ctx.strokeStyle = 'rgba(80,120,160,0.12)';
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Center cold glow
-    const cg = ctx.createRadialGradient(x, y, 0, x, y, baseR * 0.38);
-    cg.addColorStop(0, `rgba(205,235,255,${animActivation * 0.60})`);
-    cg.addColorStop(1, `rgba(130,195,255,0)`);
+    // Active arc glow (outer bloom)
     ctx.beginPath();
-    ctx.arc(x, y, baseR * 0.38, 0, Math.PI * 2);
+    ctx.arc(x, y, baseR * 0.72, startA, startA + animArc);
+    ctx.strokeStyle = `rgba(130,200,255,${0.15 + animActivation * 0.20})`;
+    ctx.lineWidth = 7;
+    ctx.stroke();
+
+    // Active arc (bright core)
+    ctx.beginPath();
+    ctx.arc(x, y, baseR * 0.72, startA, startA + animArc);
+    ctx.strokeStyle = `rgba(175,225,255,${0.65 + animActivation * 0.30})`;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Arc tip glow dot
+    const tipAngle = startA + animArc;
+    const tipX = x + Math.cos(tipAngle) * baseR * 0.72;
+    const tipY = y + Math.sin(tipAngle) * baseR * 0.72;
+    const tipG = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 6);
+    tipG.addColorStop(0, `rgba(220,240,255,${animActivation * 0.8})`);
+    tipG.addColorStop(1, 'rgba(130,200,255,0)');
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, 6, 0, Math.PI * 2);
+    ctx.fillStyle = tipG;
+    ctx.fill();
+
+    // Center cold glow
+    const cg = ctx.createRadialGradient(x, y, 0, x, y, baseR * 0.35);
+    cg.addColorStop(0, `rgba(200,235,255,${animActivation * 0.35})`);
+    cg.addColorStop(1, 'rgba(130,195,255,0)');
+    ctx.beginPath();
+    ctx.arc(x, y, baseR * 0.35, 0, Math.PI * 2);
     ctx.fillStyle = cg;
     ctx.fill();
   }
 
-  // === Value readout in gauge center (cold monospace) ===
-  ctx.font = 'bold 7px JetBrains Mono';
+  // === Value readout (cold monospace) ===
+  ctx.font = 'bold 11px JetBrains Mono';
   ctx.textAlign = 'center';
-  ctx.fillStyle = `rgba(175,220,255,${0.45 + animActivation * 0.45})`;
-  ctx.fillText(val.toFixed(2), x, y + 2.5);
+  ctx.fillStyle = `rgba(175,225,255,${0.50 + animActivation * 0.45})`;
+  ctx.fillText(val.toFixed(2), x, y + 4);
   ctx.textAlign = 'left';
 
   // === Signal name to the right ===
-  ctx.font = '11px Inter';
-  ctx.fillStyle = `rgba(46,26,14,${0.38 + val * 0.42})`;
-  ctx.fillText(signalName, x + outerR + 8, y - 2);
+  ctx.font = '500 13px Inter';
+  ctx.fillStyle = `rgba(46,26,14,${0.42 + val * 0.40})`;
+  ctx.fillText(signalName, x + outerR + 10, y - 1);
 
-  // === Semantic labels (warm lo, cold hi) ===
+  // === Semantic labels (warm lo ↔ cold hi) ===
   const [lo, hi] = semantics;
-  ctx.font = '8.5px JetBrains Mono';
-  ctx.fillStyle = `rgba(184,140,50,${0.35 + (1-val)*0.25})`;
-  ctx.fillText(lo, x + outerR + 8, y + 11);
+  ctx.font = '10px JetBrains Mono';
+  ctx.fillStyle = `rgba(184,140,50,${0.38 + (1-val)*0.28})`;
+  ctx.fillText(lo, x + outerR + 10, y + 14);
   const loW = ctx.measureText(lo).width;
-  ctx.fillStyle = 'rgba(46,26,14,0.13)';
-  ctx.fillText(' ↔ ', x + outerR + 8 + loW, y + 11);
-  ctx.fillStyle = `rgba(110,185,255,${0.35 + val * 0.38})`;
-  ctx.fillText(hi, x + outerR + 8 + loW + ctx.measureText(' ↔ ').width, y + 11);
+  ctx.fillStyle = 'rgba(46,26,14,0.15)';
+  ctx.fillText(' ↔ ', x + outerR + 10 + loW, y + 14);
+  ctx.fillStyle = `rgba(110,190,255,${0.40 + val * 0.42})`;
+  ctx.fillText(hi, x + outerR + 10 + loW + ctx.measureText(' ↔ ').width, y + 14);
 }
 
 // ── Recurrent timestamp labels ──
@@ -929,8 +955,8 @@ function render(timestamp) {
   // Idle breathe: very slight alpha flicker to feel "alive"
   const idlePulse = computeActive ? 0 : 0.005 + Math.sin(now * 0.5) * 0.003;
   // Base mesh — always visible, very faint (full 600 + 192 connections)
-  drawLayerConnections(nodes.input, nodes.hidden, agent.W1, 0.036 + idlePulse);
-  drawLayerConnections(nodes.hidden, nodes.output, agent.W2, 0.05 + idlePulse);
+  drawLayerConnections(nodes.input, nodes.hidden, agent.W1, 0.08 + idlePulse);
+  drawLayerConnections(nodes.hidden, nodes.output, agent.W2, 0.10 + idlePulse);
 
   // W1 pulse wave — brightens as signal surges through
   if (computeActive) {
@@ -974,7 +1000,7 @@ function render(timestamp) {
     const val = input[i] || 0;
     const breathe = 1 + Math.sin(now * 0.65 + i * 0.52) * 0.09;
     const activation = val * (computeActive ? easeOut(inputFlashT) : 1);
-    drawNode(n.x, n.y, 5 * breathe, n.color, activation);
+    drawNode(n.x, n.y, 7 * breathe, n.color, activation);
   });
 
   // Layer labels
@@ -1007,42 +1033,30 @@ function render(timestamp) {
     const breathe = 1 + Math.sin(now * 0.58 + i * 0.41) * 0.11;
     // Hidden[0..7]: slightly warmer/violet tint to show recurrent contribution
     const color = i < RECURRENT_SIZE ? '#9b80b0' : '#8b7050';
-    drawNode(n.x, n.y, 6 * breathe, color, activation);
+    drawNode(n.x, n.y, 9 * breathe, color, activation);
   });
 
   // Draw recurrent feedback arc (always visible, shows temporal loop)
   drawRecurrentArc(nodes, now);
 
-  // ─── Output nodes (large, breathing, delayed activation) ───
-  ctx.font = '11px Inter';
+  // ─── Output gauges (brass instrument + cold blue arc) ───
   nodes.output.forEach((n, i) => {
+    // Group separator line before index 3 and 6
+    if (i === 3 || i === 6) {
+      const sepY = n.y - 9;
+      ctx.beginPath();
+      ctx.moveTo(n.x - 36, sepY);
+      ctx.lineTo(n.x + 160, sepY);
+      ctx.strokeStyle = 'rgba(184,140,50,0.18)';
+      ctx.lineWidth = 0.6;
+      ctx.setLineDash([3, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     const val = signals[SIGNALS[i]] || 0.5;
     const outT = computeActive ? clamp((animPulse - 0.70) / 0.24, 0, 1) : 1;
-    const activation = val * (computeActive ? easeOut(outT) : 1);
-    const breathe = 1 + Math.sin(now * 0.52 + i * 0.73) * 0.13;
-    drawNode(n.x, n.y, 9 * breathe, n.color, activation);
-
-    // Signal name + value
-    ctx.font = '11px Inter';
-    ctx.fillStyle = `rgba(61,35,24,${0.35 + val * 0.45})`;
-    ctx.fillText(SIGNALS[i], n.x + 16, n.y + 2);
-    ctx.font = '10px JetBrains Mono';
-    ctx.fillStyle = 'rgba(61,35,24,0.45)';
-    const lw = ctx.measureText(SIGNALS[i]).width;
-    ctx.fillText(val.toFixed(2), n.x + 16 + lw + 6, n.y + 2);
-
-    // Semantic label: low ↔ high
-    const [lo, hi] = SIGNAL_SEMANTICS[i];
-    ctx.font = '8.5px JetBrains Mono';
-    const [sr, sg, sb] = hexToRgb(n.color);
-    ctx.fillStyle = `rgba(${sr},${sg},${sb},${0.30 + (1-val) * 0.28})`;
-    ctx.fillText(lo, n.x + 16, n.y + 13);
-    ctx.fillStyle = 'rgba(61,35,24,0.15)';
-    const loW = ctx.measureText(lo).width;
-    ctx.fillText(' ↔ ', n.x + 16 + loW, n.y + 13);
-    const sepW = ctx.measureText(' ↔ ').width;
-    ctx.fillStyle = `rgba(${sr},${sg},${sb},${0.30 + val * 0.38})`;
-    ctx.fillText(hi, n.x + 16 + loW + sepW, n.y + 13);
+    const animActivation = computeActive ? easeOut(outT) : 1;
+    drawOutputGauge(n.x, n.y, val, animActivation, SIGNALS[i], SIGNAL_SEMANTICS[i]);
   });
 
   // ─── Particles ───

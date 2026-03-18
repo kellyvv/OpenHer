@@ -85,5 +85,15 @@ struct OpenHerApp: App {
             SettingsView()
                 .environmentObject(appState)
         }
+
+        // Developer Mode: Engine Visualization (HTML5 via WKWebView)
+        Window("Persona Engine", id: "engine-debug") {
+            EngineWebPanel(debugState: appState.engineDebug)
+                .environmentObject(appState)
+                .frame(minWidth: 900, minHeight: 600)
+        }
+        .windowResizability(.contentSize)
+        .defaultSize(width: 1100, height: 680)
+        .defaultPosition(.trailing)
     }
 }

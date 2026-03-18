@@ -227,6 +227,7 @@ class Agent:
         self._frustration = 0.0
         self._last_hidden = None
         self._last_input = None
+        self._last_phase_transition = False
         self.signal_history = []
 
     def compute_signals(self, context: dict) -> dict:
@@ -295,6 +296,7 @@ class Agent:
                           If None (pre-warming/smoke test), uses rule-based fallback.
         """
         lr = self.hebbian_lr * (1 + abs(reward))
+        self._last_phase_transition = False
 
         hidden = getattr(self, '_last_hidden',
                          self.recurrent_state + [0.0] * (HIDDEN_SIZE - RECURRENT_SIZE))
@@ -330,6 +332,7 @@ class Agent:
             for i in range(HIDDEN_SIZE):
                 self.b1[i] += random.gauss(0, 0.1)
             self._frustration = 0.0
+            self._last_phase_transition = True
 
         # Drive satisfaction (LLM-judged — caller must provide)
         if drive_satisfaction:

@@ -51,25 +51,19 @@ actor APIClient {
 
         var result: [ChatMessage] = []
         for dict in messagesArray {
-            guard let userMsg = dict["user_msg"] as? String,
-                  let agentReply = dict["agent_reply"] as? String else { continue }
+            guard let role = dict["role"] as? String,
+                  let content = dict["content"] as? String else { continue }
 
-            let modality = dict["modality"] as? String ?? "文字"
             let msgId = dict["id"] as? Int ?? Int.random(in: 1...999999)
+            let modality = dict["modality"] as? String ?? "文字"
+            let imageURL = dict["image_url"] as? String
 
             result.append(ChatMessage(
-                id: "h_u_\(msgId)",
-                role: .user,
-                content: userMsg,
-                modality: "文字"
-            ))
-            let imageURL = dict["image_url"] as? String
-            result.append(ChatMessage(
-                id: "h_a_\(msgId)",
-                role: .assistant,
-                content: agentReply,
+                id: "h_\(msgId)",
+                role: role == "user" ? .user : .assistant,
+                content: content,
                 modality: modality,
-                imageURL: imageURL
+                imageURL: role == "assistant" ? imageURL : nil
             ))
         }
         return result
