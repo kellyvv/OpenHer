@@ -13,9 +13,10 @@ import os
 import time
 import json
 
-sys.path.insert(0, "/Users/zxw/AITOOL/openher-docker")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, BASE_DIR)
 from dotenv import load_dotenv
-load_dotenv(os.path.join("/Users/zxw/AITOOL/openher-docker", ".env"), override=True)
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 
 from providers.llm.client import LLMClient
 from persona.loader import PersonaLoader
@@ -23,7 +24,7 @@ from agent.chat_agent import ChatAgent
 from engine.genome.genome_engine import Agent, DRIVES, SIGNALS
 from engine.genome.drive_metabolism import DriveMetabolism
 
-BASE_DIR = "/Users/zxw/AITOOL/openher-docker"
+# BASE_DIR already defined above via __file__
 PERSONAS_DIR = os.path.join(BASE_DIR, "persona", "personas")
 GENOME_DATA_DIR = os.path.join(BASE_DIR, ".data", "genome")
 

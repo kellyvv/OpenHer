@@ -19,9 +19,10 @@ import os
 import time
 
 # Must load .env BEFORE importing providers
-sys.path.insert(0, "/Users/zxw/AITOOL/openher")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, BASE_DIR)
 from dotenv import load_dotenv
-load_dotenv(os.path.join("/Users/zxw/AITOOL/openher", ".env"), override=True)
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
 
 from providers.llm.client import LLMClient, ChatMessage
 from persona.loader import PersonaLoader
@@ -30,7 +31,7 @@ from engine.genome.genome_engine import DRIVES, SIGNALS
 
 
 # ── Config (mirrors main.py startup) ──
-BASE_DIR = "/Users/zxw/AITOOL/openher"
+# BASE_DIR already defined above via __file__
 PERSONAS_DIR = os.path.join(BASE_DIR, "persona", "personas")
 GENOME_DATA_DIR = os.path.join(BASE_DIR, ".data", "genome")
 
