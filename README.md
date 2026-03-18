@@ -67,11 +67,28 @@ We're doing one thing: making "HER" real — making AI Being a reality.
 
 ## 📸 Screenshots
 
-<!-- TODO: Add actual screenshots here -->
-<!-- <img src="docs/assets/screenshot_chat.png" alt="Chat Interface" width="45%"> -->
-<!-- <img src="docs/assets/screenshot_discover.png" alt="Discover Page" width="45%"> -->
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="docs/assets/screenshot_iris.png" alt="Iris · INFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_luna.png" alt="Luna · ENFP" width="260"></td>
+<td align="center"><img src="docs/assets/screenshot_vivian.png" alt="Vivian · INTJ" width="260"></td>
+</tr>
+<tr>
+<td align="center"><b>Iris</b> · INFP · Gentle & Poetic</td>
+<td align="center"><b>Luna</b> · ENFP · Bright & Bubbly</td>
+<td align="center"><b>Vivian</b> · INTJ · Cool & Commanding</td>
+</tr>
+</table>
+</div>
 
-*Coming soon — screenshots of the chat interface, persona selection, and macOS native client.*
+<div align="center">
+
+<video src="docs/assets/demo.mp4" width="600" controls autoplay muted loop></video>
+
+*Awakening → Chat · macOS Native Client*
+
+</div>
 
 ---
 

@@ -38,7 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }) ?? NSApp.windows.first else { return }
 
         switch phase {
-        case .discovery, .awakening:
+        case .loading, .discovery, .awakening:
             // Lock aspect ratio — user can resize but proportion stays fixed
             window.contentAspectRatio = discoveryAspect
         case .conversation:

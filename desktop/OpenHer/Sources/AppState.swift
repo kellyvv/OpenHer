@@ -3,6 +3,7 @@ import Combine
 
 /// App navigation phases
 enum AppPhase: Equatable {
+    case loading
     case discovery
     case awakening(Persona)
     case conversation
@@ -12,7 +13,7 @@ enum AppPhase: Equatable {
 @MainActor
 final class AppState: ObservableObject {
     // MARK: - Navigation
-    @Published var appPhase: AppPhase = .discovery
+    @Published var appPhase: AppPhase = .loading
     // MARK: - Connection
     @Published var isConnected: Bool = false
     @Published var serverURL: String = "http://localhost:8000"

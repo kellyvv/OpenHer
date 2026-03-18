@@ -8,6 +8,9 @@ struct RootView: View {
         ZStack {
             Paper.background.ignoresSafeArea()
 
+            // Loading — show nothing, just background
+            // (prevents Discovery from flashing before restore completes)
+
             // Conversation sits BEHIND — revealed when awakening slides up
             if appState.appPhase == .conversation {
                 ConversationPanel()
