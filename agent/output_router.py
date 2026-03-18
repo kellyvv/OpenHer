@@ -122,11 +122,5 @@ async def stream_to_ws(
         parsed = parse_raw_output(raw_text)
         modality = parsed["modality"]
 
-        # Future modality routing hooks:
-        # if modality == "语音": await _route_voice(...)
-        # elif modality == "表情": await _route_sticker(...)
-        # elif modality == "照片": await _route_photo(...)
-        # elif modality == "静默": return  # no reply
-
         await on_reply_complete(parsed["reply"], modality)
 

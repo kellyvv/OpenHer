@@ -34,7 +34,8 @@ TIMEOUT = 60  # generous timeout for first-turn (cold start)
 async def send_chat(ws, content: str, persona_id: str, user_name: str = "Tester") -> dict:
     """Send a chat message and collect the full response.
 
-    Returns dict with keys: reply, latency_to_start, latency_total, chunks, has_start, has_end
+    The system sends: chat_start → chat_end (with reply in the message).
+    There are no chat_chunk messages — the stream is buffered server-side.
     """
     t0 = time.time()
     await ws.send(json.dumps({
@@ -44,7 +45,6 @@ async def send_chat(ws, content: str, persona_id: str, user_name: str = "Tester"
         "user_name": user_name,
     }))
 
-    reply_chunks = []
     has_start = False
     has_end = False
     t_start = None
@@ -57,23 +57,25 @@ async def send_chat(ws, content: str, persona_id: str, user_name: str = "Tester"
         if msg["type"] == "chat_start":
             has_start = True
             t_start = time.time()
-        elif msg["type"] == "chat_chunk":
-            reply_chunks.append(msg["content"])
         elif msg["type"] == "chat_end":
             has_end = True
             end_data = msg
+            break
+        elif msg["type"] == "silence":
+            has_end = True
+            end_data = msg
+            end_data["reply"] = "(silence)"
             break
         elif msg["type"] == "error":
             return {"error": msg.get("content", "unknown"), "reply": ""}
 
     t_end = time.time()
-    reply = "".join(reply_chunks)
+    reply = end_data.get("reply", "")
 
     return {
         "reply": reply,
         "latency_to_start_ms": int((t_start - t0) * 1000) if t_start else -1,
         "latency_total_ms": int((t_end - t0) * 1000),
-        "chunks": len(reply_chunks),
         "has_start": has_start,
         "has_end": has_end,
         "end_data": end_data,
@@ -113,33 +115,28 @@ async def test_layer1(ws):
     else:
         ok = r["has_start"] and r["has_end"] and r["reply"]
         print(f"      {'✅' if ok else '❌'} protocol: start={r['has_start']}, end={r['has_end']}, reply={len(r['reply'])}字")
+        print(f"      回复: {r['reply'][:80]}")
         if ok: passed += 1
 
-    # 1.2 Streaming chunks > 1
+    # 1.2 chat_end contains reply
     total += 1
-    chunks_ok = r.get("chunks", 0) > 1
-    print(f"      {'✅' if chunks_ok else '⚠️'} streaming: {r.get('chunks', 0)} chunks (expected >1)")
-    if chunks_ok: passed += 1
+    reply_ok = len(r.get("reply", "")) > 5
+    print(f"      {'✅' if reply_ok else '❌'} reply length: {len(r.get('reply', ''))}字")
+    if reply_ok: passed += 1
 
-    # 1.3 chat_start latency < 2000ms (single-pass: no Feel wait)
-    total += 1
-    latency = r.get("latency_to_start_ms", -1)
-    latency_ok = 0 < latency < 2000
-    print(f"      {'✅' if latency_ok else '⚠️'} chat_start latency: {latency}ms (expected <2000ms)")
-    if latency_ok: passed += 1
-
-    # 1.4 chat_end contains status data
+    # 1.3 chat_end contains status data
     total += 1
     end_data = r.get("end_data", {})
     has_status = "dominant_drive" in end_data or "modality" in end_data
     print(f"      {'✅' if has_status else '⚠️'} chat_end status: {list(end_data.keys())[:5]}")
     if has_status: passed += 1
 
-    # 1.5 Reply non-trivial (>5 characters)
+    # 1.4 Total latency reasonable (<15s for cold start)
     total += 1
-    reply_ok = len(r.get("reply", "")) > 5
-    print(f"      {'✅' if reply_ok else '❌'} reply length: {len(r.get('reply', ''))}字")
-    if reply_ok: passed += 1
+    latency = r.get("latency_total_ms", -1)
+    latency_ok = 0 < latency < 15000
+    print(f"      {'✅' if latency_ok else '⚠️'} total latency: {latency}ms")
+    if latency_ok: passed += 1
 
     print(f"\n  Layer 1 Result: {passed}/{total} passed")
     return passed, total
