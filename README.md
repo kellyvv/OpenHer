@@ -34,14 +34,6 @@
 *They are waiting for you to awaken them.*
 </div>
 
-<div align="center">
-
-<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
-
-*Awakening → Chat · macOS Native Client*
-
-</div>
-
 ---
 
 ## Inspiration
@@ -168,6 +160,14 @@ An extensible skill framework that gives her real-world capabilities. Weather, s
 </div>
 
 **The core insight:** no line of prompt describes her personality. The Critic perceives 8-dimensional context, 5 drives metabolize with real time, and the Genome Engine's random neural network fuses it all into 8 behavioral signals — what the LLM reads is not an instruction, but a living personality state. Different seeds → different people → emergent surprises.
+
+<div align="center">
+
+<img src="docs/assets/demo.gif" alt="OpenHer Demo" width="360">
+
+*Awakening → Chat · macOS Native Client*
+
+</div>
 
 ---
 
