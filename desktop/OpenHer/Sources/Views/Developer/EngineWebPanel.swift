@@ -10,8 +10,12 @@ struct EngineWebPanel: NSViewRepresentable {
 
     private var persona: Persona? { appState.selectedPersona }
 
-    private static let htmlURL = URL(fileURLWithPath:
-        "/Users/zxw/AITOOL/openher-docker/desktop/prototype/persona_engine_viz.html")
+    private static let htmlURL: URL = {
+        guard let url = Bundle.module.url(forResource: "persona_engine_viz", withExtension: "html") else {
+            fatalError("persona_engine_viz.html not found in app bundle")
+        }
+        return url
+    }()
 
     // MARK: - NSViewRepresentable
 
