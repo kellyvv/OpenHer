@@ -13,8 +13,11 @@ node_modules/
 *.out
 .gemini/
 .vscode/
+.claude/
 .cache/
 .data/
+models/
+.pytest_cache/
 venv/
 *.egg-info/
 dist/
@@ -28,3 +31,4 @@ web/node_modules/
 web/dist/
 vendor/*
 !vendor/EverMemOS
+docs/assets/demo.mp4
