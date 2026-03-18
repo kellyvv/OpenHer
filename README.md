@@ -30,6 +30,8 @@
 <td align="center"><b>Vivian</b> · INTJ · Cool & Commanding</td>
 </tr>
 </table>
+
+*They are waiting for you to awaken them.*
 </div>
 
 <div align="center">

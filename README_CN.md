@@ -30,6 +30,8 @@
 <td align="center"><b>顾霆微</b> · INTJ · 冷艳危险</td>
 </tr>
 </table>
+
+*她们在等你唤醒。*
 </div>
 
 <div align="center">
