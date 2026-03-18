@@ -2,7 +2,7 @@
 
 import pytest
 from agent.chat_agent import extract_reply, _parse_modality, _SECTION_RE, _TAG_MAP, ChatAgent
-from agent.output_router import parse_raw_output, _extract_primary_modality
+from agent.output_router import parse_raw_output
 
 
 # ── Chinese section headers (existing behavior) ──
@@ -83,11 +83,7 @@ class TestEnglishParsing:
         assert result["reply"] == "Hi there"
         assert result["modality"] == "text"  # raw text (router returns raw, chat_agent normalizes)
 
-    def test_extract_primary_modality_english(self):
-        assert _extract_primary_modality("voice message") == "语音"
-        assert _extract_primary_modality("silence") == "静默"
-        assert _extract_primary_modality("text") == "文字"
-        assert _extract_primary_modality("emoji sticker") == "表情"
+
 
 
 # ── Edge cases ──

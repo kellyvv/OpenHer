@@ -263,7 +263,8 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         # Build persona hint for persona-aware Critic
         _p = self.persona
         _mbti = getattr(_p, 'mbti', '') or '未知'
-        _persona_hint = f"{_p.name} ({_mbti})"
+        _tags = '、'.join(getattr(_p, 'tags', [])[:3])
+        _persona_hint = f"{_p.name} ({_mbti}) — {_tags}" if _tags else f"{_p.name} ({_mbti})"
         context, frustration_delta, rel_delta, drive_satisfaction = await critic_sense(
             user_message, self.llm, frust_dict,
             user_profile=self._user_profile,

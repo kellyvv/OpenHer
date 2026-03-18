@@ -76,7 +76,7 @@ def test_recall_for_persona(persona_id: str, lang: str = "zh"):
     sm = ContinuousStyleMemory(
         agent_id=f"{persona_id}_recall_test",
         persona_id=persona_id,
-        state_db_path=db_path,
+        db_dir=data_dir,
         now=1000.0,
     )
 
