@@ -29,7 +29,7 @@ def _is_valid_reference_type(ref_type: str) -> bool:
 
 def _get_idimage_dir(persona_id: str) -> Path:
     """Get the idimage directory for a persona."""
-    base = Path(__file__).resolve().parents[3]  # openher-docker/
+    base = Path(__file__).resolve().parents[3]  # project root
     return base / "persona" / "personas" / persona_id / "idimage"
 
 
@@ -45,7 +45,7 @@ def _find_reference_image(persona_id: str, reference_type: str) -> Optional[str]
     """
     # last_generated → find most recent cached photo
     if reference_type == "last_generated":
-        base = Path(__file__).resolve().parents[3]  # openher-docker/
+        base = Path(__file__).resolve().parents[3]  # project root
         cache_dir = base / ".cache" / "selfie" / persona_id
         if cache_dir.exists():
             files = sorted(
