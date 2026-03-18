@@ -194,7 +194,7 @@ class ProactiveMixin:
         express_few_shot = self.style_memory.build_few_shot_prompt(
             context, top_k=2, monologue_only=False, lang=turn_lang,
         )
-        express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot)
+        express_prompt = self._build_express_prompt(monologue, few_shot=express_few_shot, signals=noisy_signals)
         express_messages = [
             ChatMessage(role="system", content=express_prompt),
             ChatMessage(role="user", content=stimulus),

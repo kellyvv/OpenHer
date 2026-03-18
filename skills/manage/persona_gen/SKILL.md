@@ -160,6 +160,15 @@ bio 中的关键词可以自然地影响参数选择：
 - 体现 MBTI 性格特征
 - 参考 Iris 的 monologue 风格：有情感波动、有小动作描写
 
+### 禁止内容
+
+monologue 和 reply 中**严禁**包含动作/心理活动描述标记：
+- `*顿了顿*`、`*sighs softly*` — 星号包裹（半角 `*` 和全角 `＊`）
+- `（沉默）`、`（轻轻笑）` — 全角括号
+- `(pauses)`、`(laughs)` — 半角括号
+
+这些是舞台剧指令，不是对话内容。内心状态应通过文字本身表达，而不是用标记注释。
+
 ### 示例
 参考 [examples/genesis_sample.json](examples/genesis_sample.json)
 
@@ -170,3 +179,5 @@ bio 中的关键词可以自然地影响参数选择：
 当被要求生成 SOUL.md 时，直接输出完整的 SOUL.md 内容（包含 `---` 前后的 YAML frontmatter）。
 
 当被要求生成 Genesis Seeds 时，输出 JSON 数组，每个元素包含 user_input, monologue, reply, lang 四个字段。
+
+> 生成的 seeds 将通过 `calibrate_genesis.py` 进行向量化校准后存入 SQLite 数据库（`genesis_seed` 表），不再保存为 JSON 文件。

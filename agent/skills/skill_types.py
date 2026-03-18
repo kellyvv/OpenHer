@@ -28,8 +28,11 @@ class Skill:
     trigger: str = "manual"          # modality | tool | cron | manual
     modality: str = ""               # bound modality (e.g. "照片") for trigger:modality skills
     executor: str = "handler"        # handler | sandbox
-    handler_fn: str = ""             # Python entry point (e.g. skills.selfie_gen.handler.generate_selfie)
+    handler_fn: str = ""             # Python entry point (legacy, replaced by tools)
+    tools: list[str] = field(default_factory=list)  # tool names this skill mounts
     resources: list[str] = field(default_factory=list)
+    needs_chat_history: bool = False  # Skill declares if it needs chat history injected
+    excludes: list[str] = field(default_factory=list)  # modalities that must be removed from plan when this skill is selected
     base_dir: str = ""
     body: Optional[str] = None       # L2 instructions (lazy-loaded by activate())
 
@@ -107,7 +110,10 @@ def load_skill(skill_dir: Path) -> Skill:
         modality=meta.get("modality", ""),
         executor=executor,
         handler_fn=handler_fn,
+        tools=meta.get("tools", []),
         resources=meta.get("resources", []),
+        needs_chat_history=meta.get("needs_chat_history", False),
+        excludes=meta.get("excludes", []),
         base_dir=str(skill_dir),
         body=None,  # L1 only — activate() loads L2
         # legacy fields

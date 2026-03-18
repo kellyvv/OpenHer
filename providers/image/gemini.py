@@ -111,7 +111,7 @@ class GeminiImageProvider(BaseImageProvider):
         aspect_ratio: str = "",
         image_size: str = "1K",
         person_generation: str = "",
-        reference_image: Optional[str] = None,
+        reference_images: Optional[list[str]] = None,
         **kwargs,
     ) -> ImageResult:
         """
@@ -122,7 +122,7 @@ class GeminiImageProvider(BaseImageProvider):
             aspect_ratio: Aspect ratio (e.g. "16:9", "9:16"). Empty = omit.
             image_size: Output size ("1K", "2K"). Default "1K".
             person_generation: Person generation mode. Empty = omit.
-            reference_image: Path to a reference image for consistency.
+            reference_images: List of paths to reference images for consistency.
 
         Returns:
             ImageResult with image_path and optional text.
@@ -135,14 +135,19 @@ class GeminiImageProvider(BaseImageProvider):
         try:
             from google.genai import types
 
-            # Build content parts: reference image (if any) + text prompt
+            # Backward compat: accept legacy reference_image kwarg
+            if kwargs.get("reference_image") and not reference_images:
+                reference_images = [kwargs["reference_image"]]
+
+            # Build content parts: reference images (if any) + text prompt
             parts = []
 
-            if reference_image and os.path.exists(reference_image):
-                # Auto-compress: large PNGs cause Gemini to silently return empty
-                image_bytes, mime = self._load_and_compress_reference(reference_image)
-                parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime))
-                print(f"  [gemini] 🖼 Reference image loaded: {os.path.basename(reference_image)} ({len(image_bytes)/1024:.0f}KB, {mime})")
+            for ref_path in (reference_images or []):
+                if ref_path and os.path.exists(ref_path):
+                    # Auto-compress: large PNGs cause Gemini to silently return empty
+                    image_bytes, mime = self._load_and_compress_reference(ref_path)
+                    parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime))
+                    print(f"  [gemini] 🖼 Reference image loaded: {os.path.basename(ref_path)} ({len(image_bytes)/1024:.0f}KB, {mime})")
 
             parts.append(types.Part.from_text(text=prompt))
 

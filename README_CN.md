@@ -198,11 +198,12 @@ OpenHer 支持多种大模型——但不是所有模型都能胜任人格涌现
 | 🥇 **Claude Haiku 4.5** | **10/10** | 人格保真 + 情感深度最强。Kelly 说「坦白讲，我没有那么懂你。我只是在听。」零格式泄漏。 |
 | 🥈 **Gemini Flash Lite** | **9/10** | 接近 Claude 质量，价格更低。很好的默认选择。Luna 会*真的兴奋起来*。 |
 | 🥉 **StepFun step-3.5-flash** | **8/10** | 人格分化最极致。Kai：「嗯。有事快说。」 |
+| **GPT-5.4-mini** | **7.5/10** | 相比 4o-mini 质变 — Kelly ENTP 突破：「你这是在夸我还是在铺垫什么？」Critic 极稳。 |
 | **Qwen Flash** | **7.5/10** | 舞台指示控制优秀。Kelly ENTP 表现突出。价格极低。 |
 | **MiniMax M2.5** | **7/10** | 回复最像真人聊天。Luna：「咳…也没有啦 😳」 |
-| GPT-4o-mini | 5/10 | 人格同质化严重，不推荐。 |
+| GPT-4o-mini | 5/10 | 人格同质化严重，已被 5.4-mini 全面超越。 |
 
-**支持模型：** Gemini · Claude · Qwen3 · GPT-4o · MiniMax · Moonshot · StepFun · Ollama (本地)
+**支持模型：** Gemini · Claude · Qwen3 · GPT-5.4-mini / GPT-4o · MiniMax · Moonshot · StepFun · Ollama (本地)
 
 → 测试方法：[LLM 对比报告](docs/benchmark/llm_comparison_report.md) · [鲁棒性报告](docs/benchmark/gemini_layer4_report.md)
 
@@ -239,7 +240,7 @@ cp .env.example .env
 | **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash-lite |
 | **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
 | **通义千问** | `DASHSCOPE_API_KEY` | qwen3-max |
-| **OpenAI** | `OPENAI_API_KEY` | gpt-4o-mini |
+| **OpenAI** | `OPENAI_API_KEY` | gpt-5.4-mini |
 | **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
 | **Moonshot** | `MOONSHOT_API_KEY` | moonshot-v1-8k |
 | **StepFun** | `STEPFUN_API_KEY` | step-3.5-flash |

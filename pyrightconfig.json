@@ -1,0 +1,12 @@
+{
+  "venvPath": "/Users/zxw/AITOOL/openher-docker",
+  "venv": ".venv",
+  "pythonVersion": "3.13",
+  "pythonPlatform": "Darwin",
+  "extraPaths": [
+    "/Users/zxw/AITOOL/openher-docker"
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportGeneralTypeIssues": false
+}

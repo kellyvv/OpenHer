@@ -198,11 +198,12 @@ OpenHer works with multiple LLMs — but not all models are created equal. Perso
 | 🥇 **Claude Haiku 4.5** | **10/10** | Persona fidelity + emotional depth best-in-class. Kelly says *"honestly, I don't really know you. I'm just listening."* Zero format leakage. |
 | 🥈 **Gemini Flash Lite** | **9/10** | Near-Claude quality at lower cost. Great default. Luna gets genuinely *excited*. |
 | 🥉 **StepFun step-3.5-flash** | **8/10** | Most extreme persona differentiation. Kai: *"嗯。有事快说。"* |
+| **GPT-5.4-mini** | **7.5/10** | Major upgrade over 4o-mini — Kelly ENTP breakthrough: *"你这是在夸我还是在铺垫什么？"* Critic rock-stable. |
 | **Qwen Flash** | **7.5/10** | Best stage-direction control. Kelly ENTP standout. Best price. |
 | **MiniMax M2.5** | **7/10** | Most human-like chat style. Luna: *"咳…也没有啦 😳"* |
-| GPT-4o-mini | 5/10 | Persona homogenization. Not recommended. |
+| GPT-4o-mini | 5/10 | Persona homogenization. Superseded by 5.4-mini. |
 
-**Supports:** Gemini · Claude · Qwen3 · GPT-4o · MiniMax · Moonshot · StepFun · Ollama (local)
+**Supports:** Gemini · Claude · Qwen3 · GPT-5.4-mini / GPT-4o · MiniMax · Moonshot · StepFun · Ollama (local)
 
 → How we test: [LLM Comparison Report](docs/benchmark/llm_comparison_report.md) · [Robustness Report](docs/benchmark/gemini_layer4_report.md)
 
@@ -239,7 +240,7 @@ Set at least one LLM provider API key in `.env`:
 | **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash-lite |
 | **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
 | **Qwen** | `DASHSCOPE_API_KEY` | qwen3-max |
-| **OpenAI** | `OPENAI_API_KEY` | gpt-4o-mini |
+| **OpenAI** | `OPENAI_API_KEY` | gpt-5.4-mini |
 | **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
 | **Moonshot** | `MOONSHOT_API_KEY` | moonshot-v1-8k |
 | **StepFun** | `STEPFUN_API_KEY` | step-3.5-flash |

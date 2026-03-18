@@ -41,9 +41,14 @@ class BaseImageProvider(ABC):
         prompt: str,
         aspect_ratio: str = "",
         image_size: str = "1K",
+        reference_images: list = None,
         **kwargs,
     ) -> ImageResult:
-        """Generate an image from a text prompt."""
+        """Generate an image from a text prompt.
+
+        Args:
+            reference_images: Optional list of reference image paths for consistency.
+        """
         ...
 
     def _cache_path(self, key_parts: str, ext: str = "png") -> str:

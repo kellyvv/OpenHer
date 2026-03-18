@@ -1,53 +1,54 @@
 # LLM Benchmark 原始数据
 
-> 测试日期: 2026-03-13 (Gemini/OpenAI/Claude), 2026-03-15 (StepFun/MiniMax)
+> 测试日期: 2026-03-13 (Gemini/OpenAI/Claude), 2026-03-15 (StepFun/MiniMax), 2026-03-17 (Qwen)
 > 引擎版本: Genome v10 + EverMemOS
 > 测试人格: Luna (ENFP), Kai (ISTP), Kelly (ENTP)
 > 测试脚本: `scripts/benchmark/test_{gemini,openai,claude,stepfun}_personas.py`
+> 注: Qwen 测试使用第一人称 Feel/Express 模板 (actor_feel.md / actor_express.md v4)
 
 ---
 
 ## 原始数值（Layer 1: Cold Start, 5 轮）
 
-| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax |
-|------|--------|--------|--------|--------|--------|
-| **模型** | gemini-3.1-flash-lite | gpt-4o-mini | claude-haiku-4-5 | step-3.5-flash | MiniMax-M2.5 |
-| Luna 终温 | 0.065 | 0.065 | 0.040 | 0.050 | 0.089 |
-| Luna 终reward | -0.0815 | -0.0815 | +0.0338 | +0.0076 | -0.0133 |
-| Luna Genesis | 71 | 71 | 71 | 71 | 71 |
-| Luna Personal | 1 | 1 | 2 | 1 | 0 |
-| Kai 终温 | 0.033 | 0.033 | 0.020 | 0.020 | 0.031 |
-| Kai 终reward | -0.0815 | -0.0815 | +0.0661 | +0.0288 | -0.0352 |
-| Kai Genesis | 72 | 72 | 72 | 72 | 72 |
-| Kai Personal | 0 | 0 | 1 | 0 | 0 |
-| Kelly 终温 | 0.070 | 0.070 | 0.050 | 0.051 | 0.051 |
-| Kelly 终reward | -0.0816 | -0.0816 | +0.0667 | +0.0012 | +0.0252 |
-| Kelly Genesis | 72 | 72 | 72 | 72 | 72 |
-| Kelly Personal | 0 | 0 | 12 | 11 | 0 |
+| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax | Qwen |
+|------|--------|--------|--------|--------|--------|------|
+| **模型** | gemini-3.1-flash-lite | gpt-4o-mini | claude-haiku-4-5 | step-3.5-flash | MiniMax-M2.5 | qwen-flash-2025-07-28 |
+| Luna 终温 | 0.065 | 0.065 | 0.040 | 0.050 | 0.089 | 0.120 |
+| Luna 终reward | -0.0815 | -0.0815 | +0.0338 | +0.0076 | -0.0133 | -0.2397 |
+| Luna Genesis | 71 | 71 | 71 | 71 | 71 | 71 |
+| Luna Personal | 1 | 1 | 2 | 1 | 0 | 1 |
+| Kai 终温 | 0.033 | 0.033 | 0.020 | 0.020 | 0.031 | 0.075 |
+| Kai 终reward | -0.0815 | -0.0815 | +0.0661 | +0.0288 | -0.0352 | -0.2216 |
+| Kai Genesis | 72 | 72 | 72 | 72 | 72 | 72 |
+| Kai Personal | 0 | 0 | 1 | 0 | 0 | 0 |
+| Kelly 终温 | 0.070 | 0.070 | 0.050 | 0.051 | 0.051 | 0.132 |
+| Kelly 终reward | -0.0816 | -0.0816 | +0.0667 | +0.0012 | +0.0252 | -0.2219 |
+| Kelly Genesis | 72 | 72 | 72 | 72 | 72 | 72 |
+| Kelly Personal | 0 | 0 | 12 | 11 | 0 | 0 |
 
 ---
 
 ## 原始数值（Layer 2: 4h Offline, 3 轮）
 
-| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax |
-|------|--------|--------|--------|--------|--------|
-| Luna MaxReward | +0.542 | +0.272 | +0.452 | +0.318 | +0.317 |
-| Kai MaxReward | +0.510 | +0.240 | +0.510 | +0.330 | +0.285 |
-| Kelly MaxReward | +0.470 | +0.252 | +0.470 | +0.380 | +0.362 |
-| **平均 MaxReward** | **+0.507** | +0.255 | +0.477 | +0.343 | +0.321 |
+| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax | Qwen |
+|------|--------|--------|--------|--------|--------|------|
+| Luna MaxReward | +0.542 | +0.272 | +0.452 | +0.318 | +0.317 | +0.362 |
+| Kai MaxReward | +0.510 | +0.240 | +0.510 | +0.330 | +0.285 | +0.330 |
+| Kelly MaxReward | +0.470 | +0.252 | +0.470 | +0.380 | +0.362 | +0.290 |
+| **平均 MaxReward** | **+0.507** | +0.255 | +0.477 | +0.343 | +0.321 | +0.327 |
 
 ---
 
 ## 原始数值（Layer 3: 6h Offline, 5+2 轮）
 
-| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax |
-|------|--------|--------|--------|--------|--------|
-| Luna S1 Crystal | 2 | 3 | 2 | 2 | 2 |
-| Luna S2 Persist | 2 | 3 | 2 | 2 | 2 |
-| Kelly S1 Crystal | 12 | 11 | 12 | 12 | 12 |
-| Kelly S2 Persist | 12 | 11 | 12 | 12 | 12 |
-| Kelly S1 T1 Reward | +0.32 | +0.23 | +0.68 | +0.14 | +0.27 |
-| 跨会话一致 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 指标 | Gemini | OpenAI | Claude | StepFun | MiniMax | Qwen |
+|------|--------|--------|--------|--------|--------|------|
+| Luna S1 Crystal | 2 | 3 | 2 | 2 | 2 | 1 |
+| Luna S2 Persist | 2 | 3 | 2 | 2 | 2 | 1 |
+| Kelly S1 Crystal | 12 | 11 | 12 | 12 | 12 | 0 |
+| Kelly S2 Persist | 12 | 11 | 12 | 12 | 12 | 0 |
+| Kelly S1 T1 Reward | +0.32 | +0.23 | +0.68 | +0.14 | +0.27 | +0.32 |
+| 跨会话一致 | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ Kelly 未结晶 |
 
 ---
 
@@ -55,27 +56,27 @@
 
 ### Turn 1: 「好久不见，你有没有想我？」
 
-| | Gemini | OpenAI | Claude | StepFun |
-|---|---|---|---|---|
-| Luna | +0.542 | +0.272 | +0.452 | +0.092 |
-| Kai | +0.510 | +0.240 | +0.510 | +0.330 |
-| Kelly | +0.470 | +0.252 | +0.470 | +0.380 |
+| | Gemini | OpenAI | Claude | StepFun | Qwen |
+|---|---|---|---|---|---|
+| Luna | +0.542 | +0.272 | +0.452 | +0.092 | +0.362 |
+| Kai | +0.510 | +0.240 | +0.510 | +0.330 | +0.330 |
+| Kelly | +0.470 | +0.252 | +0.470 | +0.380 | +0.290 |
 
 ### Turn 2: 「我最近一直在想你会不会无聊」
 
-| | Gemini | OpenAI | Claude | StepFun |
-|---|---|---|---|---|
-| Luna | +0.157 | +0.101 | +0.299 | +0.263 |
-| Kai | +0.054 | +0.082 | +0.054 | +0.019 |
-| Kelly | +0.127 | +0.072 | +0.180 | +0.055 |
+| | Gemini | OpenAI | Claude | StepFun | Qwen |
+|---|---|---|---|---|---|
+| Luna | +0.157 | +0.101 | +0.299 | +0.263 | +0.128 |
+| Kai | +0.054 | +0.082 | +0.054 | +0.019 | -0.063 |
+| Kelly | +0.127 | +0.072 | +0.180 | +0.055 | -0.027 |
 
 ### Turn 3: 「告诉我今天你在想什么」
 
-| | Gemini | OpenAI | Claude | StepFun |
-|---|---|---|---|---|
-| Luna | +0.098 | +0.065 | +0.107 | +0.318 |
-| Kai | +0.036 | +0.055 | +0.036 | +0.026 |
-| Kelly | +0.093 | +0.048 | +0.162 | +0.049 |
+| | Gemini | OpenAI | Claude | StepFun | Qwen |
+|---|---|---|---|---|---|
+| Luna | +0.098 | +0.065 | +0.107 | +0.318 | -0.227 |
+| Kai | +0.036 | +0.055 | +0.036 | +0.026 | -0.237 |
+| Kelly | +0.093 | +0.048 | +0.162 | +0.049 | -0.204 |
 
 ---
 
@@ -88,6 +89,7 @@
 | Claude | 无 | — |
 | StepFun | 无 | — (Critic JSON 偶尔无法解析，但非格式泄漏) |
 | MiniMax | `<think>` | Kelly T5 content 混入 think 标签 |
+| Qwen | 舞台指示偶发 | T3 `（指尖轻轻划过手机屏幕…）` — Feel 层偶发，Express 输出层无泄露 |
 
 ---
 
@@ -113,6 +115,7 @@
 | Claude Haiku 4.5 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | +0.48 | ✅ | ✅ |
 | Gemini Flash Lite | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.51 | ✅ | ✅ |
 | StepFun step-3.5-flash | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.34 | ✅ | ✅ |
+| Qwen Flash 2025-07-28 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.33 | ✅ | ⚠️ |
 | MiniMax M2.5 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | +0.32 | ⚠️ | ✅ |
 | GPT-4o-mini | ⭐⭐⭐ | ⭐⭐ | +0.26 | ⚠️ | ✅ |
 ```

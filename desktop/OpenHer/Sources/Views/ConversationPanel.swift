@@ -156,6 +156,13 @@ struct ConversationPanel: View {
                 isFocused: $inputFocused,
                 onSend: sendMessage
             )
+            .onChange(of: inputFocused) { _, focused in
+                if focused {
+                    appState.wsManager.sendTypingIndicator(active: true)
+                } else {
+                    appState.wsManager.sendTypingIndicator(active: false)
+                }
+            }
         }
     }
 

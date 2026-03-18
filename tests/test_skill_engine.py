@@ -1,6 +1,6 @@
-"""Tests for the dual SkillEngine architecture (v6).
+"""Tests for the dual SkillEngine architecture (v7 — ReAct).
 
-TaskSkillEngine: trigger=tool skills only.
+TaskSkillEngine: trigger=tool skills, VERA-inspired ReAct loop.
 ModalitySkillEngine: trigger=modality skills only.
 Shared types: skill_types.py (Skill, ExecutionStatus, SkillExecutionResult).
 """
@@ -222,7 +222,7 @@ class TestModalitySkillEngine:
 
 
 # ---------------------------------------------------------------------------
-# TaskSkillEngine
+# TaskSkillEngine — Loading & Catalog
 # ---------------------------------------------------------------------------
 
 class TestTaskSkillEngine:
@@ -240,19 +240,19 @@ class TestTaskSkillEngine:
         assert len(engine.tool_skills) == 1
         assert engine.tool_skills[0].skill_id == "weather"
 
-    def test_build_skill_declarations(self, tool_skill_dir):
+    def test_build_catalog(self, tool_skill_dir):
+        """build_catalog() generates L1 description text."""
         engine = TaskSkillEngine(str(tool_skill_dir))
         engine.load_all()
-        defs = engine.build_skill_declarations()
-        assert len(defs) == 1
-        assert defs[0]["type"] == "function"
-        assert defs[0]["function"]["name"] == "weather"
-        assert defs[0]["function"]["description"]
+        catalog = engine.build_catalog()
+        assert "weather" in catalog
+        assert "weather" in catalog.lower() or "forecasts" in catalog.lower()
 
-    def test_empty_declarations_for_modality_only(self, modality_skills_dir):
+    def test_build_catalog_empty(self, modality_skills_dir):
+        """No tool skills → empty catalog."""
         engine = TaskSkillEngine(str(modality_skills_dir))
         engine.load_all()
-        assert engine.build_skill_declarations() == []
+        assert engine.build_catalog() == ""
 
     def test_openclaw_defaults_to_tool(self, openclaw_skills_dir):
         engine = TaskSkillEngine(str(openclaw_skills_dir))
@@ -265,6 +265,68 @@ class TestTaskSkillEngine:
     def test_backward_compat_alias(self):
         """SkillEngine import should still work as TaskSkillEngine alias."""
         assert SkillEngine is TaskSkillEngine
+
+
+# ---------------------------------------------------------------------------
+# TaskSkillEngine — JSON Extraction
+# ---------------------------------------------------------------------------
+
+class TestJSONExtraction:
+    """TaskSkillEngine._extract_json — parses various LLM output formats."""
+
+    def setup_method(self):
+        self.engine = TaskSkillEngine("/nonexistent")
+
+    def test_direct_json(self):
+        result = self.engine._extract_json('{"done": true, "thought": "test"}')
+        assert result == {"done": True, "thought": "test"}
+
+    def test_markdown_fenced_json(self):
+        text = '```json\n{"activate": "weather", "thought": "reason"}\n```'
+        result = self.engine._extract_json(text)
+        assert result["activate"] == "weather"
+
+    def test_json_with_surrounding_text(self):
+        text = 'Here is the result: {"done": true} and more text'
+        result = self.engine._extract_json(text)
+        assert result["done"] is True
+
+    def test_nested_json(self):
+        text = '{"actions": [{"tool": "execute_shell", "params": {"command": "echo hi"}}]}'
+        result = self.engine._extract_json(text)
+        assert len(result["actions"]) == 1
+
+    def test_invalid_json(self):
+        result = self.engine._extract_json("no json here")
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
+# TaskSkillEngine — Keyword Matching Fallback
+# ---------------------------------------------------------------------------
+
+class TestKeywordMatch:
+    """TaskSkillEngine._keyword_match — fallback when JSON fails."""
+
+    def test_match_by_skill_id(self, tool_skill_dir):
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        skill = engine._keyword_match("今天的weather怎么样")
+        assert skill is not None
+        assert skill.skill_id == "weather"
+
+    def test_match_by_description(self, tool_skill_dir):
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        skill = engine._keyword_match("I want to check the forecasts")
+        assert skill is not None
+        assert skill.skill_id == "weather"
+
+    def test_no_match(self, tool_skill_dir):
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        skill = engine._keyword_match("你吃饭了吗")
+        assert skill is None
 
 
 # ---------------------------------------------------------------------------
@@ -288,7 +350,7 @@ class TestIsolation:
 
 
 # ---------------------------------------------------------------------------
-# Task skill execution
+# Task skill execution (legacy execute() path)
 # ---------------------------------------------------------------------------
 
 from unittest.mock import AsyncMock
@@ -326,6 +388,67 @@ class TestExecute:
         result = await engine.execute("nonexistent", "whatever", AsyncMock())
         assert not result.success
         assert "Unknown skill" in result.output["error"]
+
+
+# ---------------------------------------------------------------------------
+# ReAct loop
+# ---------------------------------------------------------------------------
+
+class TestReactLoop:
+    """TaskSkillEngine.react_loop() — prompt-driven ReAct."""
+
+    async def test_react_no_skill_needed(self, tool_skill_dir):
+        """Normal chat → LLM returns done:true → None."""
+        class MockLLM:
+            async def chat(self, msgs, **kw):
+                return ChatResponse(content='{"done": true, "thought": "普通聊天"}')
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.react_loop("你好呀", MockLLM())
+        assert result is None
+
+    async def test_react_activate_and_execute(self, tool_skill_dir):
+        """Weather skill → activate → execute → observations."""
+        call_count = 0
+        class MockLLM:
+            async def chat(self, msgs, **kw):
+                nonlocal call_count
+                call_count += 1
+                if call_count == 1:
+                    # Round 1: activate
+                    return ChatResponse(content='{"activate": "weather", "thought": "用户问天气"}')
+                elif call_count == 2:
+                    # Round 2: execute (after JIT injection)
+                    return ChatResponse(content='{"actions": [{"tool": "execute_shell", "params": {"command": "echo Beijing: 22C"}}], "thought": "生成命令"}')
+                else:
+                    # Round 3: done
+                    return ChatResponse(content='{"done": true, "thought": "完成"}')
+
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.react_loop("北京天气怎么样", MockLLM())
+        assert result is not None
+        assert "Beijing: 22C" in result
+
+    async def test_react_max_rounds(self, tool_skill_dir):
+        """Max rounds prevents infinite loops."""
+        class MockLLM:
+            async def chat(self, msgs, **kw):
+                # Always try to activate (never done)
+                return ChatResponse(content='{"activate": "weather", "thought": "试试"}')
+
+        engine = TaskSkillEngine(str(tool_skill_dir))
+        engine.load_all()
+        result = await engine.react_loop("北京天气", MockLLM(), max_rounds=2)
+        # Should terminate due to max_rounds, no observations collected
+        assert result is None
+
+    async def test_react_empty_skills(self, modality_skills_dir):
+        """No tool skills → immediate None."""
+        engine = TaskSkillEngine(str(modality_skills_dir))
+        engine.load_all()
+        result = await engine.react_loop("北京天气", AsyncMock())
+        assert result is None
 
 
 class TestExecuteShell:

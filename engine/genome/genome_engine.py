@@ -491,12 +491,14 @@ class Agent:
         lines.append(drive_header)
         frust = frustration or {}
         craving_label = "craving" if is_en else "渴望"
+        baseline_label = "baseline" if is_en else "基线"
         for d in DRIVES:
             d_info = drv_config.get(d, {})
             d_label = d_info.get('emoji_label_en', d) if is_en else d_info.get('emoji_label', d)
             d_val = self.drive_state[d]
+            d_base = self.drive_baseline[d]
             d_frust = frust.get(d, 0.0)
-            lines.append(f"{d_label}: {d_val:.2f} ({craving_label}: {d_frust:.1f})")
+            lines.append(f"{d_label}: {d_val:.2f} ({baseline_label}: {d_base:.2f}, {craving_label}: {d_frust:.1f})")
 
         return '\n'.join(lines)
 

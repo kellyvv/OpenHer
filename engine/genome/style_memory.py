@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 import sqlite3
 import time
 
@@ -36,6 +37,20 @@ def _l2_distance(vec_a, vec_b):
 def _context_to_vec(context):
     """Convert Critic context dict to ordered vector for KNN retrieval."""
     return [context.get(k, 0.0) for k in CONTEXT_KEYS]
+
+
+def clean_action_markers(text: str) -> str:
+    """Remove action/emotion stage directions from text.
+
+    Strips *action*, ＊action＊, （action）, (action), 「action」 patterns
+    in both Chinese and English, full-width and half-width.
+    """
+    text = re.sub(r'\*[^*]+\*', '', text)       # *sighs*  *顿了顿*
+    text = re.sub(r'＊[^＊]+＊', '', text)         # ＊轻笑＊  full-width asterisk
+    text = re.sub(r'（[^）]+）', '', text)         # （沉默）  full-width parens
+    text = re.sub(r'\([^)]+\)', '', text)        # (pauses) half-width parens
+    text = re.sub(r'「[^」]+」', '', text)         # 「沉默」  occasional
+    return re.sub(r'\s{2,}', ' ', text).strip()
 
 
 def _hawking_mass(mass_raw, last_used_at, now, gamma=HAWKING_GAMMA):
@@ -69,16 +84,7 @@ class ContinuousStyleMemory:
         )
         os.makedirs(self.db_dir, exist_ok=True)
 
-        # Per-persona genesis file (genesis_kai.json) → fallback to shared bank
         self._persona_id = persona_id or agent_id
-        if persona_id:
-            persona_genesis = os.path.join(self.db_dir, f"genesis_{persona_id}.json")
-            if os.path.exists(persona_genesis):
-                self.genesis_file = persona_genesis
-            else:
-                self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
-        else:
-            self.genesis_file = os.path.join(self.db_dir, "genesis_bank.json")
 
         # Derive user_id from agent_id (format: "{persona_id}_{user_id}")
         if persona_id and agent_id.startswith(persona_id + "_"):
@@ -105,7 +111,7 @@ class ContinuousStyleMemory:
         self._now = now
 
     def _init_db(self):
-        """Create style_memory table if not exists."""
+        """Create style_memory and genesis_seed tables if not exists."""
         conn = sqlite3.connect(self._state_db_path)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS style_memory (
@@ -116,6 +122,13 @@ class ContinuousStyleMemory:
                 PRIMARY KEY (persona_id, user_id)
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS genesis_seed (
+                persona_id TEXT PRIMARY KEY,
+                seeds      TEXT NOT NULL,
+                created_at REAL NOT NULL
+            )
+        """)
         conn.commit()
         conn.close()
 
@@ -123,10 +136,16 @@ class ContinuousStyleMemory:
         """Load innate genes + learned experience into unified pool."""
         self._pool = []
 
-        # Genesis from JSON file (seed data, stays as files)
-        if os.path.exists(self.genesis_file):
-            with open(self.genesis_file, 'r', encoding='utf-8') as f:
-                genesis = json.load(f)
+        # Genesis from SQLite genesis_seed table
+        conn = sqlite3.connect(self._state_db_path)
+        row = conn.execute(
+            "SELECT seeds FROM genesis_seed WHERE persona_id = ?",
+            (self._persona_id,)
+        ).fetchone()
+        conn.close()
+
+        if row:
+            genesis = json.loads(row[0])
             for mem in genesis:
                 mem.setdefault('mass', 1.0)
                 mem.setdefault('created_at', 0.0)
@@ -325,3 +344,34 @@ class ContinuousStyleMemory:
             'total_mass_raw': sum(masses_raw),
             'total_mass_eff': round(sum(masses_eff), 1),
         }
+
+    @staticmethod
+    def save_genesis_to_db(persona_id: str, seeds: list, db_path: str):
+        """Save genesis seeds to DB (used by calibrate and migration scripts).
+
+        Cleans action markers from monologue/reply before storing.
+        Upserts: existing data for the same persona_id will be replaced.
+        """
+        for seed in seeds:
+            if 'monologue' in seed:
+                seed['monologue'] = clean_action_markers(seed['monologue'])
+            if 'reply' in seed:
+                seed['reply'] = clean_action_markers(seed['reply'])
+
+        conn = sqlite3.connect(db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS genesis_seed (
+                persona_id TEXT PRIMARY KEY,
+                seeds      TEXT NOT NULL,
+                created_at REAL NOT NULL
+            )
+        """)
+        conn.execute("""
+            INSERT INTO genesis_seed (persona_id, seeds, created_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(persona_id) DO UPDATE SET
+                seeds = excluded.seeds,
+                created_at = excluded.created_at
+        """, (persona_id, json.dumps(seeds, ensure_ascii=False), time.time()))
+        conn.commit()
+        conn.close()

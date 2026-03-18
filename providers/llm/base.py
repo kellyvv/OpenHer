@@ -24,8 +24,10 @@ from openai import AsyncOpenAI
 @dataclass
 class ChatMessage:
     """A single chat message."""
-    role: str       # system, user, assistant
+    role: str       # system, user, assistant, tool
     content: str
+    tool_call_id: Optional[str] = None  # Required when role="tool"
+    name: Optional[str] = None          # Tool name when role="tool"
 
 
 @dataclass
@@ -88,6 +90,8 @@ class OpenAICompatProvider(BaseLLMProvider):
     DEFAULT_API_KEY_ENV: str = ""
     DEFAULT_MODEL: str = ""
     NO_KEY_REQUIRED: bool = False
+    # Models that require max_completion_tokens instead of max_tokens
+    MAX_COMPLETION_TOKENS_MODELS: tuple = ()
 
     def __init__(
         self,
@@ -123,6 +127,18 @@ class OpenAICompatProvider(BaseLLMProvider):
             base_url=resolved_url,
         )
 
+    def _token_param_name(self) -> str:
+        """Return the API parameter name for max tokens.
+
+        Newer OpenAI models (o1, o3, gpt-5.x) require 'max_completion_tokens'
+        instead of 'max_tokens'. Subclasses set MAX_COMPLETION_TOKENS_MODELS
+        with model prefix patterns to opt in.
+        """
+        for prefix in self.MAX_COMPLETION_TOKENS_MODELS:
+            if self.model.startswith(prefix):
+                return "max_completion_tokens"
+        return "max_tokens"
+
     async def chat(
         self,
         messages: list[ChatMessage],
@@ -132,13 +148,21 @@ class OpenAICompatProvider(BaseLLMProvider):
         tool_choice: Optional[str] = None,
     ) -> ChatResponse:
         """Send a chat request and get a response (async)."""
-        api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        api_messages = []
+        for m in messages:
+            msg = {"role": m.role, "content": m.content}
+            if m.tool_call_id:
+                msg["tool_call_id"] = m.tool_call_id
+            if m.name:
+                msg["name"] = m.name
+            api_messages.append(msg)
 
+        token_param = self._token_param_name()
         kwargs = {
             "model": self.model,
             "messages": api_messages,
             "temperature": temperature if temperature is not None else self.temperature,
-            "max_tokens": max_tokens if max_tokens is not None else self.max_tokens,
+            token_param: max_tokens if max_tokens is not None else self.max_tokens,
         }
         if tools:
             kwargs["tools"] = tools
@@ -149,7 +173,7 @@ class OpenAICompatProvider(BaseLLMProvider):
 
         choice = response.choices[0]
         tc = choice.message.tool_calls
-        parsed_tc = [{"name": t.function.name, "arguments": t.function.arguments}
+        parsed_tc = [{"id": t.id, "name": t.function.name, "arguments": t.function.arguments}
                      for t in tc] if tc else None
         return ChatResponse(
             content=choice.message.content or "",
@@ -176,8 +200,8 @@ class OpenAICompatProvider(BaseLLMProvider):
             model=self.model,
             messages=api_messages,
             temperature=temperature if temperature is not None else self.temperature,
-            max_tokens=max_tokens if max_tokens is not None else self.max_tokens,
             stream=True,
+            **{self._token_param_name(): max_tokens if max_tokens is not None else self.max_tokens},
         )
 
         async for chunk in stream:

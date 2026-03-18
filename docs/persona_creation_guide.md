@@ -57,7 +57,7 @@ bio:
 
 ## 三、阶段 2：编写种子 (genesis_xxx.json)
 
-路径：`.data/genome/genesis_<persona_id>.json`
+路径：生成后经 `calibrate_genesis.py` 校准并存入 `openher.db` 的 `genesis_seed` 表。
 
 ### 种子结构
 
@@ -83,6 +83,15 @@ bio:
 
 > [!IMPORTANT]
 > 种子质量直接决定角色的风格表现。以下是从 Iris (zh INFP) 成功经验中总结的设计原则。
+
+#### 0. 禁止动作/心理描述标记
+
+monologue 和 reply 中**严禁**包含：
+- `*顿了顿*`、`*sighs softly*` — 星号包裹（半角 `*` 和全角 `＊`）
+- `（沉默）`、`（轻轻笑）` — 全角括号
+- `(pauses)`、`(laughs)` — 半角括号
+
+内心状态应通过文字本身表达，不要用标记注释。`calibrate_genesis.py` 会在存 DB 前自动清洗这些标记作为兜底。
 
 #### 1. Monologue 必须碎片化
 
@@ -209,7 +218,7 @@ new_vector = [round(signals[s], 4) for s in SIGNALS]
 ### 重启服务器
 
 > [!IMPORTANT]
-> 修改种子后**必须重启服务器**。`uvicorn --reload` 只监控 `.py` 文件变化，不会自动重载 `.json` 种子文件。
+> 修改种子后**必须重启服务器**。`uvicorn --reload` 只监控 `.py` 文件变化，不会自动重载 DB 数据。
 
 ```bash
 kill -9 $(lsof -i :8800 -t 2>/dev/null) 2>/dev/null
@@ -324,9 +333,10 @@ with open("/tmp/_dbg_express.txt", "w") as f:
      - 设置 lang: en
      - 定义 MBTI、tags、bio、engine_params
 
-□ 2. 编写 .data/genome/genesis_<id>.json
+□ 2. 编写 genesis seeds JSON 文件（临时）
      - 35+ 条种子，覆盖 7 种场景
      - monologue 碎片化，reply 极简
+     - 严禁 *动作* / （描述）标记
      - vector 全部写 [0,0,0,0,0,0,0,0]
      - mass 全部写 1.0
 
@@ -334,10 +344,11 @@ with open("/tmp/_dbg_express.txt", "w") as f:
      - 确保每条种子的 user_input 能被正确分类
      - 必要时在 KEYWORD_MAP 中添加英文关键词
 
-□ 4. 运行 calibrate_genesis.py
+□ 4. 运行 calibrate_genesis.py（向量化 + 存入 DB）
      - PYTHONPATH=. python3 scripts/calibrate_genesis.py <id>
      - 检查输出：每条种子的 scenario 分类是否正确
      - 检查向量范围：不同 scenario 的 vector 应该明显不同
+     - 校准后数据自动存入 openher.db genesis_seed 表
 
 □ 5. 重启服务器
 

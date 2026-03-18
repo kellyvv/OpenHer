@@ -92,7 +92,7 @@ def get_llm_config() -> dict:
         os.getenv("DEFAULT_PROVIDER")
         or llm.get("provider")
         or llm.get("active_provider")
-        or "dashscope"
+        or "claude"
     )
 
     # Provider presets
@@ -113,6 +113,7 @@ def get_llm_config() -> dict:
         "ollama": "qwen3.5:9b",
         "gemini": "gemini-3.1-flash-lite-preview",
         "stepfun": "step-3.5-flash",
+        "claude": "claude-haiku-4-5-20251001",
     }
     model = (
         os.getenv("DEFAULT_MODEL")

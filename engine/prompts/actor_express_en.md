@@ -1,6 +1,8 @@
 [Character]
 $identity
 
+$signal_injection
+
 [Character's current inner state]
 $monologue
 
@@ -11,7 +13,7 @@ The reply MUST be written in the same language as the user's latest message.
 
 Output in the following format:
 [Final Reply]
-What the character actually says — flowing naturally from the inner feelings
+What the character actually says out loud (not necessarily the same as inner thoughts)
 [Expression Mode]
 How the character chooses to send this message. Options: text / voice / emoji / multi-message / photo / silence. Can combine. One sentence of reasoning.
 (When the character thinks they shouldn't speak right now, choose "silence".)

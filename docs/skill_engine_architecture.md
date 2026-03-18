@@ -163,7 +163,7 @@ v10 inject 模式下，`user_message` 被重绑定后流入以下位置：
 ## 6. 记忆隔离
 
 ```
-chat.db (ChatLogStore)     ← 前端展示历史
+chat.db (ChatLogStore)     ← 客户端展示历史
 task.db (TaskLogStore)     ← 工具执行记录（隔离）
 EverMemOS                  ← 人格长期记忆（v10: 工具轮也写入，含注入数据）
 agent.history              ← 工作记忆（工具轮和人格轮都写入）

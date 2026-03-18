@@ -67,55 +67,50 @@ struct MessageRow: View {
 
     @ViewBuilder
     private var messageContent: some View {
-        switch message.modality {
-        case "表情":
-            Text(message.content)
-                .font(.system(size: 40))
-
-        case "照片":
-            VStack(alignment: .leading, spacing: 8) {
-                if let urlStr = message.imageURL,
-                   let url = URL(string: serverURL + urlStr) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 200)
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
-                                .onTapGesture { onImageTap?(url) }
-                                .cursor(.pointingHand)
-                        case .failure:
-                            photoPlaceholder
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 200, height: 150)
-                        @unknown default:
-                            photoPlaceholder
-                        }
+        VStack(alignment: .leading, spacing: 8) {
+            // Layer 1: Image — render if imageURL is present (any modality)
+            if let urlStr = message.imageURL,
+               let url = URL(string: serverURL + urlStr) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .onTapGesture { onImageTap?(url) }
+                            .cursor(.pointingHand)
+                    case .failure:
+                        photoPlaceholder
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 200, height: 150)
+                    @unknown default:
+                        photoPlaceholder
                     }
-                } else {
-                    photoPlaceholder
-                }
-
-                if !message.content.isEmpty {
-                    Text(message.content)
-                        .font(Paper.bodyFont)
-                        .foregroundStyle(isUser ? Paper.yourText : Paper.herText)
                 }
             }
 
-        case "语音":
-            VoiceMessageView(message: message)
+            // Layer 2: Voice — render if audioData is present
+            if message.audioData != nil {
+                VoiceMessageView(message: message)
+            }
 
-        default:
-            Text(message.content)
-                .font(Paper.bodyFont)
-                .foregroundStyle(isUser ? Paper.yourText : Paper.herText)
-                .textSelection(.enabled)
-                .lineSpacing(4)
-                .opacity(isFailed ? 0.5 : 1.0)
+            // Layer 3: Text — render if content is non-empty (skip if voice-only with audio)
+            if !message.content.isEmpty && message.audioData == nil {
+                if message.modality == "表情" {
+                    Text(message.content)
+                        .font(.system(size: 40))
+                } else {
+                    Text(message.content)
+                        .font(Paper.bodyFont)
+                        .foregroundStyle(isUser ? Paper.yourText : Paper.herText)
+                        .textSelection(.enabled)
+                        .lineSpacing(4)
+                        .opacity(isFailed ? 0.5 : 1.0)
+                }
+            }
         }
     }
 
