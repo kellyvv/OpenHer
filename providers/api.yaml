@@ -38,9 +38,9 @@ llm:
       api_key_env: "STEPFUN_API_KEY"
       default_model: "step-3.5-flash"
     minimax:
-      base_url: "https://api.minimaxi.com/v1"
+      base_url: "https://api.minimax.io/v1"
       api_key_env: "MINIMAX_LLM_API_KEY"
-      default_model: "MiniMax-M2.5"
+      default_model: "MiniMax-M2.7"
 
 # ── TTS (语音合成) ──
 tts:

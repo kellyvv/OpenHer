@@ -208,7 +208,7 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         """
         Process a user message through the full Genome v10 lifecycle.
         Returns only the reply (monologue is stored internally).
-        on_feel_done: optional async callback invoked after Feel pass completes.
+        on_feel_done: optional async callback invoked when prompt is ready (before LLM call).
         """
         async with self._turn_lock:
             return await self._chat_inner(user_message, on_feel_done=on_feel_done)
@@ -468,7 +468,7 @@ class ChatAgent(PromptBuilderMixin, EverMemosMixin, ModalityRetryMixin, Proactiv
         return result
 
     # _express_wrap removed — SKILL results now injected into user_message
-    # and processed through the full persona engine (Feel → Express).
+    # and processed through the full persona engine (Single-Pass Actor).
 
     def _log_task(self, skill_id: str, user_input: str, output: dict, reply: str) -> None:
         """Log task execution to task.db (isolated from persona memory)."""

@@ -74,7 +74,7 @@ async def stream_to_ws(
     Args:
         raw_stream:        AsyncIterator of raw LLM chunks from chat_agent
         ws_send:           Coroutine to send a dict to the WebSocket
-        on_feel_done:      Callback when Feel pass completes (before Express starts)
+        on_feel_done:      Callback when prompt is ready (before LLM call starts)
         on_reply_complete: Callback(clean_reply, modality) after full stream
     """
     buf = ""

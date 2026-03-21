@@ -20,7 +20,7 @@ final class EngineDebugState: ObservableObject {
     @Published var frustration: Double = 0
     @Published var temperature: Double = 0
 
-    // ── Feel Pass ──
+    // ── Inner Monologue ──
     @Published var monologue: String = ""
 
     // ── Style Memory Recall ──

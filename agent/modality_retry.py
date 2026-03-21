@@ -2,7 +2,7 @@
 ModalityRetryMixin — Modality failure handling for ChatAgent.
 
 When a modality skill (TTS, image gen) fails after 2 silent tool retries:
-  1. Inject failure context into Express pass
+  1. Inject failure context into Actor re-run
   2. Re-run Express through normal engine pipeline
   3. Engine naturally decides response (may choose text, retry modality, etc.)
   4. Result goes through normal _flush_buffer delivery
@@ -22,7 +22,7 @@ class ModalityRetryMixin:
         """Handle modality skill failure by re-running Express through the engine.
 
         Called after a modality skill has exhausted its 2 internal tool retries.
-        Injects failure context and re-runs the Express pass through the normal
+        Injects failure context and re-runs the Actor pass through the normal
         pipeline (extract_reply -> JSON context -> skill -> _flush_buffer).
 
         Returns the new reply text (from re-run Express), or original_reply if

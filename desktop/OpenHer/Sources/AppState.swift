@@ -37,6 +37,13 @@ final class AppState: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var isTyping: Bool = false
 
+    // MARK: - Message Merge Buffer
+    /// Buffer for merging rapid consecutive messages before sending to backend.
+    /// Messages flush when input loses focus or after hard cap timeout.
+    private var _pendingTexts: [String] = []
+    private var _mergeTask: Task<Void, Never>?
+    private let _hardCapNanos: UInt64 = 15_000_000_000  // 15s hard cap
+
     // MARK: - Mood (ambient system)
     @Published var currentMood: Mood = .calm
     @Published var valence: Double = 0.0       // -1...1 emotional valence EMA
@@ -276,9 +283,9 @@ final class AppState: ObservableObject {
     }
 
     func sendMessage(_ text: String) {
-        guard let personaId = selectedPersonaId, !text.isEmpty else { return }
+        guard selectedPersonaId != nil, !text.isEmpty else { return }
 
-        // Add user message immediately
+        // Add user message immediately (UI responsiveness)
         let userMsg = ChatMessage(
             id: UUID().uuidString,
             role: .user,
@@ -289,9 +296,31 @@ final class AppState: ObservableObject {
         )
         messages.append(userMsg)
 
-        // Send via WebSocket
+        // Buffer for merge — don't send to backend yet
+        _pendingTexts.append(text)
+        print("[merge] 📥 buffered #\(_pendingTexts.count): '\(text.prefix(30))'")
+
+        // Reset idle timer — 8s after the LAST message, flush
+        _mergeTask?.cancel()
+        _mergeTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 8_000_000_000)  // 8s idle
+            guard !Task.isCancelled else { return }
+            print("[merge] ⏰ idle timeout (8s), flushing")
+            self?.flushMergedMessages()
+        }
+    }
+
+    /// Merge all buffered messages and send as a single WS message.
+    func flushMergedMessages() {
+        guard let personaId = selectedPersonaId, !_pendingTexts.isEmpty else { return }
+        let merged = _pendingTexts.joined(separator: "\n")
+        let count = _pendingTexts.count
+        _pendingTexts.removeAll()
+        _mergeTask = nil
+
+        print("[merge] 📦 flushing \(count) message(s): '\(merged.prefix(60))'")
         wsManager.sendChat(
-            content: text,
+            content: merged,
             personaId: personaId,
             clientId: getClientId()
         )

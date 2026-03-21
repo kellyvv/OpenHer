@@ -19,7 +19,7 @@ class PromptBuilderMixin:
         """
         Build single-pass prompt — generates monologue + reply + modality in one call.
 
-        Combines Feel and Express into one template with full context.
+        Combines identity, signals, and few-shot examples into a unified single-pass template.
         """
         import datetime as _dt
 

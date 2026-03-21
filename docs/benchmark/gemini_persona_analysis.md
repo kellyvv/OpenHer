@@ -1,7 +1,7 @@
 # Gemini × 人格引擎 — 详细分析报告
 
 **模型**: `gemini-3.1-flash-lite-preview`
-**引擎**: 完整人格引擎 (Critic → Metabolism → Signal → KNN Genesis → Feel → Express → Hebbian)
+**引擎**: 完整人格引擎 (Critic → Metabolism → Signal → KNN Genesis → Actor Single-Pass → Hebbian)
 
 ## 人格档案
 

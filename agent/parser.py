@@ -1,7 +1,7 @@
 """
 LLM output parsing utilities for the persona engine.
 
-Parses structured output from Feel/Express passes:
+Parses structured output from the single-pass Actor:
   【内心独白】 → monologue
   【最终回复】 → reply
   【表达方式】 → modality (语音/文字/照片/…)
@@ -49,6 +49,9 @@ def extract_reply(raw: str) -> tuple[str, str, str]:
     Supports both Chinese (【最终回复】) and English ([Final Reply]) section headers.
     Returns canonical Chinese modality key for internal consistency.
     """
+    # Strip <think>...</think> blocks from reasoning models (e.g. MiniMax M2.7)
+    raw = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+
     sections: dict[str, str] = {}
     matches = list(_SECTION_RE.finditer(raw))
     for i, m in enumerate(matches):

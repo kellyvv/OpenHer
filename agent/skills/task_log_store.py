@@ -6,7 +6,7 @@ completely separate from persona memory (EverMemOS) and chat display (chat.db).
 
 Design decisions:
   - Append-only, no CAS, thread-safe (check_same_thread=False).
-  - Does NOT feed into agent.history, Feel/Express prompt, or EverMemOS.
+  - Does NOT feed into agent.history, Actor prompt, or EverMemOS.
   - Called from _chat_inner guard clause after successful tool execution.
 """
 

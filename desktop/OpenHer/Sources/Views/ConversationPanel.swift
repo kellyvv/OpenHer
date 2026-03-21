@@ -161,6 +161,7 @@ struct ConversationPanel: View {
                     appState.wsManager.sendTypingIndicator(active: true)
                 } else {
                     appState.wsManager.sendTypingIndicator(active: false)
+                    appState.flushMergedMessages()
                 }
             }
         }

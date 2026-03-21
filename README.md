@@ -307,7 +307,7 @@ python main.py
 
 启动成功会看到：
 ```
-INFO:     Uvicorn running on http://0.0.0.0:8800
+INFO:     Uvicorn running on http://0.0.0.0:8000
 ✓ GenomeEngine loaded · 10 personas available
 ```
 

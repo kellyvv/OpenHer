@@ -314,7 +314,7 @@ class ContinuousStyleMemory:
         Args:
             context: Critic context dict for KNN retrieval.
             monologue_only: If True, only include monologue (no reply).
-                            Used by Pass 1 (Feel) of two-pass Actor.
+                            Legacy parameter, currently unused (single-pass mode).
             lang: Label language ('zh' or 'en').
         """
         memories = self.retrieve(context, top_k=top_k, lang_preference=lang)

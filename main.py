@@ -28,7 +28,7 @@ from pydantic import BaseModel
 import uuid as _uuid
 
 from persona import PersonaLoader
-from providers.llm import LLMClient
+from providers.llm import LLMClient, ChatMessage
 from agent.chat_agent import ChatAgent
 from providers.media.tts_engine import TTSEngine, TTSProvider
 from agent.skills import TaskSkillEngine, ModalitySkillEngine
@@ -565,6 +565,7 @@ def get_or_create_session(
     session_id: Optional[str],
     persona_id: str,
     user_name: Optional[str] = None,
+    client_id: Optional[str] = None,
 ) -> tuple[str, ChatAgent]:
     """Get existing session or create a new one (with state hydration)."""
     now = time.time()
@@ -630,6 +631,20 @@ def get_or_create_session(
     if is_new_agent:
         agent.pre_warm()
         print(f"  ↳ 新 Agent 预热: 60步完成 (seed={genome_seed})")
+
+    # ── Restore chat history from DB (Layer 1: Working Memory) ──
+    if chat_log_store and client_id:
+        rows = chat_log_store.load_messages(
+            client_id=client_id,
+            persona_id=persona_id,
+            limit=agent.max_history,
+        )
+        if rows:
+            agent.history = [
+                ChatMessage(role=r["role"], content=r["content"])
+                for r in rows
+            ]
+            print(f"  ↳ 恢复聊天历史: {len(agent.history)} 条消息")
 
 
     active_sessions[sid] = (agent, now)
@@ -724,7 +739,7 @@ async def get_persona_media(persona_id: str, media_type: str):
 async def chat_api(req: ChatRequest):
     try:
         session_id, agent = get_or_create_session(
-            req.session_id, req.persona_id, req.user_name
+            req.session_id, req.persona_id, req.user_name, req.client_id
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -933,6 +948,7 @@ async def websocket_chat(ws: WebSocket):
                 session_id or first.get("session_id"),
                 persona_id,
                 user_name,
+                ws_client_id,
             )
         except ValueError as e:
             await ws.send_json({"type": "error", "content": str(e)})
@@ -1102,17 +1118,15 @@ async def websocket_chat(ws: WebSocket):
             # Persist to display-layer chat log
             if chat_log_store and ws_client_id:
                 _persona_id = first.get("persona_id", "")
-                now = time.time()
                 try:
-                    chat_log_store._conn.execute(
-                        "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                        (ws_client_id, _persona_id, "user", merged_text, "文字", now),
+                    chat_log_store.save_turn(
+                        client_id=ws_client_id,
+                        persona_id=_persona_id,
+                        user_msg=merged_text,
+                        agent_reply=_clean_reply_text,
+                        modality=modality,
+                        image_url=image_url,
                     )
-                    chat_log_store._conn.execute(
-                        "INSERT INTO chat_messages (client_id, persona_id, role, content, modality, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                        (ws_client_id, _persona_id, "assistant", _clean_reply_text, modality, now),
-                    )
-                    chat_log_store._conn.commit()
                 except Exception as e:
                     print(f"  [chat_log] save error: {e}")
 
@@ -1223,6 +1237,7 @@ async def websocket_chat(ws: WebSocket):
                             None,
                             new_persona_id,
                             msg.get("user_name"),
+                            msg.get("client_id"),
                         )
                         _ws_connections[session_id] = ws
                         await ws.send_json({

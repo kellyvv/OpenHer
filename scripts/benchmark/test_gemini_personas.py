@@ -8,7 +8,7 @@ Mirrors main.py's exact initialization:
   4. ChatAgent with genome_data_dir=.data/genome (genesis seeds)
   5. genome_seed = hash(persona_id)
   6. pre_warm() for new agents
-  7. Full lifecycle: Critic → Metabolism → Signals → KNN → Feel → Express
+  7. Full lifecycle: Critic → Metabolism → Signals → KNN → Actor (Single-Pass)
 
 Personas: luna (ENFP), rex (ENTJ), vivian (INTJ)
 """

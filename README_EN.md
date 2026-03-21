@@ -208,7 +208,7 @@ An extensible skill framework that gives her real-world capabilities. Weather, s
 | **Local Facts** | User preferences, personal details | SQLite FTS5 |
 | **Long-Term Memory** | Cross-session profiles, episode narratives, foresight | [EverMemOS](https://evermind.ai) |
 
-Memory retrieval is **async and two-stage**: search fires at the end of each turn, results blend into the next turn's context (80% relevant / 20% stable), so recall feels organic — not robotic.
+Memory retrieval is **async and pipelined**: search fires at the end of each turn, results blend into the next turn's context (80% relevant / 20% stable), so recall feels organic — not robotic.
 
 ---
 
@@ -380,7 +380,7 @@ genome_seed:
 
 - [x] **Personality engine** — drives × neural weights × reinforcement learning, character computed not described
 - [x] **Emotional thermodynamics** — 5 drives metabolize with real time, her mood today is genuinely different from yesterday
-- [x] **Feel-first** — inner monologue before every reply, what she wants to say vs. what she'll actually say
+- [x] **Feel-first** — inner monologue before every reply in a single pass: what she wants to say vs. what she'll actually say
 - [x] **Hebbian learning** — the neural network reshapes with every conversation, she changes through knowing you
 - [x] **StyleMemory** — experiences crystallize and fade, the important ones stay, the forgotten ones gently dissolve
 - [x] **EverMemOS** — cross-session long-term memory: who you are, what you've shared, what she anticipates

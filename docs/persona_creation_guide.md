@@ -42,8 +42,7 @@ bio:
 | 字段 | 中文角色 | 英文角色 |
 |------|----------|----------|
 | `lang` | `zh` | `en` |
-| Feel template | `actor_feel.md` | `actor_feel_en.md` |
-| Express template | `actor_express.md` | `actor_express_en.md` |
+| Actor template | `actor_single.md` | `actor_single_en.md` |
 | Signal labels | `emoji_label` / `low_anchor` | `emoji_label_en` / `low_anchor_en` |
 | Identity tag | `【角色】` | `[Character]` |
 | Few-shot labels | `内心感受片段` / `基因` | `Inner feeling fragment` / `genesis` |
@@ -75,7 +74,7 @@ bio:
 
 - `user_input`：模拟用户说的话，用于场景分类和向量化
 - `monologue`：角色的内心独白——**这是注入 Feel prompt 的 few-shot 参考**
-- `reply`：角色说出口的话——当前 two-pass 模式下**不直接注入 prompt**，但影响 crystallization
+- `reply`：角色说出口的话——作为 few-shot 示例注入 single-pass Actor prompt，同时影响 crystallization
 - `vector`：**初始写 `[0,0,0,0,0,0,0,0]`**，由 `calibrate_genesis.py` 自动生成
 - `mass`：固定 `1.0`（genesis 基因不衰减）
 
@@ -250,21 +249,19 @@ done
 - [ ] **KNN 命中**：种子检索是否匹配场景（检查 feel prompt 中的 fragments）
 - [ ] **Monologue 风格**：是否碎片化、符合 MBTI
 - [ ] **Reply 风格**：是否简短、符合 MBTI（不是通用 chatbot 口吻）
-- [ ] **Prompt 零中文字符**（英文角色）：用脚本扫描 feel/express prompt
+- [ ] **Prompt 零中文字符**（英文角色）：用脚本扫描 actor single-pass prompt
 
 ### Debug 方法
 
-临时在 `chat_agent.py` 的 Step 9a/9b 之间加 dump：
+临时在 `chat_agent.py` 的 Step 9 前后加 dump：
 
 ```python
 # 临时 debug，验证完删除
-with open("/tmp/_dbg_feel.txt", "w") as f:
-    f.write(feel_prompt)
-# ...
-with open("/tmp/_dbg_mono.txt", "w") as f:
-    f.write(monologue)
-with open("/tmp/_dbg_express.txt", "w") as f:
-    f.write(express_prompt)
+with open("/tmp/_dbg_single_prompt.txt", "w") as f:
+    f.write(single_prompt)
+# ... LLM 调用后 ...
+with open("/tmp/_dbg_output.txt", "w") as f:
+    f.write(single_response.content)
 ```
 
 ---
