@@ -248,6 +248,7 @@ OpenHer works with multiple LLMs — but not all models are created equal. Perso
 
 - Python 3.11+
 - macOS 14.0+ (for desktop client, optional)
+- Node.js 20.19+ or 22.12+ (for web client, optional)
 - An API key from any supported LLM provider
 
 ### 1. Clone & Install
@@ -309,7 +310,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 ✓ GenomeEngine loaded · 10 personas available
 ```
 
-### 4. Launch the Desktop Client
+### 4. Launch the Desktop Client (Optional)
 
 1. Download `OpenHer.app.zip` from [GitHub Releases](https://github.com/kellyvv/OpenHer/releases)
 2. Unzip to get `OpenHer.app`
@@ -331,7 +332,29 @@ Requires macOS 14.0+ and Xcode Command Line Tools (`xcode-select --install`).
 
 </details>
 
-### 5. Long-Term Memory (Optional)
+### 5. Launch the Web Client (Optional)
+
+The web client lives in `web/`. It is a Vite + React browser client that does not modify the Python backend or persona engine. It lets you use persona discovery, awakening, chat, demo panels, engine status, and debug views directly from a browser.
+
+Before using it, keep the backend running (step 3). By default, the web client connects to `http://localhost:8000`.
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` to use it. If your backend is not using the default URL, change it in the web settings panel. The value is stored in browser `localStorage`.
+
+Production build:
+
+```bash
+npm run build
+```
+
+The production output is written to `web/dist`.
+
+### 6. Long-Term Memory (Optional)
 
 Connect [EverMemOS](https://evermind.ai) for cross-session persistent memory.
 
