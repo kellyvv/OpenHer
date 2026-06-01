@@ -276,6 +276,7 @@ OpenHer 支持多种大模型——但不是所有模型都能胜任人格涌现
 
 - Python 3.11+
 - macOS 14.0+（桌面客户端，可选）
+- Node.js 20.19+ 或 22.12+（网页端，可选）
 - 任一支持的 LLM 服务商 API 密钥
 
 ### 一、克隆 & 安装
@@ -337,7 +338,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 ✓ GenomeEngine loaded · 10 personas available
 ```
 
-### 四、启动桌面客户端
+### 四、启动桌面客户端（可选）
 
 1. 从 [GitHub Releases](https://github.com/kellyvv/OpenHer/releases) 下载 `OpenHer.app.zip`
 2. 解压得到 `OpenHer.app`
@@ -359,7 +360,29 @@ chmod +x run.sh
 
 </details>
 
-### 五、长期记忆（可选）
+### 五、启动网页端
+
+网页端位于 `web/`，是基于 Vite + React 的浏览器客户端。它不修改 Python 后端或人格引擎，适合直接在浏览器中体验角色发现、唤醒、聊天、演示面板和引擎调试信息。
+
+使用前请先保持后端运行（步骤三），默认连接 `http://localhost:8000`。
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+打开 `http://localhost:5173` 即可使用。若后端地址不是默认值，可以在网页端的设置面板中修改，配置会保存在浏览器 `localStorage`。
+
+生产构建：
+
+```bash
+npm run build
+```
+
+构建产物会输出到 `web/dist`。
+
+### 六、长期记忆（可选）
 
 连接 [EverMemOS](https://evermind.ai) 获得跨对话的持久化记忆。
 
