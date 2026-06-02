@@ -500,7 +500,23 @@ button {
   justify-self: end;
 }
 
+.message-image-button {
+  width: fit-content;
+  max-width: min(260px, 64vw);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.message-image-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
 .message-image {
+  display: block;
   max-width: min(260px, 64vw);
   border-radius: 4px;
   box-shadow: 0 12px 24px rgba(44, 36, 32, 0.18);
@@ -509,6 +525,25 @@ button {
 .voice-player {
   width: min(280px, 70vw);
   height: 36px;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  border: 0;
+  background: rgba(44, 36, 32, 0.74);
+  cursor: zoom-out;
+}
+
+.image-lightbox img {
+  max-width: min(920px, calc(100vw - 56px));
+  max-height: calc(100vh - 56px);
+  border-radius: 6px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
 }
 
 .emoji-message {
