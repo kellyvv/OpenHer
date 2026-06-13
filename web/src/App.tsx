@@ -15,6 +15,7 @@ import {
   mergeEngineDebugState,
   mergeInjectedMemoryKeys,
 } from "./demo/state";
+import { resolveDemoPersonaId, type DemoMediaType } from "./demo/media";
 import { buildWorkspaceClassName } from "./layout/workspace";
 import {
   developerMode,
@@ -320,10 +321,10 @@ export default function App() {
     socketRef.current?.switchPersona(personaId);
   };
 
-  const enterConversationWorkspace = () => {
+  const enterConversationWorkspace = (preferredPersonaId?: string) => {
     setSettingsOpen(false);
     if (phase !== "conversation") {
-      const targetId = selectedId || personas[0]?.persona_id;
+      const targetId = preferredPersonaId || selectedId || personas[0]?.persona_id;
       if (targetId) {
         setSelectedId(targetId);
         saveSelectedPersonaId(targetId);
@@ -342,7 +343,7 @@ export default function App() {
   };
 
   const openDemoBar = () => {
-    enterConversationWorkspace();
+    enterConversationWorkspace(resolveDemoPersonaId(selectedId, phase));
     setDebugMode(true);
     saveDeveloperMode(true);
     setDemoBarOpen(true);
@@ -435,6 +436,11 @@ export default function App() {
                 if (scenarioId === "lonely") openShowcase(4);
               }}
               onSendMessage={sendMessage}
+              onMediaTest={(mediaType: DemoMediaType) => {
+                const personaId = selectedId || "iris";
+                socketRef.current?.sendDemoMediaTest(mediaType, personaId);
+                setDemoBarOpen(false);
+              }}
               onInjectMemory={(memory) => {
                 if (!selectedId) return;
                 setInjectedMemoryKeys((current) => mergeInjectedMemoryKeys(current, memory.content));

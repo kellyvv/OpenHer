@@ -1,4 +1,5 @@
 import { DEMO_MEMORIES, DEMO_PERSONAS, DEMO_TEST_ACTIONS, DEMO_TIME_JUMPS, type DemoMemory } from "../demo/catalog";
+import type { DemoMediaType } from "../demo/media";
 import type { Persona } from "../types/openher";
 
 interface DemoBarProps {
@@ -8,6 +9,7 @@ interface DemoBarProps {
   onScenario: (scenarioId: string) => void;
   onSendMessage: (message: string) => void;
   onInjectMemory: (memory: DemoMemory) => void;
+  onMediaTest: (mediaType: DemoMediaType) => void;
   onClose: () => void;
 }
 
@@ -18,6 +20,7 @@ export function DemoBar({
   onScenario,
   onSendMessage,
   onInjectMemory,
+  onMediaTest,
   onClose,
 }: DemoBarProps) {
   const runAction = (actionId: string) => {
@@ -77,6 +80,15 @@ export function DemoBar({
             </button>
           ))}
         </div>
+      </DemoRow>
+
+      <DemoRow label="媒体">
+        <button className="demo-chip demo-blue" type="button" onClick={() => onMediaTest("image")}>
+          图片测试
+        </button>
+        <button className="demo-chip demo-purple" type="button" onClick={() => onMediaTest("voice")}>
+          语音测试
+        </button>
       </DemoRow>
 
       <DemoRow label="记忆">

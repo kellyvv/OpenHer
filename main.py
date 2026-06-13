@@ -43,6 +43,7 @@ from providers.memory.evermemos.evermemos_client import EverMemOSClient
 from providers.api_config import get_llm_config, get_tts_config, get_memory_config
 from agent.cron_scheduler import CronScheduler
 from agent.output_router import stream_to_ws as _stream_to_ws
+from demo.media_test import build_demo_media_events
 from engine.genome import DRIVE_LABELS
 from agent.demo_controller import DemoController
 
@@ -1505,6 +1506,26 @@ async def websocket_chat(ws: WebSocket):
                     })
                 except Exception as e:
                     await ws.send_json({"type": "error", "content": f"Failed to load presets: {e}"})
+
+            # ── Demo: Fixed Media Delivery Test ──
+            elif msg_type == "demo_media_test":
+                media_type = msg.get("media_type", "")
+                requested_persona_id = msg.get("persona_id", "") or "iris"
+                persona = persona_loader.get(requested_persona_id)
+                persona_id = requested_persona_id if persona else "iris"
+                try:
+                    await ws.send_json({
+                        "type": "chat_start",
+                        "session_id": session_id,
+                    })
+                    for event in build_demo_media_events(media_type, persona_id):
+                        await ws.send_json(event)
+                    print(f"  [demo] media test: type={media_type}, persona={persona_id}")
+                except (OSError, ValueError) as e:
+                    await ws.send_json({
+                        "type": "error",
+                        "content": f"媒体测试失败: {e}",
+                    })
 
             # ── Demo: Force Proactive Tick ──
             elif msg_type == "demo_force_proactive":

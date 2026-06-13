@@ -1,6 +1,7 @@
 import type { OpenHerEvent } from "../types/openher";
 import { normalizeBaseUrl } from "./openherClient";
 import { buildDemoMemoryPayload, buildDemoScenarioPayload, buildDemoTimeJumpPayload, type DemoMemory } from "../demo/catalog";
+import { buildDemoMediaPayload, type DemoMediaType } from "../demo/media";
 
 export interface SocketHandlers {
   onEvent: (event: OpenHerEvent) => void;
@@ -111,6 +112,10 @@ export class OpenHerSocket {
 
   sendDemoPresets(): void {
     this.sendRaw({ type: "demo_presets" });
+  }
+
+  sendDemoMediaTest(mediaType: DemoMediaType, personaId: string): void {
+    this.sendRaw(buildDemoMediaPayload(mediaType, personaId));
   }
 
   sendDemoForceProactive(): void {
