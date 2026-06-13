@@ -56,7 +56,7 @@ def _load() -> dict:
         return _config
 
     try:
-        _config = yaml.safe_load(_CONFIG_PATH.read_text()) or {}
+        _config = yaml.safe_load(_CONFIG_PATH.read_text(encoding="utf-8")) or {}
     except Exception as e:
         print(f"  [api_config] ⚠ parse error: {e}")
         _config = {}
@@ -114,6 +114,7 @@ def get_llm_config() -> dict:
         "gemini": "gemini-3.1-flash-lite-preview",
         "stepfun": "step-3.5-flash",
         "claude": "claude-haiku-4-5-20251001",
+        "deepseek": "deepseek-v4-pro",
     }
     model = (
         os.getenv("DEFAULT_MODEL")

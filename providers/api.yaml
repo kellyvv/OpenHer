@@ -41,6 +41,10 @@ llm:
       base_url: "https://api.minimax.io/v1"
       api_key_env: "MINIMAX_LLM_API_KEY"
       default_model: "MiniMax-M2.7"
+    deepseek:
+      base_url: "https://api.deepseek.com"
+      api_key_env: "DEEPSEEK_API_KEY"
+      default_model: "deepseek-v4-pro"
 
 # ── TTS (语音合成) ──
 tts:

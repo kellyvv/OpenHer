@@ -284,6 +284,7 @@ Set at least one LLM provider API key in `.env`:
 |----------|---------------------|---------------|
 | **Gemini** | `GEMINI_API_KEY` | gemini-3.1-flash-lite-preview |
 | **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | deepseek-v4-pro |
 | **Qwen** | `DASHSCOPE_API_KEY` | qwen3-max |
 | **OpenAI** | `OPENAI_API_KEY` | gpt-5.4-mini |
 | **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
@@ -294,8 +295,8 @@ Set at least one LLM provider API key in `.env`:
 Then set your default provider:
 
 ```bash
-DEFAULT_PROVIDER=gemini           # or claude, dashscope, openai, minimax, moonshot, stepfun, ollama
-DEFAULT_MODEL=gemini-3.1-flash-lite-preview
+DEFAULT_PROVIDER=deepseek         # or gemini, claude, dashscope, openai, minimax, moonshot, stepfun, ollama
+DEFAULT_MODEL=deepseek-v4-pro
 ```
 
 ### 3. Start the Backend

@@ -43,7 +43,7 @@ def _load() -> dict:
         return _config
 
     try:
-        _config = yaml.safe_load(_CONFIG_PATH.read_text()) or {}
+        _config = yaml.safe_load(_CONFIG_PATH.read_text(encoding="utf-8")) or {}
     except Exception as e:
         print(f"  [providers/config] ⚠ parse error: {e}")
         _config = {}
@@ -89,6 +89,7 @@ def get_llm_provider_config() -> dict:
         "moonshot": "moonshot-v1-auto",
         "ollama": "qwen3.5:9b",
         "gemini": "gemini-3.1-flash-lite-preview",
+        "deepseek": "deepseek-v4-pro",
     }
     model = (
         os.getenv("DEFAULT_MODEL")

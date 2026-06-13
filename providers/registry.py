@@ -39,6 +39,7 @@ def _register_llm_providers():
     from .llm.claude import ClaudeLLMProvider
     from .llm.stepfun import StepFunLLMProvider
     from .llm.minimax import MiniMaxLLMProvider
+    from .llm.deepseek import DeepSeekLLMProvider
 
     _LLM_PROVIDERS.update({
         "dashscope": DashScopeLLMProvider,
@@ -49,6 +50,7 @@ def _register_llm_providers():
         "claude": ClaudeLLMProvider,
         "stepfun": StepFunLLMProvider,
         "minimax": MiniMaxLLMProvider,
+        "deepseek": DeepSeekLLMProvider,
     })
 
 

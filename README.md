@@ -312,6 +312,7 @@ cp .env.example .env
 |--------|---------|---------|
 | **Gemini** | `GEMINI_API_KEY` | gemini-3.1-flash-lite-preview |
 | **Claude** | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | deepseek-v4-pro |
 | **通义千问** | `DASHSCOPE_API_KEY` | qwen3-max |
 | **OpenAI** | `OPENAI_API_KEY` | gpt-5.4-mini |
 | **MiniMax** | `MINIMAX_LLM_API_KEY` | MiniMax-M2.5 |
@@ -322,8 +323,8 @@ cp .env.example .env
 设置默认服务商：
 
 ```bash
-DEFAULT_PROVIDER=gemini           # 或 claude, dashscope, openai, minimax, moonshot, stepfun, ollama
-DEFAULT_MODEL=gemini-3.1-flash-lite-preview
+DEFAULT_PROVIDER=deepseek         # 或 gemini, claude, dashscope, openai, minimax, moonshot, stepfun, ollama
+DEFAULT_MODEL=deepseek-v4-pro
 ```
 
 ### 三、启动后端
