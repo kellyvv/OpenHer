@@ -11,6 +11,7 @@ interface ChatViewProps {
   messages: ChatMessage[];
   isConnected: boolean;
   isTyping: boolean;
+  error: string | null;
   status: EngineStatus | null;
   debugMode: boolean;
   onOpenEnginePanel: () => void;
@@ -28,6 +29,7 @@ export function ChatView({
   messages,
   isConnected,
   isTyping,
+  error,
   status,
   debugMode,
   onOpenEnginePanel,
@@ -84,6 +86,11 @@ export function ChatView({
       <div className="conversation-layout">
         <EngineStatusPanel status={status} debugMode={debugMode} />
         <div className="messages-column">
+          {error && (
+            <div className="chat-error" role="alert">
+              {error}
+            </div>
+          )}
           <MessageList baseUrl={baseUrl} messages={messages} />
           {isTyping && <div className="typing-line">正在输入...</div>}
           <div ref={bottomRef} />

@@ -452,6 +452,16 @@ button {
   padding: 14px clamp(28px, 7vw, 72px) 22px 12px;
 }
 
+.chat-error {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--coral);
+  background: rgba(232, 93, 74, 0.1);
+  color: #9f352b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .message-list {
   display: grid;
   gap: 28px;

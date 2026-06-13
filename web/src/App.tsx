@@ -87,6 +87,7 @@ export default function App() {
 
     if (event.type === "chat_start") {
       setTyping(true);
+      setError(null);
       setStreaming("");
       streamingRef.current = "";
       if (event.user_content) {
@@ -299,6 +300,7 @@ export default function App() {
 
   const sendMessage = (content: string) => {
     if (!selectedId) return;
+    setError(null);
     const message: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -394,6 +396,7 @@ export default function App() {
             messages={messages}
             isConnected={isConnected}
             isTyping={isTyping}
+            error={error}
             status={status}
             debugMode={effectiveDebugMode}
             onOpenEnginePanel={openDeveloperPanel}
