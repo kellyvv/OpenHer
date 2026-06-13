@@ -46,4 +46,21 @@ describe("MessageList media rendering", () => {
     expect(html).toContain('aria-label="播放语音消息"');
     expect(html).toContain('class="voice-player"');
   });
+
+  test("renders persisted voice replies from the backend", () => {
+    const html = renderToStaticMarkup(
+      <MessageList
+        baseUrl="http://localhost:8000"
+        messages={[
+          {
+            ...baseMessage,
+            modality: "语音",
+            audioUrl: "/api/voice/iris/voice.wav",
+          },
+        ]}
+      />,
+    );
+
+    expect(html).toContain('src="http://localhost:8000/api/voice/iris/voice.wav"');
+  });
 });

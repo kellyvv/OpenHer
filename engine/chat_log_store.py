@@ -40,6 +40,7 @@ class ChatLogStore:
                 content TEXT NOT NULL,
                 modality TEXT DEFAULT '文字',
                 image_url TEXT DEFAULT NULL,
+                audio_url TEXT DEFAULT NULL,
                 created_at REAL NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_chat_lookup
@@ -52,6 +53,11 @@ class ChatLogStore:
         except sqlite3.OperationalError:
             self._conn.execute("ALTER TABLE chat_messages ADD COLUMN image_url TEXT DEFAULT NULL")
             self._conn.commit()
+        try:
+            self._conn.execute("SELECT audio_url FROM chat_messages LIMIT 0")
+        except sqlite3.OperationalError:
+            self._conn.execute("ALTER TABLE chat_messages ADD COLUMN audio_url TEXT DEFAULT NULL")
+            self._conn.commit()
 
     def save_turn(
         self,
@@ -61,17 +67,28 @@ class ChatLogStore:
         agent_reply: str,
         modality: str = "文字",
         image_url: str | None = None,
+        audio_url: str | None = None,
     ) -> None:
         """Save one conversation turn (user + assistant messages)."""
         now = time.time()
         self._conn.executemany(
             """
-            INSERT INTO chat_messages (client_id, persona_id, role, content, modality, image_url, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO chat_messages
+                (client_id, persona_id, role, content, modality, image_url, audio_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
-                (client_id, persona_id, "user", user_msg, "文字", None, now),
-                (client_id, persona_id, "assistant", agent_reply, modality, image_url, now),
+                (client_id, persona_id, "user", user_msg, "文字", None, None, now),
+                (
+                    client_id,
+                    persona_id,
+                    "assistant",
+                    agent_reply,
+                    modality,
+                    image_url,
+                    audio_url,
+                    now,
+                ),
             ],
         )
         self._conn.commit()
@@ -84,14 +101,25 @@ class ChatLogStore:
         content: str,
         modality: str = "文字",
         image_url: str | None = None,
+        audio_url: str | None = None,
     ) -> None:
         """Save a single message (e.g. additional segment from split_reply)."""
         self._conn.execute(
             """
-            INSERT INTO chat_messages (client_id, persona_id, role, content, modality, image_url, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO chat_messages
+                (client_id, persona_id, role, content, modality, image_url, audio_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (client_id, persona_id, role, content, modality, image_url, time.time()),
+            (
+                client_id,
+                persona_id,
+                role,
+                content,
+                modality,
+                image_url,
+                audio_url,
+                time.time(),
+            ),
         )
         self._conn.commit()
 
@@ -118,7 +146,7 @@ class ChatLogStore:
         if before_id is not None:
             rows = self._conn.execute(
                 """
-                SELECT id, role, content, modality, image_url, created_at
+                SELECT id, role, content, modality, image_url, audio_url, created_at
                 FROM chat_messages
                 WHERE client_id = ? AND persona_id = ? AND id < ?
                 ORDER BY id DESC
@@ -129,7 +157,7 @@ class ChatLogStore:
         else:
             rows = self._conn.execute(
                 """
-                SELECT id, role, content, modality, image_url, created_at
+                SELECT id, role, content, modality, image_url, audio_url, created_at
                 FROM chat_messages
                 WHERE client_id = ? AND persona_id = ?
                 ORDER BY id DESC
@@ -146,6 +174,7 @@ class ChatLogStore:
                 "content": r["content"],
                 "modality": r["modality"],
                 "image_url": r["image_url"],
+                "audio_url": r["audio_url"],
                 "created_at": r["created_at"],
             }
             for r in reversed(rows)

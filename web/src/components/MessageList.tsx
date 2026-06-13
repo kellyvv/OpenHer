@@ -1,4 +1,4 @@
-import { selfieUrl } from "../api/openherClient";
+import { persistedMediaUrl, selfieUrl } from "../api/openherClient";
 import type { ChatMessage } from "../types/openher";
 import { useState } from "react";
 
@@ -20,6 +20,7 @@ export function MessageList({ baseUrl, messages }: MessageListProps) {
         {messages.map((message) => {
           const isUser = message.role === "user";
           const image = selfieUrl(baseUrl, message.imageUrl);
+          const audio = persistedMediaUrl(baseUrl, message.audioUrl);
           return (
             <article className={`message-row ${isUser ? "message-user" : "message-assistant"}`} key={message.id}>
               <div className="message-content">
@@ -29,8 +30,8 @@ export function MessageList({ baseUrl, messages }: MessageListProps) {
                     <img className="message-image" src={image} alt="OpenHer 生成图片" />
                   </button>
                 )}
-                {message.audioUrl && (
-                  <audio className="voice-player" controls src={message.audioUrl} aria-label="播放语音消息">
+                {audio && (
+                  <audio className="voice-player" controls src={audio} aria-label="播放语音消息">
                     <track kind="captions" />
                   </audio>
                 )}

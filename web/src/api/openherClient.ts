@@ -30,8 +30,12 @@ export function mediaUrl(baseUrl: string, personaId: string, mediaType: string):
 }
 
 export function selfieUrl(baseUrl: string, path?: string | null): string | null {
+  return persistedMediaUrl(baseUrl, path);
+}
+
+export function persistedMediaUrl(baseUrl: string, path?: string | null): string | null {
   if (!path) return null;
-  if (/^https?:\/\//.test(path)) return path;
+  if (/^(?:https?:|blob:)/.test(path)) return path;
   return `${normalizeBaseUrl(baseUrl)}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

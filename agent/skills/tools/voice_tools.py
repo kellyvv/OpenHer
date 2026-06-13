@@ -16,10 +16,14 @@ from pathlib import Path
 from agent.skills.tool_registry import Tool, ToolRegistry
 
 
+VOICE_CACHE_ROOT = Path(__file__).resolve().parents[3] / ".cache" / "voice"
+
+
 # ── Tool: synthesize_voice ──
 
 async def _synthesize_voice(
     text: str,
+    persona_id: str = "",
     voice_preset: str = "",
     emotion_instruction: str = "",
 ) -> dict:
@@ -45,9 +49,7 @@ async def _synthesize_voice(
     try:
         from providers.registry import get_tts
 
-        cache_dir = str(
-            Path(__file__).resolve().parents[3] / ".cache" / "voice"
-        )
+        cache_dir = str((VOICE_CACHE_ROOT / (persona_id or "default")).resolve())
         os.makedirs(cache_dir, exist_ok=True)
 
         provider = get_tts(cache_dir=cache_dir)

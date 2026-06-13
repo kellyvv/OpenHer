@@ -17,6 +17,7 @@ import {
 } from "./demo/state";
 import { resolveDemoPersonaId, type DemoMediaType } from "./demo/media";
 import { buildWorkspaceClassName } from "./layout/workspace";
+import { toHistoryMessages } from "./history/messages";
 import {
   developerMode,
   saveDeveloperMode,
@@ -26,18 +27,6 @@ import {
   showOnlyReadyPersonas as readShowOnlyReadyPersonas,
 } from "./state/local";
 import type { AppPhase, ChatMessage, DemoSnapshot, EngineDebugState, EngineStatus, OpenHerEvent, Persona } from "./types/openher";
-
-function toHistoryMessages(items: Awaited<ReturnType<typeof fetchHistory>>["messages"]): ChatMessage[] {
-  return items.map((item) => ({
-    id: `h_${item.id}`,
-    role: item.role,
-    content: item.content,
-    modality: item.modality || "文字",
-    imageUrl: item.role === "assistant" ? item.image_url : null,
-    timestamp: item.created_at ? item.created_at * 1000 : Date.now(),
-    sendStatus: "sent",
-  }));
-}
 
 function audioUrlFromBase64(audio: string, format = "wav"): string {
   const byteCharacters = atob(audio);

@@ -9,6 +9,7 @@ Validates:
 """
 
 import os
+import sqlite3
 import sys
 import tempfile
 
@@ -45,6 +46,71 @@ def test_save_and_load():
 
         store.close()
         print("✅ save_turn → load_messages PASSED")
+
+
+def test_save_and_load_audio_url():
+    """Assistant audio URLs survive a chat history round-trip."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        store = ChatLogStore(os.path.join(tmpdir, "test_chat.db"))
+
+        store.save_turn(
+            "client_A",
+            "iris",
+            "Say hello",
+            "Hello",
+            "语音",
+            audio_url="/api/voice/iris/hello.wav",
+        )
+
+        messages = store.load_messages("client_A", "iris")
+        assert messages[0]["audio_url"] is None
+        assert messages[1]["audio_url"] == "/api/voice/iris/hello.wav"
+
+        store.close()
+
+
+def test_migrates_existing_database_with_audio_url():
+    """Databases created before audio persistence gain the new column."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = os.path.join(tmpdir, "legacy_chat.db")
+        connection = sqlite3.connect(db_path)
+        connection.execute(
+            """
+            CREATE TABLE chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id TEXT NOT NULL,
+                persona_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                modality TEXT DEFAULT '文字',
+                image_url TEXT DEFAULT NULL,
+                created_at REAL NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO chat_messages
+                (client_id, persona_id, role, content, modality, image_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("client_A", "iris", "assistant", "Legacy reply", "文字", None, 1.0),
+        )
+        connection.commit()
+        connection.close()
+
+        store = ChatLogStore(db_path)
+        messages = store.load_messages("client_A", "iris")
+
+        assert messages[0]["content"] == "Legacy reply"
+        assert messages[0]["audio_url"] is None
+        columns = {
+            row[1]
+            for row in store._conn.execute("PRAGMA table_info(chat_messages)").fetchall()
+        }
+        assert "audio_url" in columns
+
+        store.close()
 
 
 def test_client_id_isolation():

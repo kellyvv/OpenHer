@@ -38,6 +38,7 @@ from agent.skills.tools.voice_tools import register_voice_tools
 from agent.skills.tools.split_tools import register_split_tools
 from engine.state_store import StateStore
 from engine.chat_log_store import ChatLogStore
+from engine.media_paths import resolve_voice_file, voice_url_from_path
 from memory.memory_store import MemoryStore
 from providers.memory.evermemos.evermemos_client import EverMemOSClient
 from providers.api_config import get_llm_config, get_tts_config, get_memory_config
@@ -976,6 +977,21 @@ async def serve_selfie(filename: str):
     return FileResponse(file_path, media_type=media_type)
 
 
+@app.get("/api/voice/{persona_id}/{filename:path}")
+async def serve_voice(persona_id: str, filename: str):
+    """Serve a persisted voice message from the cache."""
+    voice_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        ".cache",
+        "voice",
+    )
+    try:
+        file_path, media_type = resolve_voice_file(voice_dir, persona_id, filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Voice message not found")
+    return FileResponse(file_path, media_type=media_type)
+
+
 # ──────────────────────────────────────────────────────────────
 # Avatar — Static file serving only (no generation)
 # ──────────────────────────────────────────────────────────────
@@ -1137,6 +1153,12 @@ async def websocket_chat(ws: WebSocket):
                 print(f"  [delivery] 📷 image_path={image_path}, image_url={image_url}")
             else:
                 image_url = None
+            voice_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                ".cache",
+                "voice",
+            )
+            audio_url = voice_url_from_path(audio_path, voice_dir) if audio_path else None
 
             segments = status.pop("segments", None)
             delays_ms = status.pop("delays_ms", None)
@@ -1243,6 +1265,7 @@ async def websocket_chat(ws: WebSocket):
                             agent_reply=segments[0],
                             modality=modality,
                             image_url=image_url,
+                            audio_url=audio_url,
                         )
                         for seg in segments[1:]:
                             chat_log_store.save_message(
@@ -1260,6 +1283,7 @@ async def websocket_chat(ws: WebSocket):
                             agent_reply=_clean_reply_text,
                             modality=modality,
                             image_url=image_url,
+                            audio_url=audio_url,
                         )
                 except Exception as e:
                     print(f"  [chat_log] save error: {e}")

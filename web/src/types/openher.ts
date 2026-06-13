@@ -93,6 +93,7 @@ export interface HistoryMessage {
   content: string;
   modality?: string;
   image_url?: string | null;
+  audio_url?: string | null;
   created_at?: number;
   timestamp?: string;
 }

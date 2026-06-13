@@ -378,6 +378,7 @@ class ModalitySkillEngine:
             voice_preset = self._resolve_voice_preset(persona)
             voice_result = await self._retry_tool("synthesize_voice", {
                 "text": params.get("text", ""),
+                "persona_id": persona.persona_id,
                 "voice_preset": voice_preset,
                 "emotion_instruction": params.get("emotion_instruction", ""),
             })
