@@ -13,7 +13,7 @@
 
 [![中文文档](https://img.shields.io/badge/中文文档-FF6B6B?style=flat-square)](README.md) &nbsp; [![English](https://img.shields.io/badge/English-555555?style=flat-square)](README_EN.md)
 
-[Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Core Capabilities](#-core-capabilities) · [How It Works](#-how-it-works) · [Memory](#-memory-architecture) · [LLM Compatibility](#-llm-compatibility) · [Quick Start](#-quick-start) · [Online Demos](#-online-experience-and-community-demos) · [Create Your Own](#-create-your-own-character) · [Roadmap](#️-roadmap)
+[Try Online](#-try-online) · [Inspiration](#inspiration) · [What is OpenHer](#-what-is-openher) · [Vision](#-vision) · [Core Capabilities](#-core-capabilities) · [How It Works](#-how-it-works) · [Memory](#-memory-architecture) · [LLM Compatibility](#-llm-compatibility) · [Quick Start](#-quick-start) · [Create Your Own](#-create-your-own-character) · [Roadmap](#️-roadmap)
 
 </div>
 
@@ -38,6 +38,19 @@
 [![Demo](https://img.youtube.com/vi/AE7bspVHEI8/maxresdefault.jpg)](https://www.youtube.com/watch?v=AE7bspVHEI8)
 
 </div>
+
+---
+
+## 🌐 Try Online
+
+Try OpenHer online, and share your demos, workflows, and integrations here.
+
+| Name | Link | Notes |
+|:-----|:-----|:------|
+| OpenHer Hugging Face Space | [Try online](https://huggingface.co/spaces/build-small-hackathon/openher) | Awakening, chat, and persona-engine experience |
+| Socialistic · OpenHer Persona Engine | [Try online](https://socialistic.ai/en/skill/openher-persona-engine-4dcaa1) | Try the OpenHer persona engine from a character description |
+
+To add a new experience, open an issue or PR. Helpful context includes the OpenHer version/commit, model and inference setup, maintenance plan, and source link when available. Changes that touch the persona engine, model providers, or media pipeline are easiest to evaluate with benchmark / regression data.
 
 ---
 
@@ -353,19 +366,6 @@ Set in `.env`:
 ```bash
 EVERMEMOS_BASE_URL=http://localhost:1995/api/v1
 ```
-
-## 🌐 Online Experience and Community Demos
-
-Try OpenHer online, and share community-built demos, workflows, and integrations here.
-
-| Name | Type | Maintainer | Link | Notes |
-|:-----|:-----|:-----------|:-----|:------|
-| OpenHer Hugging Face Space | Official online experience | OpenHer | [Try online](https://huggingface.co/spaces/build-small-hackathon/openher) | Gradio Space showcasing OpenHer's awakening, chat, and persona-engine experience |
-| Socialistic · OpenHer Persona Engine | Community demo | [shesl-tinkerland](https://github.com/shesl-tinkerland) / Tinkerland | [Try online](https://socialistic.ai/en/skill/openher-persona-engine-4dcaa1) | From [issue #17](https://github.com/kellyvv/OpenHer/issues/17), lets visitors try the OpenHer persona engine from a character description |
-
-To add a community demo, open an issue or PR. Helpful context includes the OpenHer version/commit, model and inference setup, data-handling notes, maintenance plan, and source link when available. Changes that touch the persona engine, model providers, or media pipeline are easiest to evaluate with benchmark / regression data.
-
----
 
 ### 💬 WeChat Integration (Optional)
 
