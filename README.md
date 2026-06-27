@@ -13,7 +13,7 @@
 
 [![中文文档](https://img.shields.io/badge/中文文档-555555?style=flat-square)](README.md) &nbsp; [![English](https://img.shields.io/badge/English-FF6B6B?style=flat-square)](README_EN.md)
 
-[灵感来源](#灵感来源) · [什么是 OpenHer](#-什么是-openher) · [愿景](#-愿景) · [核心能力](#-核心能力) · [技术原理](#-技术原理) · [记忆架构](#-记忆架构) · [LLM 兼容性](#-llm-兼容性) · [快速开始](#-快速开始) · [社区 Demo](#-社区-demo) · [微信接入](#-微信接入可选) · [创建角色](#-创建你自己的角色) · [路线图](#️-路线图)
+[灵感来源](#灵感来源) · [什么是 OpenHer](#-什么是-openher) · [愿景](#-愿景) · [核心能力](#-核心能力) · [技术原理](#-技术原理) · [记忆架构](#-记忆架构) · [LLM 兼容性](#-llm-兼容性) · [快速开始](#-快速开始) · [在线体验](#-在线体验与社区-demo) · [微信接入](#-微信接入可选) · [创建角色](#-创建你自己的角色) · [路线图](#️-路线图)
 
 </div>
 
@@ -382,15 +382,16 @@ cd vendor/EverMemOS && docker compose up -d && uv run python src/run.py
 EVERMEMOS_BASE_URL=http://localhost:1995/api/v1
 ```
 
-## 🌐 社区 Demo
+## 🌐 在线体验与社区 Demo
 
-这些入口由社区维护，OpenHer **不直接托管或审计**。使用前请自行判断其数据处理方式、模型配置和可用性；如果入口失效或表现偏离当前主仓库，请以本仓库代码为准。
+欢迎直接在线体验 OpenHer，也欢迎社区把自己的 Demo、玩法和集成入口分享出来。
 
-| 名称 | 维护者 | 入口 | 说明 |
-|:-----|:------|:-----|:-----|
-| Socialistic · OpenHer 陪伴人格引擎 | [shesl-tinkerland](https://github.com/shesl-tinkerland) / Tinkerland | [在线体验](https://socialistic.ai/zh/skill/openher-persona-engine-4dcaa1) | 第三方社区入口，来自 [issue #17](https://github.com/kellyvv/OpenHer/issues/17)，OpenHer 不直接托管或审计 |
+| 名称 | 类型 | 维护者 | 入口 | 说明 |
+|:-----|:-----|:------|:-----|:-----|
+| OpenHer Hugging Face Space | 官方在线体验 | OpenHer | [在线体验](https://huggingface.co/spaces/build-small-hackathon/openher) | Gradio Space，展示 OpenHer 的唤醒、聊天和人格引擎体验 |
+| Socialistic · OpenHer 陪伴人格引擎 | 社区 Demo | [shesl-tinkerland](https://github.com/shesl-tinkerland) / Tinkerland | [在线体验](https://socialistic.ai/zh/skill/openher-persona-engine-4dcaa1) | 来自 [issue #17](https://github.com/kellyvv/OpenHer/issues/17)，支持通过性格描述体验 OpenHer 的人格引擎 |
 
-想添加社区 Demo，请开 issue 或 PR，并说明使用的 OpenHer 版本/commit、是否开源、模型和推理服务、用户输入是否会保存或用于分析、维护方式；如果改动涉及人格引擎、模型 provider 或媒体链路，也请附 benchmark / 回归数据。
+想添加社区 Demo，欢迎开 issue 或 PR。建议附上使用的 OpenHer 版本/commit、模型和推理服务、数据处理说明、维护方式，以及源码链接（如果方便公开）；涉及人格引擎、模型 provider 或媒体链路的改动，也欢迎附 benchmark / 回归数据。
 
 ---
 
